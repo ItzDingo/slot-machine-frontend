@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Slot Machine</title>
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<div id="notification" class="notification-hidden">
+    <div id="notification-message"></div>
+</div>
     <!-- Login Screen -->
     <div id="login-screen" class="login-container">
         <h1></h1>
@@ -34,7 +37,7 @@
         <div class="currency-display">
             <div class="currency">
                 <img src="assets/spade.png" alt="Chips">
-                <span id="chips">0</span>
+                <span id="chips">1000</span>
             </div>
             <div class="currency">
                 <img src="assets/dice.png" alt="Dice">
@@ -61,6 +64,6 @@
         </div>
     </div>
 
-    <script src="./script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
