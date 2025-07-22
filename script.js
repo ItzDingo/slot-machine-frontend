@@ -69,14 +69,10 @@ function getRandomSymbol() {
 
 function resetReel(reel, centerSymbol) {
     reel.innerHTML = '';
-    for (let i = -1; i <= 1; i++) {
-        const symbol = i === 0 ? centerSymbol : getRandomSymbol();
-        const symbolElement = document.createElement('div');
-        symbolElement.className = 'symbol';
-        symbolElement.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
-        symbolElement.style.transform = `translateY(${i * 100}%)`;
-        reel.appendChild(symbolElement);
-    }
+    const symbolElement = document.createElement('div');
+    symbolElement.className = 'symbol';
+    symbolElement.innerHTML = `<img src="${centerSymbol.img}" alt="${centerSymbol.name}">`;
+    reel.appendChild(symbolElement);
 }
 
 function updateCurrencyDisplay() {
@@ -97,6 +93,75 @@ function showNotification(message, isSuccess) {
     setTimeout(() => {
         notification.remove();
     }, 3000);
+}
+
+// Improved Spin Animation
+function spinReel(reel, targetSymbol, duration, isLastReel) {
+    const symbols = CONFIG.symbols;
+    const symbolHeight = 100; // Each symbol takes 100% height
+    const spinCycles = 5; // Number of full rotations before stopping
+    let startTime = null;
+    let animationFrameId = null;
+
+    // Clear previous symbols
+    reel.innerHTML = '';
+
+    // Create enough symbols to fill the reel plus buffer
+    const totalSymbols = symbols.length * 2; // Double the symbols for smooth looping
+    const symbolElements = [];
+    
+    for (let i = 0; i < totalSymbols; i++) {
+        const symbol = symbols[i % symbols.length];
+        const symbolElement = document.createElement('div');
+        symbolElement.className = 'symbol';
+        symbolElement.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
+        symbolElement.style.position = 'absolute';
+        symbolElement.style.width = '100%';
+        symbolElement.style.height = '100%';
+        symbolElement.style.transform = `translateY(${i * symbolHeight}%)`;
+        reel.appendChild(symbolElement);
+        symbolElements.push(symbolElement);
+    }
+
+    function animateSpin(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing function for smooth deceleration
+        const easedProgress = progress < 0.8 ? 
+            progress / 0.8 : 
+            1 - Math.pow((progress - 0.8) / 0.2, 2);
+
+        // Calculate position with easing
+        const totalDistance = spinCycles * symbols.length * symbolHeight;
+        const currentPosition = -easedProgress * totalDistance;
+
+        // Position all symbols
+        symbolElements.forEach((element, index) => {
+            const position = (currentPosition + index * symbolHeight) % (symbols.length * symbolHeight);
+            element.style.transform = `translateY(${position}%)`;
+        });
+
+        if (progress < 1) {
+            animationFrameId = requestAnimationFrame(animateSpin);
+        } else {
+            // Animation complete - show final result
+            reel.innerHTML = '';
+            resetReel(reel, targetSymbol);
+            gameState.spinningReels--;
+            
+            if (gameState.spinningReels === 0) {
+                gameState.isSpinning = false;
+                spinBtn.disabled = false;
+                checkWin();
+            }
+        }
+    }
+
+    // Start the animation
+    gameState.spinningReels++;
+    animationFrameId = requestAnimationFrame(animateSpin);
 }
 
 // Game Functions
@@ -139,55 +204,13 @@ async function startSpin() {
         gameState.currentSymbols = targetSymbols.map(s => s.name);
 
         reels.forEach((reel, index) => {
-            const duration = 1000 + Math.random() * 2000;
+            const duration = 2000 + Math.random() * 1000; // 2-3 seconds duration
             spinReel(reel, targetSymbols[index], duration, index === reels.length - 1);
         });
     } catch (error) {
         console.error('Spin error:', error);
         showNotification('Failed to start spin. Please try again.', false);
     }
-}
-
-function spinReel(reel, targetSymbol, duration, isLastReel) {
-    const symbols = CONFIG.symbols;
-    let startTime = null;
-    let currentPosition = 0;
-    let currentSymbolIndex = 0;
-
-    function animateSpin(timestamp) {
-        if (!startTime) startTime = timestamp;
-        const progress = timestamp - startTime;
-        const spinProgress = Math.min(progress / duration, 1);
-
-        if (spinProgress < 1) {
-            currentPosition = -100 * spinProgress * 10;
-            currentSymbolIndex = Math.floor(Math.random() * symbols.length);
-            
-            reel.innerHTML = '';
-            for (let i = -1; i <= 1; i++) {
-                const symbol = symbols[(currentSymbolIndex + i + symbols.length) % symbols.length];
-                const symbolElement = document.createElement('div');
-                symbolElement.className = 'symbol';
-                symbolElement.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
-                symbolElement.style.transform = `translateY(${currentPosition + (i * 100)}%)`;
-                reel.appendChild(symbolElement);
-            }
-            
-            requestAnimationFrame(animateSpin);
-        } else {
-            gameState.currentSymbols[reels.indexOf(reel)] = targetSymbol.name;
-            resetReel(reel, targetSymbol);
-            gameState.spinningReels--;
-            
-            if (gameState.spinningReels === 0) {
-                gameState.isSpinning = false;
-                spinBtn.disabled = false;
-                checkWin();
-            }
-        }
-    }
-
-    requestAnimationFrame(animateSpin);
 }
 
 async function checkWin() {
