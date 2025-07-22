@@ -289,32 +289,49 @@ async function claimWin() {
 
 // Authentication Functions
 async function checkAuthStatus() {
-    try {
-        loginScreen.innerHTML = '<div class="loading">Checking session...</div>';
-        
-        const user = await makeApiCall(API_CONFIG.endpoints.auth.user);
-        handleSuccessfulLogin(user);
-        showNotification(`Welcome back, ${user.username}!`, true);
+  try {
+    loginScreen.innerHTML = '<div class="loading">Checking session...</div>';
+    
+    const response = await fetch(`${API_BASE_URL}/auth/user`, {
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      if (data.authenticated) {
+        handleSuccessfulLogin(data);
         return true;
-    } catch (error) {
-        localStorage.removeItem('lastKnownUserId');
-        showLoginScreen();
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('login_failed')) {
-            showNotification('Login failed. Please try again.', false);
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-        return false;
+      }
     }
+    
+    // If not authenticated, clear any residual session data
+    await clearSessionCookies();
+    showLoginScreen();
+    return false;
+    
+  } catch (error) {
+    console.error('Auth check failed:', error);
+    showLoginScreen();
+    return false;
+  }
 }
 
 async function clearSessionCookies() {
-    try {
-        await makeApiCall(API_CONFIG.endpoints.auth.clear, 'POST');
-    } catch (error) {
-        console.error('Failed to clear cookies:', error);
+  try {
+    // First try the proper endpoint
+    const response = await fetch(`${API_BASE_URL}/auth/clear-cookies`, {
+      method: 'POST',
+      credentials: 'include'
+    });
+    
+    // Fallback to manual cookie clearing if endpoint fails
+    if (!response.ok) {
+      document.cookie = 'connect.sid=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+      document.cookie = 'slot_machine.sid=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     }
+  } catch (error) {
+    console.error('Failed to clear cookies:', error);
+  }
 }
 
 async function handleDiscordLogin() {
@@ -391,44 +408,44 @@ async function logout() {
 
 // Initialize Game
 async function initGame() {
+  try {
     // Clear any existing session first
     await clearSessionCookies();
     
-    // Set up event listeners
-    spinBtn.addEventListener('click', startSpin);
-    claimBtn.addEventListener('click', claimWin);
-    
-    // Check URL for auth code first
+    // Check URL for auth code
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('code')) {
-        try {
-            loginScreen.innerHTML = '<div class="loading">Completing login...</div>';
-            
-            const authResponse = await makeApiCall(API_CONFIG.endpoints.auth.token, 'POST', {
-                code: urlParams.get('code')
-            });
-            
-            window.history.replaceState({}, document.title, window.location.pathname);
-            await checkAuthStatus();
-        } catch (error) {
-            console.error('Auth processing error:', error);
-            showNotification('Login failed. Please try again.', false);
-            showLoginScreen();
-        }
-    } else {
-        // Regular session check
-        await checkAuthStatus();
+      loginScreen.innerHTML = '<div class="loading">Completing login...</div>';
+      
+      // Exchange code for session
+      const authResponse = await fetch(`${API_BASE_URL}/auth/discord/callback?code=${urlParams.get('code')}`, {
+        credentials: 'include'
+      });
+      
+      if (authResponse.ok) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
     }
     
+    // Check auth status
+    const isAuthenticated = await checkAuthStatus();
+    
     // Initialize game if authenticated
-    if (gameState.userId) {
-        reels.forEach((reel, index) => {
-            const symbol = getRandomSymbol();
-            gameState.currentSymbols[index] = symbol.name;
-            resetReel(reel, symbol);
-        });
+    if (isAuthenticated) {
+      reels.forEach((reel, index) => {
+        const symbol = getRandomSymbol();
+        gameState.currentSymbols[index] = symbol.name;
+        resetReel(reel, symbol);
+      });
     }
+    
+  } catch (error) {
+    console.error('Initialization error:', error);
+    showNotification('Failed to initialize game. Please refresh.', false);
+    showLoginScreen();
+  }
 }
+
 
 // Start the game when DOM is loaded
 document.addEventListener('DOMContentLoaded', initGame);
