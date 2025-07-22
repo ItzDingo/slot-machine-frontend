@@ -74,11 +74,17 @@ function showNotification(message, isSuccess) {
 }
 
 // Authentication
+// Replace your checkAuthStatus function with this:
 async function checkAuthStatus() {
     try {
         const response = await fetch(`${API_BASE_URL}/auth/user`, {
             credentials: 'include',
-            headers: { 'Cache-Control': 'no-cache' }
+            headers: {
+                // Remove Cache-Control header as it's causing preflight issues
+                'Authorization': localStorage.getItem('lastKnownUserId') 
+                    ? `Bearer ${localStorage.getItem('lastKnownUserId')}`
+                    : undefined
+            }
         });
         
         if (response.ok) {
