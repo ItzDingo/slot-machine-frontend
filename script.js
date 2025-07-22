@@ -61,6 +61,10 @@ const winPopup = document.getElementById('win-popup');
 const winComboDisplay = document.getElementById('win-combo');
 const winAmountDisplay = document.getElementById('win-amount');
 const claimBtn = document.getElementById('claim-btn');
+const loadingIndicator = document.createElement('div');
+loadingIndicator.className = 'spin-loading';
+loadingIndicator.innerHTML = '<div class="spinner"></div>';
+document.body.appendChild(loadingIndicator);
 
 // Helper Functions
 function getRandomSymbol() {
@@ -108,7 +112,27 @@ async function startSpin() {
         return;
     }
 
+    // Start visual spin immediately for better responsiveness
+    gameState.isSpinning = true;
+    gameState.spinningReels = reels.length;
+    gameState.winAmount = 0;
+    gameState.winCombo = null;
+    spinBtn.disabled = true;
+    winPopup.style.display = 'none';
+    loadingIndicator.classList.add('show');
+
+    const targetSymbols = reels.map(() => getRandomSymbol());
+    gameState.currentSymbols = targetSymbols.map(s => s.name);
+
+    // Start visual animation immediately with staggered timing
+    const baseDuration = 2500; // 2.5 seconds base duration
+    reels.forEach((reel, index) => {
+        const duration = baseDuration + (index * 300); // Stagger by 300ms
+        spinReel(reel, targetSymbols[index], duration, index === reels.length - 1);
+    });
+
     try {
+        // Make API call after starting visuals
         const response = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
             headers: { 
@@ -122,66 +146,78 @@ async function startSpin() {
             credentials: 'include'
         });
 
-        if (!response.ok) throw new Error('Spin failed');
+        if (!response.ok) {
+            throw new Error('Spin failed');
+        }
 
         const data = await response.json();
         gameState.chips = data.newBalance;
         updateCurrencyDisplay();
         
-        gameState.isSpinning = true;
-        gameState.spinningReels = reels.length;
-        gameState.winAmount = 0;
-        gameState.winCombo = null;
-        spinBtn.disabled = true;
-        winPopup.style.display = 'none';
-
-        const targetSymbols = reels.map(() => getRandomSymbol());
-        gameState.currentSymbols = targetSymbols.map(s => s.name);
-
-        reels.forEach((reel, index) => {
-            const duration = 1000 + Math.random() * 2000;
-            spinReel(reel, targetSymbols[index], duration, index === reels.length - 1);
-        });
     } catch (error) {
         console.error('Spin error:', error);
-        showNotification('Failed to start spin. Please try again.', false);
+        showNotification('Failed to process spin. Please try again.', false);
+        // Reset spin state if error occurs
+        gameState.isSpinning = false;
+        spinBtn.disabled = false;
+        loadingIndicator.classList.remove('show');
+        // Reset reels to their initial state
+        reels.forEach((reel, index) => {
+            const symbol = getRandomSymbol();
+            resetReel(reel, symbol);
+            gameState.currentSymbols[index] = symbol.name;
+        });
     }
 }
 
 function spinReel(reel, targetSymbol, duration, isLastReel) {
     const symbols = CONFIG.symbols;
     let startTime = null;
-    let currentPosition = 0;
-    let currentSymbolIndex = 0;
+    const symbolHeight = 100; // Height of each symbol in percentage
+    const totalSymbols = 5; // Number of symbols to show in the reel during spin
+
+    // Pre-create all symbol elements
+    const symbolElements = [];
+    for (let i = 0; i < totalSymbols; i++) {
+        const symbolElement = document.createElement('div');
+        symbolElement.className = 'symbol';
+        reel.appendChild(symbolElement);
+        symbolElements.push(symbolElement);
+    }
 
     function animateSpin(timestamp) {
         if (!startTime) startTime = timestamp;
         const progress = timestamp - startTime;
         const spinProgress = Math.min(progress / duration, 1);
+        
+        // Ease-out function for smoother deceleration
+        const easedProgress = 1 - Math.pow(1 - spinProgress, 3);
 
         if (spinProgress < 1) {
-            currentPosition = -100 * spinProgress * 10;
-            currentSymbolIndex = Math.floor(Math.random() * symbols.length);
+            // Calculate position with proper spacing
+            const basePosition = -easedProgress * (symbolHeight * 10); // 10 full spins
             
-            reel.innerHTML = '';
-            for (let i = -1; i <= 1; i++) {
-                const symbol = symbols[(currentSymbolIndex + i + symbols.length) % symbols.length];
-                const symbolElement = document.createElement('div');
-                symbolElement.className = 'symbol';
-                symbolElement.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
-                symbolElement.style.transform = `translateY(${currentPosition + (i * 100)}%)`;
-                reel.appendChild(symbolElement);
+            // Update all symbols
+            for (let i = 0; i < totalSymbols; i++) {
+                const position = basePosition + (i * symbolHeight);
+                const symbolIndex = Math.floor(-basePosition / symbolHeight) + i;
+                const symbol = symbols[symbolIndex % symbols.length];
+                
+                symbolElements[i].innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
+                symbolElements[i].style.transform = `translateY(${position}%)`;
             }
             
             requestAnimationFrame(animateSpin);
         } else {
-            gameState.currentSymbols[reels.indexOf(reel)] = targetSymbol.name;
+            // Clean up and show final result
+            reel.innerHTML = '';
             resetReel(reel, targetSymbol);
             gameState.spinningReels--;
             
             if (gameState.spinningReels === 0) {
                 gameState.isSpinning = false;
                 spinBtn.disabled = false;
+                loadingIndicator.classList.remove('show');
                 checkWin();
             }
         }
