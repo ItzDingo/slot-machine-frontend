@@ -76,28 +76,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             await checkAuthStatus();
             window.history.replaceState({}, document.title, window.location.pathname);
         } catch (error) {
-            console.error('Auth failed:', error);
+            showNotification('Login failed. Please try again.', false);
             showLoginScreen();
         }
-    } 
-    // Normal page load
-    else {
-        // Check auth status with retry logic
-        const retryAuthCheck = async (attempt = 0) => {
-            try {
-                await checkAuthStatus();
-            } catch (error) {
-                if (attempt < 3) {
-                    setTimeout(() => retryAuthCheck(attempt + 1), 1000 * (attempt + 1));
-                } else {
-                    showLoginScreen();
-                }
-            }
-        };
-        
-        retryAuthCheck();
+    } else {
+        await checkAuthStatus();
     }
 });
+
+function showNotification(message, isSuccess) {
+    const notification = document.getElementById('notification');
+    const notificationMsg = document.getElementById('notification-message');
+    
+    notification.className = isSuccess ? 'notification-success' : 'notification-error';
+    notificationMsg.textContent = message;
+    notification.classList.add('notification-show');
+    
+    setTimeout(() => {
+        notification.classList.remove('notification-show');
+    }, 3000);
+}
 
 async function initGame() {
     await checkAuthStatus();
@@ -120,44 +118,27 @@ async function initGame() {
 
 async function checkAuthStatus() {
     try {
-        // First check if we have a cached user ID
-        const cachedUserId = localStorage.getItem('lastKnownUserId');
-        if (!cachedUserId) {
-            showLoginScreen();
-            return;
-        }
-
-        // Verify with backend
         const response = await fetch(`${API_BASE_URL}/auth/user`, {
             credentials: 'include',
-            headers: {
-                'Cache-Control': 'no-cache',
-                'Authorization': `Bearer ${cachedUserId}`
-            }
+            headers: { 'Cache-Control': 'no-cache' }
         });
         
         if (response.ok) {
             const user = await response.json();
             handleSuccessfulLogin(user);
-            
-            // Additional verification after 1 second
-            setTimeout(async () => {
-                const verifyResponse = await fetch(`${API_BASE_URL}/auth/user`, {
-                    credentials: 'include'
-                });
-                if (!verifyResponse.ok) {
-                    localStorage.removeItem('lastKnownUserId');
-                    window.location.reload();
-                }
-            }, 1000);
+            showNotification(`Welcome, ${user.username}!`, true);
         } else {
             showLoginScreen();
+            // Check if we came from a failed login attempt
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('login_failed')) {
+                showNotification('Login failed. Please try again.', false);
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
         }
     } catch (error) {
         console.error('Auth check failed:', error);
         showLoginScreen();
-        // Retry after 2 seconds
-        setTimeout(checkAuthStatus, 2000);
     }
 }
 
@@ -172,7 +153,6 @@ function handleSuccessfulLogin(user) {
     gameScreen.style.display = 'block';
     updateCurrencyDisplay();
     
-    // Store user ID in localStorage
     localStorage.setItem('lastKnownUserId', user.id);
 }
 
