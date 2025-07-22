@@ -1,7 +1,7 @@
 // API Configuration
-const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com';
+const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com/';
 
-// Game Configuration (keep this the same)
+// Game Configuration
 const CONFIG = {
     spinCost: 10,
     symbols: [
@@ -42,27 +42,27 @@ let gameState = {
 };
 
 // DOM Elements
+const loginScreen = document.getElementById('login-screen');
+const gameScreen = document.getElementById('game-screen');
+const tokenInput = document.getElementById('token-input');
+const loginBtn = document.getElementById('login-btn');
+const logoutBtn = document.getElementById('logout-btn');
+const usernameDisplay = document.getElementById('username');
+const userAvatar = document.getElementById('user-avatar');
+const chipsDisplay = document.getElementById('chips');
+const diceDisplay = document.getElementById('dice');
 const spinBtn = document.getElementById('spin-btn');
 const reels = [
     document.getElementById('reel1'),
     document.getElementById('reel2'),
     document.getElementById('reel3')
 ];
-const chipsDisplay = document.getElementById('chips');
-const diceDisplay = document.getElementById('dice');
 const winPopup = document.getElementById('win-popup');
 const winComboDisplay = document.getElementById('win-combo');
 const winAmountDisplay = document.getElementById('win-amount');
 const claimBtn = document.getElementById('claim-btn');
-const tokenLoginBtn = document.getElementById('token-login');
-const tokenInput = document.getElementById('token-input');
-const loginScreen = document.getElementById('login-screen');
-const gameScreen = document.getElementById('game-screen');
-const logoutBtn = document.getElementById('logout-btn');
-const userAvatar = document.getElementById('user-avatar');
-const loggedInUser = document.getElementById('logged-in-user');
 
-// Helper Functions (keep these the same)
+// Helper Functions
 function getRandomSymbol() {
     return CONFIG.symbols[Math.floor(Math.random() * CONFIG.symbols.length)];
 }
@@ -84,28 +84,22 @@ function updateCurrencyDisplay() {
     diceDisplay.textContent = gameState.dice;
 }
 
-// Notification System (keep this the same)
 function showNotification(message, isSuccess) {
     const notification = document.createElement('div');
-    notification.className = isSuccess ? 'notification-success' : 'notification-error';
+    notification.className = `notification ${isSuccess ? 'success' : 'error'}`;
     notification.textContent = message;
-    notification.style.position = 'fixed';
-    notification.style.top = '20px';
-    notification.style.left = '50%';
-    notification.style.transform = 'translateX(-50%)';
-    notification.style.padding = '15px 25px';
-    notification.style.borderRadius = '5px';
-    notification.style.color = 'white';
-    notification.style.fontWeight = 'bold';
-    notification.style.zIndex = '1000';
     document.body.appendChild(notification);
-
+    
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+    
     setTimeout(() => {
         notification.remove();
     }, 3000);
 }
 
-// Game Functions (keep these the same)
+// Game Functions
 async function startSpin() {
     if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
         if (gameState.chips < CONFIG.spinCost) {
@@ -263,7 +257,6 @@ async function loginWithToken(token) {
         if (response.ok) {
             const user = await response.json();
             handleSuccessfulLogin(user);
-            showNotification(`Welcome, ${user.username}!`, true);
             return true;
         } else {
             const error = await response.json();
@@ -277,12 +270,31 @@ async function loginWithToken(token) {
     }
 }
 
+async function logout() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            showLoginScreen();
+            showNotification('Logged out successfully', true);
+        } else {
+            throw new Error('Logout failed');
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        showNotification('Failed to logout. Please try again.', false);
+    }
+}
+
 function handleSuccessfulLogin(user) {
     gameState.userId = user.id;
     gameState.chips = user.chips;
     gameState.dice = user.dice;
     
-    loggedInUser.textContent = user.username;
+    usernameDisplay.textContent = user.username;
     userAvatar.src = user.avatar || 'assets/default-avatar.png';
     loginScreen.style.display = 'none';
     gameScreen.style.display = 'block';
@@ -300,20 +312,7 @@ function showLoginScreen() {
     loginScreen.style.display = 'block';
     gameScreen.style.display = 'none';
     gameState.userId = null;
-}
-
-async function logout() {
-    try {
-        await fetch(`${API_BASE_URL}/auth/logout`, {
-            method: 'POST',
-            credentials: 'include'
-        });
-        showLoginScreen();
-        showNotification('Logged out successfully', true);
-    } catch (error) {
-        console.error('Logout failed:', error);
-        showNotification('Failed to logout. Please try again.', false);
-    }
+    tokenInput.value = '';
 }
 
 async function checkAuthStatus() {
@@ -331,29 +330,38 @@ async function checkAuthStatus() {
             return false;
         }
     } catch (error) {
-        console.error('Auth check failed:', error);
+        console.error('Auth check error:', error);
         showLoginScreen();
         return false;
     }
 }
 
+// Event Listeners
+loginBtn.addEventListener('click', async () => {
+    const token = tokenInput.value.trim();
+    if (token) {
+        await loginWithToken(token);
+    } else {
+        showNotification('Please enter your token', false);
+    }
+});
+
+logoutBtn.addEventListener('click', logout);
+spinBtn.addEventListener('click', startSpin);
+claimBtn.addEventListener('click', claimWin);
+
 // Initialize Game
 async function initGame() {
-    // Set up event listeners
-    spinBtn.addEventListener('click', startSpin);
-    claimBtn.addEventListener('click', claimWin);
-    tokenLoginBtn.addEventListener('click', async () => {
-        const token = tokenInput.value.trim();
-        if (token) {
-            await loginWithToken(token);
-        } else {
-            showNotification('Please enter your token', false);
-        }
-    });
-    logoutBtn.addEventListener('click', logout);
-    
-    // Check if user is already logged in
     await checkAuthStatus();
+    
+    // Initialize reels if authenticated
+    if (gameState.userId) {
+        reels.forEach((reel, index) => {
+            const symbol = getRandomSymbol();
+            gameState.currentSymbols[index] = symbol.name;
+            resetReel(reel, symbol);
+        });
+    }
 }
 
 // Start the game when DOM is loaded
