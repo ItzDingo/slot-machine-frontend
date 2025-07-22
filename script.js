@@ -1,3 +1,4 @@
+// API Configuration
 const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com';
 
 // Game Configuration
@@ -59,93 +60,48 @@ const gameScreen = document.getElementById('game-screen');
 const logoutBtn = document.getElementById('logout-btn');
 const userAvatar = document.getElementById('user-avatar');
 const loggedInUser = document.getElementById('logged-in-user');
-const notification = document.getElementById('notification');
-const notificationMsg = document.getElementById('notification-message');
+
+// Helper Functions
+function getRandomSymbol() {
+    return CONFIG.symbols[Math.floor(Math.random() * CONFIG.symbols.length)];
+}
+
+function resetReel(reel, centerSymbol) {
+    reel.innerHTML = '';
+    for (let i = -1; i <= 1; i++) {
+        const symbol = i === 0 ? centerSymbol : getRandomSymbol();
+        const symbolElement = document.createElement('div');
+        symbolElement.className = 'symbol';
+        symbolElement.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
+        symbolElement.style.transform = `translateY(${i * 100}%)`;
+        reel.appendChild(symbolElement);
+    }
+}
+
+function updateCurrencyDisplay() {
+    chipsDisplay.textContent = gameState.chips;
+    diceDisplay.textContent = gameState.dice;
+}
 
 // Notification System
 function showNotification(message, isSuccess) {
+    const notification = document.createElement('div');
     notification.className = isSuccess ? 'notification-success' : 'notification-error';
-    notificationMsg.textContent = message;
-    notification.classList.add('notification-show');
-    
+    notification.textContent = message;
+    notification.style.position = 'fixed';
+    notification.style.top = '20px';
+    notification.style.left = '50%';
+    notification.style.transform = 'translateX(-50%)';
+    notification.style.padding = '15px 25px';
+    notification.style.borderRadius = '5px';
+    notification.style.color = 'white';
+    notification.style.fontWeight = 'bold';
+    notification.style.zIndex = '1000';
+    document.body.appendChild(notification);
+
     setTimeout(() => {
-        notification.classList.remove('notification-show');
+        notification.remove();
     }, 3000);
-}
-
-// Authentication
-// Replace your checkAuthStatus function with this:
-async function checkAuthStatus() {
-    try {
-        // First check localStorage for cached user
-        const cachedUserId = localStorage.getItem('lastKnownUserId');
-        if (!cachedUserId) {
-            showLoginScreen();
-            return;
-        }
-
-        const response = await fetch(`${API_BASE_URL}/auth/user`, {
-            credentials: 'include' // This is crucial for sending cookies
-        });
-
-        if (response.status === 401) {
-            // Session expired or invalid
-            localStorage.removeItem('lastKnownUserId');
-            showLoginScreen();
-            return;
-        }
-
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-        const user = await response.json();
-        handleSuccessfulLogin(user);
-        showNotification(`Welcome back, ${user.username}!`, true);
-
-    } catch (error) {
-        console.error('Auth check failed:', error);
-        showLoginScreen();
-        
-        // Check if we came from a failed login redirect
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('login_failed')) {
-            showNotification('Login failed. Please try again.', false);
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-    }
-}
-
-function handleSuccessfulLogin(user) {
-    gameState.userId = user.id;
-    gameState.chips = user.chips;
-    gameState.dice = user.dice;
-    
-    loggedInUser.textContent = user.username;
-    userAvatar.src = user.avatar || 'assets/default-avatar.png';
-    loginScreen.style.display = 'none';
-    gameScreen.style.display = 'block';
-    updateCurrencyDisplay();
-    
-    localStorage.setItem('lastKnownUserId', user.id);
-}
-
-function showLoginScreen() {
-    loginScreen.style.display = 'block';
-    gameScreen.style.display = 'none';
-    gameState.userId = null;
-}
-
-async function logout() {
-    try {
-        await fetch(`${API_BASE_URL}/auth/logout`, {
-            method: 'POST',
-            credentials: 'include'
-        });
-        localStorage.removeItem('lastKnownUserId');
-        window.location.href = window.location.origin;
-    } catch (error) {
-        console.error('Logout failed:', error);
-        showNotification('Failed to logout. Please try again.', false);
-    }
 }
 
 // Game Functions
@@ -294,53 +250,67 @@ async function claimWin() {
     winPopup.style.display = 'none';
 }
 
-// Helper Functions
-function getRandomSymbol() {
-    return CONFIG.symbols[Math.floor(Math.random() * CONFIG.symbols.length)];
-}
-
-function resetReel(reel, centerSymbol) {
-    reel.innerHTML = '';
-    for (let i = -1; i <= 1; i++) {
-        const symbol = i === 0 ? centerSymbol : getRandomSymbol();
-        const symbolElement = document.createElement('div');
-        symbolElement.className = 'symbol';
-        symbolElement.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
-        symbolElement.style.transform = `translateY(${i * 100}%)`;
-        reel.appendChild(symbolElement);
+// Authentication
+async function checkAuthStatus() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/user`, {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const user = await response.json();
+            handleSuccessfulLogin(user);
+            showNotification(`Welcome, ${user.username}!`, true);
+        } else {
+            showLoginScreen();
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('login_failed')) {
+                showNotification('Login failed. Please try again.', false);
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+    } catch (error) {
+        console.error('Auth check failed:', error);
+        showLoginScreen();
     }
 }
 
-function updateCurrencyDisplay() {
-    chipsDisplay.textContent = gameState.chips;
-    diceDisplay.textContent = gameState.dice;
+function handleSuccessfulLogin(user) {
+    gameState.userId = user.id;
+    gameState.chips = user.chips;
+    gameState.dice = user.dice;
+    
+    loggedInUser.textContent = user.username;
+    userAvatar.src = user.avatar || 'assets/default-avatar.png';
+    loginScreen.style.display = 'none';
+    gameScreen.style.display = 'block';
+    updateCurrencyDisplay();
+    
+    localStorage.setItem('lastKnownUserId', user.id);
+}
+
+function showLoginScreen() {
+    loginScreen.style.display = 'block';
+    gameScreen.style.display = 'none';
+    gameState.userId = null;
+}
+
+async function logout() {
+    try {
+        await fetch(`${API_BASE_URL}/auth/logout`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+        localStorage.removeItem('lastKnownUserId');
+        window.location.href = window.location.origin;
+    } catch (error) {
+        console.error('Logout failed:', error);
+        showNotification('Failed to logout. Please try again.', false);
+    }
 }
 
 // Initialize Game
-document.addEventListener('DOMContentLoaded', async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    // Handle successful login redirect
-    if (urlParams.has('login_success')) {
-        window.history.replaceState({}, document.title, window.location.pathname);
-        showNotification('Login successful! Loading your data...', true);
-    }
-    
-    // Initialize game regardless of auth state
-    initGame();
-    
-    // Check auth status with retry logic
-    const checkAuthWithRetry = async (attempt = 0) => {
-        try {
-            await checkAuthStatus();
-        } catch (error) {
-            if (attempt < 2) { // Retry up to 2 times
-                setTimeout(() => checkAuthWithRetry(attempt + 1), 1000 * (attempt + 1));
-            }
-        }
-    }
-    
-    checkAuthWithRetry();
+async function initGame() {
     // Set up event listeners
     spinBtn.addEventListener('click', startSpin);
     claimBtn.addEventListener('click', claimWin);
@@ -348,6 +318,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.location.href = `${API_BASE_URL}/auth/discord`;
     });
     logoutBtn.addEventListener('click', logout);
+    
+    // Check authentication status
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('code')) {
+        await checkAuthStatus();
+        window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+        await checkAuthStatus();
+    }
     
     // Initialize reels if authenticated
     if (gameState.userId) {
@@ -357,4 +336,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             resetReel(reel, symbol);
         });
     }
-});
+}
+
+// Start the game when DOM is loaded
+document.addEventListener('DOMContentLoaded', initGame);
