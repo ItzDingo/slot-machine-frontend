@@ -70,10 +70,37 @@ const logoutBtn = document.getElementById('logout-btn');
 const userAvatar = document.getElementById('user-avatar');
 const loggedInUser = document.getElementById('logged-in-user');
 
+
+// Add this at the top of your script.js
+document.addEventListener('DOMContentLoaded', async () => {
+    // Check if we're returning from Discord auth
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('code')){
+        // We came back from OAuth, do immediate check
+        await checkAuthStatus();
+        // Clean the URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+        // Normal page load
+        const lastUserId = localStorage.getItem('lastKnownUserId');
+        if (lastUserId) {
+            // We have a cached user, verify immediately
+            await checkAuthStatus();
+        } else {
+            // No cached user, wait a bit longer
+            setTimeout(checkAuthStatus, 500);
+        }
+    }
+});
+
 // Initialize Game
 initGame();
 
+// Replace the initGame() function with this:
 async function initGame() {
+    // First check auth status before setting up anything else
+    await checkAuthStatus();
+    
     // Set up event listeners
     spinBtn.addEventListener('click', startSpin);
     claimBtn.addEventListener('click', claimWin);
@@ -82,21 +109,24 @@ async function initGame() {
     });
     logoutBtn.addEventListener('click', logout);
     
-    // Check authentication status
-    await checkAuthStatus();
-    
-    // Initialize reels
-    reels.forEach((reel, index) => {
-        const symbol = getRandomSymbol();
-        gameState.currentSymbols[index] = symbol.name;
-        resetReel(reel, symbol);
-    });
+    // Initialize reels only if authenticated
+    if (gameState.userId) {
+        reels.forEach((reel, index) => {
+            const symbol = getRandomSymbol();
+            gameState.currentSymbols[index] = symbol.name;
+            resetReel(reel, symbol);
+        });
+    }
 }
 
 async function checkAuthStatus() {
     try {
+        // Add timeout and retry logic
         const response = await fetch(`${API_BASE_URL}/auth/user`, {
-            credentials: 'include'
+            credentials: 'include',
+            headers: {
+                'Cache-Control': 'no-cache'
+            }
         });
         
         if (response.ok) {
@@ -105,21 +135,44 @@ async function checkAuthStatus() {
             gameState.chips = user.chips;
             gameState.dice = user.dice;
             
-            // Update UI
-            loggedInUser.textContent = user.username;
-            userAvatar.src = user.avatar || 'assets/default-avatar.png';
-            loginScreen.style.display = 'none';
-            gameScreen.style.display = 'block';
-            updateCurrencyDisplay();
+            // Update UI immediately
+            updateUIAfterLogin(user);
+            
+            // Additional check after 1 second to handle race conditions
+            setTimeout(async () => {
+                const verifyResponse = await fetch(`${API_BASE_URL}/auth/user`, {
+                    credentials: 'include'
+                });
+                if (!verifyResponse.ok) {
+                    location.reload(); // Force refresh if session changed
+                }
+            }, 1000);
         } else {
-            loginScreen.style.display = 'block';
-            gameScreen.style.display = 'none';
+            showLoginScreen();
         }
     } catch (error) {
         console.error('Auth check failed:', error);
-        loginScreen.style.display = 'block';
-        gameScreen.style.display = 'none';
+        showLoginScreen();
+        // Retry after 2 seconds if failed
+        setTimeout(checkAuthStatus, 2000);
     }
+}
+
+function updateUIAfterLogin(user) {
+    loggedInUser.textContent = user.username;
+    userAvatar.src = user.avatar || 'assets/default-avatar.png';
+    loginScreen.style.display = 'none';
+    gameScreen.style.display = 'block';
+    updateCurrencyDisplay();
+    
+    // Store user ID in localStorage as backup
+    localStorage.setItem('lastKnownUserId', user.id);
+}
+
+function showLoginScreen() {
+    loginScreen.style.display = 'block';
+    gameScreen.style.display = 'none';
+    gameState.userId = null;
 }
 
 async function logout() {
@@ -128,7 +181,11 @@ async function logout() {
             method: 'POST',
             credentials: 'include'
         });
-        location.reload();
+        // Clear all local traces
+        localStorage.removeItem('lastKnownUserId');
+        gameState.userId = null;
+        // Force full reload
+        window.location.href = window.location.origin;
     } catch (error) {
         console.error('Logout failed:', error);
         alert('Failed to logout. Please try again.');
