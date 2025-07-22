@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com/';
+const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com/'; // Replace with your actual backend URL
 
 // Game Configuration
 const CONFIG = {
@@ -38,9 +38,7 @@ let gameState = {
     currentSymbols: [],
     winAmount: 0,
     winCombo: null,
-    userId: null,
-    username: null,
-    avatar: null
+    userId: null
 };
 
 // DOM Elements
@@ -113,7 +111,10 @@ async function startSpin() {
     try {
         const response = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
             body: JSON.stringify({
                 userId: gameState.userId,
                 cost: CONFIG.spinCost
@@ -208,7 +209,10 @@ async function checkWin() {
         try {
             const response = await fetch(`${API_BASE_URL}/api/win`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
                 body: JSON.stringify({
                     userId: gameState.userId,
                     amount: winAmount
@@ -259,18 +263,18 @@ async function loginWithToken(token) {
             credentials: 'include'
         });
 
-        const data = await response.json();
-        
-        if (!response.ok || !data.success) {
-            throw new Error(data.error || 'Login failed');
+        if (response.ok) {
+            const user = await response.json();
+            handleSuccessfulLogin(user);
+            return true;
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Login failed', false);
+            return false;
         }
-
-        handleSuccessfulLogin(data.user);
-        showNotification('Login successful!', true);
-        return true;
     } catch (error) {
         console.error('Login error:', error);
-        showNotification(error.message || 'Login failed. Please try again.', false);
+        showNotification('Login failed. Please try again.', false);
         return false;
     }
 }
@@ -296,8 +300,6 @@ async function logout() {
 
 function handleSuccessfulLogin(user) {
     gameState.userId = user.id;
-    gameState.username = user.username;
-    gameState.avatar = user.avatar;
     gameState.chips = user.chips;
     gameState.dice = user.dice;
     
@@ -319,28 +321,23 @@ function showLoginScreen() {
     loginScreen.style.display = 'block';
     gameScreen.style.display = 'none';
     gameState.userId = null;
-    gameState.username = null;
-    gameState.avatar = null;
-    gameState.chips = 0;
-    gameState.dice = 0;
     tokenInput.value = '';
 }
 
 async function checkAuthStatus() {
     try {
-        const response = await fetch(`${API_BASE_URL}/auth/check`, {
+        const response = await fetch(`${API_BASE_URL}/auth/user`, {
             credentials: 'include'
         });
         
         if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-                handleSuccessfulLogin(data.user);
-                return true;
-            }
+            const user = await response.json();
+            handleSuccessfulLogin(user);
+            return true;
+        } else {
+            showLoginScreen();
+            return false;
         }
-        showLoginScreen();
-        return false;
     } catch (error) {
         console.error('Auth check error:', error);
         showLoginScreen();
