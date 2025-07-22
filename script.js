@@ -162,25 +162,38 @@ function initSpinState() {
     elements.loadingIndicator.classList.add('show');
 }
 
+// Modified spin functions for slower animation
 function startContinuousSpinAnimation() {
     gameState.spinAnimations = [];
     elements.reels.forEach(reel => {
         const animation = {
             position: 0,
-            speed: 0.5 + Math.random() * 0.3,
-            frameId: null
+            speed: 0.2 + Math.random() * 0.1, // Reduced speed for slower spinning
+            frameId: null,
+            acceleration: 0.0005 // Added gradual acceleration
         };
         
-        function animate() {
+        function animate(timestamp) {
+            if (!animation.startTime) animation.startTime = timestamp;
+            const elapsed = timestamp - animation.startTime;
+            
+            // Gradually increase speed then slow down
+            if (elapsed < 1000) {
+                animation.speed = Math.min(0.3, 0.1 + (elapsed/1000)*0.2);
+            } else {
+                animation.speed = Math.max(0.2, 0.3 - ((elapsed-1000)/2000)*0.1);
+            }
+            
             animation.position += animation.speed;
             updateReelPosition(reel, animation.position);
             animation.frameId = requestAnimationFrame(animate);
         }
         
-        animate();
+        animate(performance.now());
         gameState.spinAnimations.push(animation);
     });
 }
+
 
 function updateReelPosition(reel, position) {
     const symbols = CONFIG.symbols;
@@ -217,11 +230,14 @@ function animateToFinalPosition(reel, targetSymbol, duration, isLastReel) {
     let startTime = null;
     const startPosition = 0;
     const endPosition = Math.ceil(startPosition / CONFIG.symbols.length) * CONFIG.symbols.length;
+    const decelerationFrames = 60; // More frames for slower deceleration
     
     function animate(timestamp) {
         if (!startTime) startTime = timestamp;
         const progress = Math.min((timestamp - startTime) / duration, 1);
-        const easedProgress = easeOutCubic(progress);
+        
+        // Use easeOutQuint for smoother deceleration
+        const easedProgress = easeOutQuint(progress);
         const currentPosition = startPosition + (endPosition - startPosition) * easedProgress;
         
         updateReelPosition(reel, currentPosition);
@@ -243,8 +259,9 @@ function animateToFinalPosition(reel, targetSymbol, duration, isLastReel) {
     requestAnimationFrame(animate);
 }
 
-function easeOutCubic(t) {
-    return 1 - Math.pow(1 - t, 3);
+// Additional easing function
+function easeOutQuint(t) {
+    return 1 - Math.pow(1 - t, 5);
 }
 
 function completeSpin() {
