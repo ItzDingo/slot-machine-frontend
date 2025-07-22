@@ -254,9 +254,12 @@ async function claimWin() {
     winPopup.style.display = 'none';
 }
 
-// Authentication
+// Enhanced Authentication Functions
 async function checkAuthStatus() {
     try {
+        // Show loading state
+        loginScreen.innerHTML = '<div class="loading">Checking session...</div>';
+        
         const response = await fetch(`${API_BASE_URL}/auth/user`, {
             credentials: 'include'
         });
@@ -320,6 +323,17 @@ function handleSuccessfulLogin(user) {
 }
 
 function showLoginScreen() {
+    loginScreen.innerHTML = `
+        <div class="login-container">
+            <h2>Login to Play</h2>
+            <button id="discord-login" class="login-btn">
+                <img src="assets/discord-logo.png" alt="Discord Logo">
+                Login with Discord
+            </button>
+        </div>
+    `;
+    // Re-bind the login button after recreating it
+    document.getElementById('discord-login').addEventListener('click', handleDiscordLogin);
     loginScreen.style.display = 'block';
     gameScreen.style.display = 'none';
     gameState.userId = null;
@@ -332,6 +346,7 @@ async function logout() {
             credentials: 'include'
         });
         localStorage.removeItem('lastKnownUserId');
+        localStorage.removeItem('preAuthUrl');
         window.location.href = window.location.origin;
     } catch (error) {
         console.error('Logout failed:', error);
