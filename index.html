@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slot Machine</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-container">
+        <h1>Slot Machine Login</h1>
+        <div class="discord-login-box">
+            <p>Connect your Discord account to play</p>
+            <button id="discord-login" class="discord-login-btn">
+                <img src="assets/discord-logo.png" alt="Discord Logo">
+                Login with Discord
+            </button>
+            <p class="bot-info">Use <code>/link</code> in Discord to get back to this website anytime!</p>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="casino-container" style="display:none;">
+        <div class="user-info">
+            <img id="user-avatar" src="" alt="User Avatar" class="user-avatar">
+            <div class="user-details">
+                <div id="logged-in-user" class="username"></div>
+                <div class="discord-connected">Connected to Discord</div>
+                <button id="logout-btn" class="logout-btn">Logout</button>
+            </div>
+        </div>
+        
+        <div class="currency-display">
+            <div class="currency">
+                <img src="assets/spade.png" alt="Chips">
+                <span id="chips">1000</span>
+            </div>
+            <div class="currency">
+                <img src="assets/dice.png" alt="Dice">
+                <span id="dice">0</span>
+            </div>
+        </div>
+        
+        <div class="slot-machine">
+            <div class="reel" id="reel1"></div>
+            <div class="reel" id="reel2"></div>
+            <div class="reel" id="reel3"></div>
+        </div>
+        
+        <button id="spin-btn" class="spin-button">SPIN</button>
+    </div>
+
+    <!-- Win Popup -->
+    <div id="win-popup" class="win-popup">
+        <div class="win-content">
+            <h3>YOU WON!</h3>
+            <div id="win-combo" class="win-combo"></div>
+            <div class="win-amount">+<span id="win-amount">0</span> chips</div>
+            <button id="claim-btn" class="claim-btn">CLAIM</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

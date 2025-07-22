@@ -1,0 +1,321 @@
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: url('assets/casino-bg.png') no-repeat center/cover;
+    font-family: 'Arial', sans-serif;
+    color: #FFD700;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+
+/* Add these new styles to your existing CSS */
+
+/* Discord Login Styles */
+.discord-login-box {
+    background: rgba(10, 10, 10, 0.85);
+    padding: 2rem;
+    border-radius: 15px;
+    border: 3px solid #5865F2;
+    text-align: center;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.discord-login-box p {
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.discord-login-btn {
+    background: #5865F2;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 auto;
+    transition: all 0.2s;
+}
+
+.discord-login-btn:hover {
+    background: #4752C4;
+    transform: scale(1.05);
+}
+
+.discord-login-btn img {
+    width: 24px;
+    height: 24px;
+}
+
+.bot-info {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+.bot-info code {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+/* User Info Styles */
+.user-info {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    background: rgba(30, 30, 30, 0.7);
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #5865F2;
+}
+
+.user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid #5865F2;
+}
+
+.user-details {
+    flex: 1;
+}
+
+.username {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: white;
+}
+
+.discord-connected {
+    font-size: 0.8rem;
+    color: #5865F2;
+    margin: 3px 0;
+}
+
+.logout-btn {
+    background: #ff3333;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background: #cc0000;
+}
+
+
+.casino-container {
+    text-align: center;
+    background: rgba(10, 10, 10, 0.85);
+    padding: 2.5rem;
+    border-radius: 15px;
+    border: 3px solid #FFD700;
+    box-shadow: 
+        0 0 25px rgba(255, 215, 0, 0.4),
+        inset 0 0 15px rgba(255, 215, 0, 0.2);
+    backdrop-filter: blur(5px);
+    max-width: 90%;
+}
+
+.slot-machine {
+    display: flex;
+    gap: 15px;
+    margin: 2rem auto;
+    width: 350px;
+    height: 180px;
+    background: rgba(20, 20, 20, 0.9);
+    border: 4px solid #FFD700;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 
+        inset 0 0 20px rgba(0, 0, 0, 0.5),
+        0 5px 15px rgba(0, 0, 0, 0.6);
+    position: relative;
+}
+
+.currency-display {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.currency {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.3rem;
+    color: white;
+}
+
+.currency img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.reel {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+    border-radius: 8px;
+    border: 2px solid #FFD700;
+    box-shadow: 
+        inset 0 0 10px rgba(0, 0, 0, 0.8),
+        0 2px 5px rgba(255, 215, 0, 0.3);
+}
+
+.reel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to bottom, 
+        rgba(255, 215, 0, 0.15) 0%, 
+        transparent 100%);
+    pointer-events: none;
+}
+
+.symbol {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.symbol img {
+    width: 80%;
+    height: auto;
+    max-height: 100px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+    transition: transform 0.1s;
+}
+
+.spin-button {
+    background: linear-gradient(to bottom, #FF3333, #CC0000);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 
+        0 0 20px rgba(255, 0, 0, 0.7),
+        inset 0 -8px 15px rgba(0, 0, 0, 0.5),
+        0 5px 10px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    transition: all 0.2s;
+    margin-top: 25px;
+    position: relative;
+    overflow: hidden;
+}
+
+.spin-button:hover {
+    background: linear-gradient(to bottom, #FF4444, #DD0000);
+    box-shadow: 
+        0 0 25px rgba(255, 0, 0, 0.9),
+        inset 0 -8px 15px rgba(0, 0, 0, 0.5);
+}
+
+.spin-button:active {
+    transform: scale(0.95);
+    box-shadow: 
+        0 0 15px rgba(255, 0, 0, 0.5),
+        inset 0 -5px 10px rgba(0, 0, 0, 0.7);
+}
+
+.spin-button:disabled {
+    background: linear-gradient(to bottom, #888, #666);
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: scale(0.98);
+}
+
+.win-popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+}
+
+.win-content {
+    background: #1a1a1a;
+    border: 3px solid gold;
+    border-radius: 10px;
+    padding: 2rem;
+    text-align: center;
+    max-width: 300px;
+    width: 90%;
+}
+
+.win-combo {
+    margin: 1rem 0;
+    font-size: 1.5rem;
+    color: #FFD700;
+}
+
+.combo-symbols {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.win-amount {
+    font-size: 1.5rem;
+    color: white;
+    margin: 1rem 0;
+}
+
+.claim-btn {
+    background: linear-gradient(to bottom, #FFD700, #D4AF37);
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.claim-btn:hover {
+    transform: scale(1.05);
+}
+
+@keyframes pulse {
+    from { text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+    to { text-shadow: 0 0 15px rgba(255, 215, 0, 0.9); }
+}
+
+h1 {
+    animation: pulse 2s infinite alternate;
+    margin-bottom: 1.5rem;
+}
