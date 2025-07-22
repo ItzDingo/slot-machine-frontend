@@ -11,6 +11,37 @@ body {
 }
 
 
+/* Notification Styles */
+#notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 25px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    max-width: 80%;
+    text-align: center;
+}
+
+.notification-show {
+    opacity: 1 !important;
+}
+
+.notification-success {
+    background-color: #4CAF50;
+    border: 2px solid #45a049;
+}
+
+.notification-error {
+    background-color: #f44336;
+    border: 2px solid #d32f2f;
+}
+
 /* Add these new styles to your existing CSS */
 
 /* Discord Login Styles */
