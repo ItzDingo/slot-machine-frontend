@@ -253,6 +253,7 @@ async function claimWin() {
 // Authentication
 async function loginWithToken(token) {
     try {
+        loginBtn.disabled = true;
         const response = await fetch(`${API_BASE_URL}/auth/token`, {
             method: 'POST',
             headers: { 
@@ -263,19 +264,27 @@ async function loginWithToken(token) {
             credentials: 'include'
         });
 
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            throw new Error(`Invalid response: ${text.substring(0, 100)}`);
+        }
+
+        const data = await response.json();
+        
         if (response.ok) {
-            const user = await response.json();
-            handleSuccessfulLogin(user);
+            handleSuccessfulLogin(data);
+            showNotification('Login successful!', true);
             return true;
         } else {
-            const error = await response.json();
-            showNotification(error.error || 'Login failed', false);
-            return false;
+            throw new Error(data.error || 'Login failed');
         }
     } catch (error) {
         console.error('Login error:', error);
-        showNotification('Login failed. Please try again.', false);
+        showNotification(`Login failed: ${error.message}`, false);
         return false;
+    } finally {
+        loginBtn.disabled = false;
     }
 }
 
