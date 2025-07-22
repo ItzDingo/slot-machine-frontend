@@ -7,49 +7,50 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Notification System -->
-    <div id="notification" class="notification-hidden">
-        <div id="notification-message"></div>
-    </div>
-
     <!-- Login Screen -->
     <div id="login-screen" class="login-container">
-        <h1>Slot Machine Login</h1>
-        <div class="token-login-box">
-            <p>Enter your unique token to login</p>
-            <p class="token-instructions">Use the <code>/token</code> command in Discord to get your token</p>
-            <input type="text" id="token-input" placeholder="Enter your token">
-            <button id="token-login" class="token-login-btn">Login</button>
+        <div class="login-box">
+            <h1>Slot Machine</h1>
+            <div class="token-form">
+                <h2>Token Login</h2>
+                <p>Enter your unique token below</p>
+                <input type="text" id="token-input" placeholder="Paste your token here">
+                <button id="login-btn">Login</button>
+                <p class="instructions">
+                    Get your token by typing <code>/token</code> in Discord
+                </p>
+            </div>
         </div>
     </div>
 
     <!-- Game Screen -->
-    <div id="game-screen" class="casino-container" style="display:none;">
-        <div class="user-info">
-            <img id="user-avatar" src="assets/default-avatar.png" alt="User Avatar" class="user-avatar">
-            <div class="user-details">
-                <div id="logged-in-user" class="username"></div>
-                <button id="logout-btn" class="logout-btn">Logout</button>
+    <div id="game-screen" class="game-container">
+        <div class="user-panel">
+            <div class="user-info">
+                <img id="user-avatar" src="assets/default-avatar.png" alt="User Avatar">
+                <div class="user-details">
+                    <span id="username">Guest</span>
+                    <button id="logout-btn">Logout</button>
+                </div>
+            </div>
+            <div class="currency-display">
+                <div class="currency">
+                    <img src="assets/chip.png" alt="Chips">
+                    <span id="chips">0</span>
+                </div>
+                <div class="currency">
+                    <img src="assets/dice.png" alt="Dice">
+                    <span id="dice">0</span>
+                </div>
             </div>
         </div>
-        
-        <div class="currency-display">
-            <div class="currency">
-                <img src="assets/spade.png" alt="Chips">
-                <span id="chips">1000</span>
-            </div>
-            <div class="currency">
-                <img src="assets/dice.png" alt="Dice">
-                <span id="dice">0</span>
-            </div>
-        </div>
-        
+
         <div class="slot-machine">
             <div class="reel" id="reel1"></div>
             <div class="reel" id="reel2"></div>
             <div class="reel" id="reel3"></div>
         </div>
-        
+
         <button id="spin-btn" class="spin-button">SPIN</button>
     </div>
 
