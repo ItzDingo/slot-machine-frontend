@@ -1,5 +1,6 @@
 // API Configuration
-const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com'; // Replace with your Render backend URL
+const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com';
+const FRONTEND_BASE_URL = 'https://itzdingo.github.io/slot-machine-frontend';
 
 // Game Configuration
 const CONFIG = {
@@ -96,11 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Initialize Game
 initGame();
 
-// Replace the initGame() function with this:
 async function initGame() {
-    // First check auth status before setting up anything else
-    await checkAuthStatus();
-    
     // Set up event listeners
     spinBtn.addEventListener('click', startSpin);
     claimBtn.addEventListener('click', claimWin);
@@ -109,14 +106,66 @@ async function initGame() {
     });
     logoutBtn.addEventListener('click', logout);
     
-    // Initialize reels only if authenticated
+    // Check auth status with retry logic
+    await checkAuthStatusWithRetry();
+    
+    // Initialize reels if authenticated
     if (gameState.userId) {
-        reels.forEach((reel, index) => {
-            const symbol = getRandomSymbol();
-            gameState.currentSymbols[index] = symbol.name;
-            resetReel(reel, symbol);
-        });
+        initializeReels();
     }
+}
+
+async function checkAuthStatusWithRetry(retryCount = 0) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/user`, {
+            credentials: 'include',
+            headers: {
+                'Cache-Control': 'no-cache'
+            }
+        });
+        
+        if (response.ok) {
+            const user = await response.json();
+            handleSuccessfulAuth(user);
+        } else {
+            showLoginScreen();
+        }
+    } catch (error) {
+        console.error('Auth check failed:', error);
+        if (retryCount < 3) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+            await checkAuthStatusWithRetry(retryCount + 1);
+        } else {
+            showLoginScreen();
+        }
+    }
+}
+
+function handleSuccessfulAuth(user) {
+    gameState.userId = user.id;
+    gameState.chips = user.chips;
+    gameState.dice = user.dice;
+    
+    // Update UI
+    loggedInUser.textContent = user.username;
+    userAvatar.src = user.avatar || 'assets/default-avatar.png';
+    loginScreen.style.display = 'none';
+    gameScreen.style.display = 'block';
+    updateCurrencyDisplay();
+    
+    // Store user ID in localStorage as backup
+    localStorage.setItem('lastKnownUserId', user.id);
+    
+    // Initialize game components
+    initializeReels();
+}
+
+function initializeReels() {
+    reels.forEach((reel, index) => {
+        const symbol = getRandomSymbol();
+        gameState.currentSymbols[index] = symbol.name;
+        resetReel(reel, symbol);
+    });
 }
 
 async function checkAuthStatus() {
@@ -352,3 +401,12 @@ function setLoading(isLoading) {
         document.body.classList.remove('loading');
     }
 }   
+
+window.addEventListener('load', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('code') || localStorage.getItem('lastKnownUserId')) {
+        await checkAuthStatusWithRetry();
+        // Clean the URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+});
