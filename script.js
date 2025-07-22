@@ -261,31 +261,39 @@ async function checkAuthStatus() {
         loginScreen.innerHTML = '<div class="loading">Checking session...</div>';
         
         const response = await fetch(`${API_BASE_URL}/auth/user`, {
-            credentials: 'include'
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json',
+                'Cache-Control': 'no-cache'
+            }
         });
         
         if (response.ok) {
             const user = await response.json();
             handleSuccessfulLogin(user);
-            showNotification(`Welcome back, ${user.username}!`, true);
             return true;
         } else {
-            // Clear any invalid session data
+            // Clear invalid session data
             localStorage.removeItem('lastKnownUserId');
+            await clearSessionCookies();
             showLoginScreen();
-            
-            // Check for login failure in URL params
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('login_failed')) {
-                showNotification('Login failed. Please try again.', false);
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
             return false;
         }
     } catch (error) {
         console.error('Auth check failed:', error);
         showLoginScreen();
         return false;
+    }
+}
+
+async function clearSessionCookies() {
+    try {
+        await fetch(`${API_BASE_URL}/auth/clear-cookies`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+    } catch (error) {
+        console.error('Failed to clear cookies:', error);
     }
 }
 
@@ -327,16 +335,37 @@ function showLoginScreen() {
         <div class="login-container">
             <h2>Login to Play</h2>
             <button id="discord-login" class="login-btn">
-                <img src="assets/discord-logo.png" alt="Discord Logo">
                 Login with Discord
             </button>
+            ${window.location.hostname === 'localhost' ? 
+              '<button id="dev-login" class="login-btn">Dev Login</button>' : ''}
         </div>
     `;
-    // Re-bind the login button after recreating it
+    
     document.getElementById('discord-login').addEventListener('click', handleDiscordLogin);
+    
+    // Add dev login for local testing
+    if (document.getElementById('dev-login')) {
+        document.getElementById('dev-login').addEventListener('click', handleDevLogin);
+    }
+    
     loginScreen.style.display = 'block';
     gameScreen.style.display = 'none';
-    gameState.userId = null;
+}
+
+async function handleDevLogin() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/dev`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            await checkAuthStatus();
+        }
+    } catch (error) {
+        console.error('Dev login failed:', error);
+    }
 }
 
 async function logout() {
@@ -356,42 +385,48 @@ async function logout() {
 
 // Initialize Game
 async function initGame() {
+    // First clear any existing session
+    await clearSessionCookies();
+    
     // Set up event listeners
     spinBtn.addEventListener('click', startSpin);
     claimBtn.addEventListener('click', claimWin);
-    discordLoginBtn.addEventListener('click', handleDiscordLogin);
-    logoutBtn.addEventListener('click', logout);
     
-    // Check for auth code in URL (OAuth callback)
+    // Check URL for auth code first
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('code')) {
         try {
-            // Show loading state during auth processing
-            loginScreen.innerHTML = '<div class="loading">Authenticating...</div>';
+            loginScreen.innerHTML = '<div class="loading">Completing login...</div>';
             
-            const authSuccess = await checkAuthStatus();
-            if (authSuccess) {
-                // Clean URL after successful auth
-                window.history.replaceState({}, document.title, window.location.pathname);
-                
-                // Restore pre-auth URL if exists
-                const preAuthUrl = localStorage.getItem('preAuthUrl');
-                if (preAuthUrl) {
-                    localStorage.removeItem('preAuthUrl');
-                    window.location.href = preAuthUrl;
+            // Exchange code for token
+            const authResponse = await fetch(`${API_BASE_URL}/auth/token`, {
+                method: 'POST',
+                credentials: 'include',
+                body: JSON.stringify({
+                    code: urlParams.get('code')
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
                 }
+            });
+            
+            if (authResponse.ok) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+                await checkAuthStatus();
+            } else {
+                throw new Error('Token exchange failed');
             }
         } catch (error) {
             console.error('Auth processing error:', error);
-            showNotification('Authentication failed', false);
+            showNotification('Login failed. Please try again.', false);
             showLoginScreen();
         }
     } else {
-        // Regular auth check
+        // Regular session check
         await checkAuthStatus();
     }
     
-    // Initialize reels if authenticated
+    // Initialize game if authenticated
     if (gameState.userId) {
         reels.forEach((reel, index) => {
             const symbol = getRandomSymbol();
