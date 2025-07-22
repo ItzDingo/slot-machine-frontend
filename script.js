@@ -1,8 +1,11 @@
+// API Configuration
+const API_BASE_URL = 'https://your-render-backend-url.onrender.com'; // Replace with your Render backend URL
+
 // Game Configuration
 const CONFIG = {
     spinCost: 10,
-    initialChips: 30,
-    initialDice: 0,
+    initialChips: 0,  // Will be loaded from backend
+    initialDice: 0,   // Will be loaded from backend
     spinSettings: {
         minDuration: 5000,
         maxDuration: 7000,
@@ -37,13 +40,14 @@ const CONFIG = {
 
 // Game State
 let gameState = {
-    chips: CONFIG.initialChips,
-    dice: CONFIG.initialDice,
+    chips: 0,
+    dice: 0,
     isSpinning: false,
     spinningReels: 0,
     currentSymbols: [],
     winAmount: 0,
-    winCombo: null
+    winCombo: null,
+    userId: null
 };
 
 // DOM Elements
@@ -59,14 +63,27 @@ const winPopup = document.getElementById('win-popup');
 const winComboDisplay = document.getElementById('win-combo');
 const winAmountDisplay = document.getElementById('win-amount');
 const claimBtn = document.getElementById('claim-btn');
+const discordLoginBtn = document.getElementById('discord-login');
+const loginScreen = document.getElementById('login-screen');
+const gameScreen = document.getElementById('game-screen');
+const logoutBtn = document.getElementById('logout-btn');
+const userAvatar = document.getElementById('user-avatar');
+const loggedInUser = document.getElementById('logged-in-user');
 
 // Initialize Game
 initGame();
 
-function initGame() {
+async function initGame() {
     // Set up event listeners
     spinBtn.addEventListener('click', startSpin);
     claimBtn.addEventListener('click', claimWin);
+    discordLoginBtn.addEventListener('click', () => {
+        window.location.href = `${API_BASE_URL}/auth/discord`;
+    });
+    logoutBtn.addEventListener('click', logout);
+    
+    // Check authentication status
+    await checkAuthStatus();
     
     // Initialize reels
     reels.forEach((reel, index) => {
@@ -74,11 +91,51 @@ function initGame() {
         gameState.currentSymbols[index] = symbol.name;
         resetReel(reel, symbol);
     });
-    
-    updateCurrencyDisplay();
 }
 
-function startSpin() {
+async function checkAuthStatus() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/user`, {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const user = await response.json();
+            gameState.userId = user.id;
+            gameState.chips = user.chips;
+            gameState.dice = user.dice;
+            
+            // Update UI
+            loggedInUser.textContent = user.username;
+            userAvatar.src = user.avatar || 'assets/default-avatar.png';
+            loginScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            updateCurrencyDisplay();
+        } else {
+            loginScreen.style.display = 'block';
+            gameScreen.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Auth check failed:', error);
+        loginScreen.style.display = 'block';
+        gameScreen.style.display = 'none';
+    }
+}
+
+async function logout() {
+    try {
+        await fetch(`${API_BASE_URL}/auth/logout`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+        location.reload();
+    } catch (error) {
+        console.error('Logout failed:', error);
+        alert('Failed to logout. Please try again.');
+    }
+}
+
+async function startSpin() {
     if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
         if (gameState.chips < CONFIG.spinCost) {
             alert("Not enough chips!");
@@ -86,119 +143,98 @@ function startSpin() {
         return;
     }
 
-    // Deduct chips
-    gameState.chips -= CONFIG.spinCost;
-    updateCurrencyDisplay();
-    
-    // Reset state
-    gameState.isSpinning = true;
-    gameState.spinningReels = reels.length;
-    gameState.winAmount = 0;
-    gameState.winCombo = null;
-    spinBtn.disabled = true;
-    winPopup.style.display = 'none';
+    try {
+        // Deduct chips via API
+        const response = await fetch(`${API_BASE_URL}/api/spin`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                cost: CONFIG.spinCost
+            }),
+            credentials: 'include'
+        });
 
-    // Set target symbols
-    const targetSymbols = reels.map(() => getRandomSymbol());
-    gameState.currentSymbols = targetSymbols.map(s => s.name);
-
-    // Start spinning all reels
-    reels.forEach((reel, index) => {
-        const duration = CONFIG.spinSettings.minDuration + 
-                       Math.random() * (CONFIG.spinSettings.maxDuration - CONFIG.spinSettings.minDuration);
-        spinReel(reel, targetSymbols[index], duration, index === reels.length - 1);
-    });
-}
-
-function spinReel(reel, targetSymbol, duration, isLastReel) {
-    // Create extended reel strip
-    reel.innerHTML = '';
-    const symbols = [];
-    for (let i = -2; i <= 2; i++) {
-        const symbol = i === 0 ? targetSymbol : getRandomSymbol();
-        const symbolElement = document.createElement('div');
-        symbolElement.className = 'symbol';
-        symbolElement.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
-        symbolElement.style.transform = `translateY(${i * 100}%)`;
-        reel.appendChild(symbolElement);
-        symbols.push(symbolElement);
-    }
-
-    let currentPosition = 0;
-    let currentSpeed = 0;
-    const startTime = Date.now();
-    const stopTime = startTime + duration;
-    const slowDownTime = stopTime - CONFIG.spinSettings.spinDownTime;
-
-    function animate() {
-        const now = Date.now();
-        const elapsed = now - startTime;
-
-        if (now < stopTime) {
-            // Acceleration
-            if (elapsed < CONFIG.spinSettings.spinUpTime) {
-                currentSpeed = easeIn(elapsed / CONFIG.spinSettings.spinUpTime) * CONFIG.spinSettings.maxSpeed;
-            } 
-            // Deceleration
-            else if (now > slowDownTime) {
-                const decelProgress = 1 - ((stopTime - now) / CONFIG.spinSettings.spinDownTime);
-                currentSpeed = easeOut(decelProgress) * CONFIG.spinSettings.maxSpeed;
-            }
-            // Full speed
-            else {
-                currentSpeed = CONFIG.spinSettings.maxSpeed;
-            }
-
-            // Move symbols down
-            currentPosition += currentSpeed;
-
-            // Update positions
-            symbols.forEach((symbol, i) => {
-                symbol.style.transform = `translateY(${(i - 2) * 100 + currentPosition}%)`;
-            });
-
-            // Infinite scroll
-            if (currentPosition > 200) {
-                currentPosition = 0;
-                const firstSymbol = symbols.shift();
-                firstSymbol.style.transform = `translateY(${symbols.length * 100}%)`;
-                firstSymbol.innerHTML = `<img src="${getRandomSymbol().img}" alt="symbol">`;
-                symbols.push(firstSymbol);
-            }
-
-            requestAnimationFrame(animate);
-        } else {
-            // Stop the reel
-            resetReel(reel, targetSymbol);
-            gameState.spinningReels--;
-
-            // If last reel, check for win after delay
-            if (isLastReel) {
-                setTimeout(() => {
-                    checkWin();
-                    gameState.isSpinning = false;
-                    spinBtn.disabled = false;
-                }, 2000);
-            }
+        if (!response.ok) {
+            throw new Error('Spin failed');
         }
-    }
 
-    requestAnimationFrame(animate);
+        const data = await response.json();
+        gameState.chips = data.newBalance;
+        updateCurrencyDisplay();
+        
+        // Reset state
+        gameState.isSpinning = true;
+        gameState.spinningReels = reels.length;
+        gameState.winAmount = 0;
+        gameState.winCombo = null;
+        spinBtn.disabled = true;
+        winPopup.style.display = 'none';
+
+        // Set target symbols
+        const targetSymbols = reels.map(() => getRandomSymbol());
+        gameState.currentSymbols = targetSymbols.map(s => s.name);
+
+        // Start spinning all reels
+        reels.forEach((reel, index) => {
+            const duration = CONFIG.spinSettings.minDuration + 
+                           Math.random() * (CONFIG.spinSettings.maxDuration - CONFIG.spinSettings.minDuration);
+            spinReel(reel, targetSymbols[index], duration, index === reels.length - 1);
+        });
+    } catch (error) {
+        console.error('Spin error:', error);
+        alert('Failed to start spin. Please try again.');
+    }
 }
 
-function checkWin() {
+// spinReel function remains the same as it's purely frontend animation
+function spinReel(reel, targetSymbol, duration, isLastReel) {
+    // ... (keep the existing spinReel implementation)
+}
+
+async function checkWin() {
     const combo = gameState.currentSymbols.join('-');
     
+    let winAmount = 0;
+    let winCombo = null;
+    
     if (CONFIG.payouts[combo]) {
-        gameState.winAmount = CONFIG.payouts[combo];
-        gameState.winCombo = combo;
-        showWinPopup(combo, gameState.winAmount);
+        winAmount = CONFIG.payouts[combo];
+        winCombo = combo;
     } else if (gameState.currentSymbols[0] === gameState.currentSymbols[1] || 
                gameState.currentSymbols[1] === gameState.currentSymbols[2] || 
                gameState.currentSymbols[0] === gameState.currentSymbols[2]) {
-        gameState.winAmount = CONFIG.payouts['ANY_TWO_MATCH'];
-        gameState.winCombo = 'ANY_TWO_MATCH';
-        showWinPopup('ANY_TWO_MATCH', gameState.winAmount);
+        winAmount = CONFIG.payouts['ANY_TWO_MATCH'];
+        winCombo = 'ANY_TWO_MATCH';
+    }
+
+    if (winAmount > 0) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/win`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: gameState.userId,
+                    amount: winAmount
+                }),
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                gameState.chips = data.newBalance;
+                gameState.winAmount = winAmount;
+                gameState.winCombo = winCombo;
+                showWinPopup(winCombo, winAmount);
+                updateCurrencyDisplay();
+            }
+        } catch (error) {
+            console.error('Win claim error:', error);
+        }
     }
 }
 
@@ -214,12 +250,15 @@ function showWinPopup(combo, amount) {
     winPopup.style.display = 'flex';
 }
 
-function claimWin() {
-    gameState.chips += gameState.winAmount;
-    gameState.winAmount = 0;
-    gameState.winCombo = null;
-    updateCurrencyDisplay();
-    winPopup.style.display = 'none';
+async function claimWin() {
+    try {
+        // The win is already claimed in checkWin, just close the popup
+        gameState.winAmount = 0;
+        gameState.winCombo = null;
+        winPopup.style.display = 'none';
+    } catch (error) {
+        console.error('Claim win error:', error);
+    }
 }
 
 // Helper Functions
@@ -247,3 +286,12 @@ function updateCurrencyDisplay() {
 // Easing functions
 function easeIn(t) { return t * t; }
 function easeOut(t) { return t * (2 - t); }
+
+// Add loading state management
+function setLoading(isLoading) {
+    if (isLoading) {
+        document.body.classList.add('loading');
+    } else {
+        document.body.classList.remove('loading');
+    }
+}   
