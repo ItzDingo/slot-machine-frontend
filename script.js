@@ -4,6 +4,10 @@ const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com';
 // Game Configuration
 const CONFIG = {
     spinCost: 10,
+    spinSettings: {
+        minDuration: 1000,
+        maxDuration: 2000
+    },
     symbols: [
         { name: '7', img: 'assets/7.png' },
         { name: 'dollar', img: 'assets/dollar.png' },
