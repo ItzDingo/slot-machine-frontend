@@ -1,6 +1,28 @@
 // API Configuration
 const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com';
 
+const API_CONFIG = {
+    baseUrl: API_BASE_URL,
+    endpoints: {
+        auth: {
+            user: '/auth/user',
+            discord: '/auth/discord',
+            logout: '/auth/logout',
+            token: '/auth/token',
+            dev: '/auth/dev',
+            clear: '/auth/clear-cookies'
+        },
+        game: {
+            spin: '/api/spin',
+            win: '/api/win'
+        }
+    },
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+    }
+};
+
 // Game Configuration
 const CONFIG = {
     spinCost: 10,
@@ -108,6 +130,33 @@ function showNotification(message, isSuccess) {
     }, 3000);
 }
 
+// API Communication
+async function makeApiCall(endpoint, method = 'GET', body = null) {
+    try {
+        const response = await fetch(`${API_CONFIG.baseUrl}${endpoint}`, {
+            method,
+            headers: API_CONFIG.headers,
+            credentials: 'include',
+            body: body ? JSON.stringify(body) : null
+        });
+        
+        if (response.status === 401) {
+            showNotification('Session expired. Please login again.', false);
+            showLoginScreen();
+            throw new Error('Session expired');
+        }
+        
+        if (!response.ok) {
+            throw new Error(`API request failed: ${response.status}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('API call failed:', error);
+        throw error;
+    }
+}
+
 // Game Functions
 async function startSpin() {
     if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
@@ -118,19 +167,11 @@ async function startSpin() {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/spin`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userId: gameState.userId,
-                cost: CONFIG.spinCost
-            }),
-            credentials: 'include'
+        const data = await makeApiCall(API_CONFIG.endpoints.game.spin, 'POST', {
+            userId: gameState.userId,
+            cost: CONFIG.spinCost
         });
 
-        if (!response.ok) throw new Error('Spin failed');
-
-        const data = await response.json();
         gameState.chips = data.newBalance;
         updateCurrencyDisplay();
         
@@ -214,24 +255,16 @@ async function checkWin() {
 
     if (winAmount > 0) {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/win`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: gameState.userId,
-                    amount: winAmount
-                }),
-                credentials: 'include'
+            const data = await makeApiCall(API_CONFIG.endpoints.game.win, 'POST', {
+                userId: gameState.userId,
+                amount: winAmount
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                gameState.chips = data.newBalance;
-                gameState.winAmount = winAmount;
-                gameState.winCombo = winCombo;
-                showWinPopup(winCombo, winAmount);
-                updateCurrencyDisplay();
-            }
+            gameState.chips = data.newBalance;
+            gameState.winAmount = winAmount;
+            gameState.winCombo = winCombo;
+            showWinPopup(winCombo, winAmount);
+            updateCurrencyDisplay();
         } catch (error) {
             console.error('Win claim error:', error);
         }
@@ -254,44 +287,31 @@ async function claimWin() {
     winPopup.style.display = 'none';
 }
 
-// Enhanced Authentication Functions
+// Authentication Functions
 async function checkAuthStatus() {
     try {
-        // Show loading state
         loginScreen.innerHTML = '<div class="loading">Checking session...</div>';
         
-        const response = await fetch(`${API_BASE_URL}/auth/user`, {
-            credentials: 'include',
-            headers: {
-                'Accept': 'application/json',
-                'Cache-Control': 'no-cache'
-            }
-        });
-        
-        if (response.ok) {
-            const user = await response.json();
-            handleSuccessfulLogin(user);
-            return true;
-        } else {
-            // Clear invalid session data
-            localStorage.removeItem('lastKnownUserId');
-            await clearSessionCookies();
-            showLoginScreen();
-            return false;
-        }
+        const user = await makeApiCall(API_CONFIG.endpoints.auth.user);
+        handleSuccessfulLogin(user);
+        showNotification(`Welcome back, ${user.username}!`, true);
+        return true;
     } catch (error) {
-        console.error('Auth check failed:', error);
+        localStorage.removeItem('lastKnownUserId');
         showLoginScreen();
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('login_failed')) {
+            showNotification('Login failed. Please try again.', false);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
         return false;
     }
 }
 
 async function clearSessionCookies() {
     try {
-        await fetch(`${API_BASE_URL}/auth/clear-cookies`, {
-            method: 'POST',
-            credentials: 'include'
-        });
+        await makeApiCall(API_CONFIG.endpoints.auth.clear, 'POST');
     } catch (error) {
         console.error('Failed to clear cookies:', error);
     }
@@ -299,20 +319,25 @@ async function clearSessionCookies() {
 
 async function handleDiscordLogin() {
     try {
-        // Show loading state
         discordLoginBtn.disabled = true;
         discordLoginBtn.textContent = 'Redirecting...';
-        
-        // Store current URL for redirect back after auth
         localStorage.setItem('preAuthUrl', window.location.href);
-        
-        // Redirect to Discord auth
-        window.location.href = `${API_BASE_URL}/auth/discord`;
+        window.location.href = `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.auth.discord}`;
     } catch (error) {
         console.error('Login error:', error);
         showNotification('Failed to initiate login', false);
         discordLoginBtn.disabled = false;
         discordLoginBtn.textContent = 'Login with Discord';
+    }
+}
+
+async function handleDevLogin() {
+    try {
+        const user = await makeApiCall(API_CONFIG.endpoints.auth.dev, 'POST');
+        handleSuccessfulLogin(user);
+    } catch (error) {
+        console.error('Dev login failed:', error);
+        showNotification('Development login failed', false);
     }
 }
 
@@ -344,7 +369,6 @@ function showLoginScreen() {
     
     document.getElementById('discord-login').addEventListener('click', handleDiscordLogin);
     
-    // Add dev login for local testing
     if (document.getElementById('dev-login')) {
         document.getElementById('dev-login').addEventListener('click', handleDevLogin);
     }
@@ -353,27 +377,9 @@ function showLoginScreen() {
     gameScreen.style.display = 'none';
 }
 
-async function handleDevLogin() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/auth/dev`, {
-            method: 'POST',
-            credentials: 'include'
-        });
-        
-        if (response.ok) {
-            await checkAuthStatus();
-        }
-    } catch (error) {
-        console.error('Dev login failed:', error);
-    }
-}
-
 async function logout() {
     try {
-        await fetch(`${API_BASE_URL}/auth/logout`, {
-            method: 'POST',
-            credentials: 'include'
-        });
+        await makeApiCall(API_CONFIG.endpoints.auth.logout, 'POST');
         localStorage.removeItem('lastKnownUserId');
         localStorage.removeItem('preAuthUrl');
         window.location.href = window.location.origin;
@@ -385,7 +391,7 @@ async function logout() {
 
 // Initialize Game
 async function initGame() {
-    // First clear any existing session
+    // Clear any existing session first
     await clearSessionCookies();
     
     // Set up event listeners
@@ -398,24 +404,12 @@ async function initGame() {
         try {
             loginScreen.innerHTML = '<div class="loading">Completing login...</div>';
             
-            // Exchange code for token
-            const authResponse = await fetch(`${API_BASE_URL}/auth/token`, {
-                method: 'POST',
-                credentials: 'include',
-                body: JSON.stringify({
-                    code: urlParams.get('code')
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+            const authResponse = await makeApiCall(API_CONFIG.endpoints.auth.token, 'POST', {
+                code: urlParams.get('code')
             });
             
-            if (authResponse.ok) {
-                window.history.replaceState({}, document.title, window.location.pathname);
-                await checkAuthStatus();
-            } else {
-                throw new Error('Token exchange failed');
-            }
+            window.history.replaceState({}, document.title, window.location.pathname);
+            await checkAuthStatus();
         } catch (error) {
             console.error('Auth processing error:', error);
             showNotification('Login failed. Please try again.', false);
