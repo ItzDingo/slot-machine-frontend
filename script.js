@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com/'; // Replace with your actual backend URL
+const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com'; // Replace with your actual backend URL
 
 // Game Configuration
 const CONFIG = {
