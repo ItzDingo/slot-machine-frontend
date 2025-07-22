@@ -99,28 +99,35 @@ function showNotification(message, isSuccess) {
 function spinReel(reel, targetSymbol, duration, isLastReel) {
     const symbols = CONFIG.symbols;
     const symbolHeight = 100; // Each symbol takes 100% height
-    const spinCycles = 5; // Number of full rotations before stopping
+    const spinCycles = 8; // Number of full rotations before stopping
     let startTime = null;
     let animationFrameId = null;
 
     // Clear previous symbols
     reel.innerHTML = '';
 
-    // Create enough symbols to fill the reel plus buffer
-    const totalSymbols = symbols.length * 2; // Double the symbols for smooth looping
+    // Create buffer of symbols (3 above and 3 below visible area)
+    const visibleSymbols = 3; // Number of symbols visible in the reel
+    const buffer = 3;
+    const totalSymbols = visibleSymbols + buffer * 2;
     const symbolElements = [];
     
+    // Create initial set of symbols
     for (let i = 0; i < totalSymbols; i++) {
-        const symbol = symbols[i % symbols.length];
+        const symbolIndex = Math.abs((i - buffer) % symbols.length);
+        const symbol = symbols[symbolIndex];
         const symbolElement = document.createElement('div');
         symbolElement.className = 'symbol';
         symbolElement.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
         symbolElement.style.position = 'absolute';
         symbolElement.style.width = '100%';
         symbolElement.style.height = '100%';
-        symbolElement.style.transform = `translateY(${i * symbolHeight}%)`;
+        symbolElement.style.transform = `translateY(${(i - buffer) * symbolHeight}%)`;
         reel.appendChild(symbolElement);
-        symbolElements.push(symbolElement);
+        symbolElements.push({
+            element: symbolElement,
+            index: symbolIndex
+        });
     }
 
     function animateSpin(timestamp) {
@@ -128,40 +135,72 @@ function spinReel(reel, targetSymbol, duration, isLastReel) {
         const elapsed = timestamp - startTime;
         const progress = Math.min(elapsed / duration, 1);
         
-        // Easing function for smooth deceleration
-        const easedProgress = progress < 0.8 ? 
-            progress / 0.8 : 
-            1 - Math.pow((progress - 0.8) / 0.2, 2);
+        // Custom easing function for smooth start and stop
+        const easedProgress = progress < 0.7 ? 
+            easeOutQuad(progress / 0.7) * 0.7 : 
+            0.7 + easeInQuad((progress - 0.7) / 0.3) * 0.3;
 
         // Calculate position with easing
         const totalDistance = spinCycles * symbols.length * symbolHeight;
-        const currentPosition = -easedProgress * totalDistance;
+        const currentPos = -easedProgress * totalDistance;
 
         // Position all symbols
-        symbolElements.forEach((element, index) => {
-            const position = (currentPosition + index * symbolHeight) % (symbols.length * symbolHeight);
-            element.style.transform = `translateY(${position}%)`;
+        symbolElements.forEach((symbol, i) => {
+            const position = (currentPos + (i - buffer) * symbolHeight) % (symbols.length * symbolHeight);
+            const normalizedPos = position < 0 ? position + symbols.length * symbolHeight : position;
+            symbol.element.style.transform = `translateY(${normalizedPos}%)`;
+            
+            // Update symbol if it goes out of view
+            if (normalizedPos > (visibleSymbols + 0.5) * symbolHeight) {
+                const newIndex = (symbol.index - 1) % symbols.length;
+                symbol.index = newIndex < 0 ? symbols.length - 1 : newIndex;
+                symbol.element.innerHTML = `<img src="${symbols[symbol.index].img}" alt="${symbols[symbol.index].name}">`;
+            } else if (normalizedPos < -0.5 * symbolHeight) {
+                const newIndex = (symbol.index + 1) % symbols.length;
+                symbol.index = newIndex;
+                symbol.element.innerHTML = `<img src="${symbols[newIndex].img}" alt="${symbols[newIndex].name}">`;
+            }
         });
 
         if (progress < 1) {
             animationFrameId = requestAnimationFrame(animateSpin);
         } else {
             // Animation complete - show final result
-            reel.innerHTML = '';
-            resetReel(reel, targetSymbol);
-            gameState.spinningReels--;
-            
-            if (gameState.spinningReels === 0) {
-                gameState.isSpinning = false;
-                spinBtn.disabled = false;
-                checkWin();
-            }
+            finishSpin();
         }
+    }
+
+    function finishSpin() {
+        reel.innerHTML = '';
+        resetReel(reel, targetSymbol);
+        gameState.spinningReels--;
+        
+        if (gameState.spinningReels === 0) {
+            gameState.isSpinning = false;
+            spinBtn.disabled = false;
+            checkWin();
+        }
+    }
+
+    // Easing functions
+    function easeOutQuad(t) {
+        return t * (2 - t);
+    }
+    
+    function easeInQuad(t) {
+        return t * t;
     }
 
     // Start the animation
     gameState.spinningReels++;
     animationFrameId = requestAnimationFrame(animateSpin);
+
+    // Cleanup function
+    return () => {
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+        }
+    };
 }
 
 // Game Functions
