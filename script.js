@@ -1,35 +1,9 @@
 // API Configuration
 const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com';
 
-const API_CONFIG = {
-    baseUrl: API_BASE_URL,
-    endpoints: {
-        auth: {
-            user: '/auth/user',
-            discord: '/auth/discord',
-            logout: '/auth/logout',
-            token: '/auth/token',
-            dev: '/auth/dev',
-            clear: '/auth/clear-cookies'
-        },
-        game: {
-            spin: '/api/spin',
-            win: '/api/win'
-        }
-    },
-    headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-    }
-};
-
-// Game Configuration
+// Game Configuration (keep this the same)
 const CONFIG = {
     spinCost: 10,
-    spinSettings: {
-        minDuration: 1000,
-        maxDuration: 2000
-    },
     symbols: [
         { name: '7', img: 'assets/7.png' },
         { name: 'dollar', img: 'assets/dollar.png' },
@@ -80,14 +54,15 @@ const winPopup = document.getElementById('win-popup');
 const winComboDisplay = document.getElementById('win-combo');
 const winAmountDisplay = document.getElementById('win-amount');
 const claimBtn = document.getElementById('claim-btn');
-const discordLoginBtn = document.getElementById('discord-login');
+const tokenLoginBtn = document.getElementById('token-login');
+const tokenInput = document.getElementById('token-input');
 const loginScreen = document.getElementById('login-screen');
 const gameScreen = document.getElementById('game-screen');
 const logoutBtn = document.getElementById('logout-btn');
 const userAvatar = document.getElementById('user-avatar');
 const loggedInUser = document.getElementById('logged-in-user');
 
-// Helper Functions
+// Helper Functions (keep these the same)
 function getRandomSymbol() {
     return CONFIG.symbols[Math.floor(Math.random() * CONFIG.symbols.length)];
 }
@@ -109,7 +84,7 @@ function updateCurrencyDisplay() {
     diceDisplay.textContent = gameState.dice;
 }
 
-// Notification System
+// Notification System (keep this the same)
 function showNotification(message, isSuccess) {
     const notification = document.createElement('div');
     notification.className = isSuccess ? 'notification-success' : 'notification-error';
@@ -130,34 +105,7 @@ function showNotification(message, isSuccess) {
     }, 3000);
 }
 
-// API Communication
-async function makeApiCall(endpoint, method = 'GET', body = null) {
-    try {
-        const response = await fetch(`${API_CONFIG.baseUrl}${endpoint}`, {
-            method,
-            headers: API_CONFIG.headers,
-            credentials: 'include',
-            body: body ? JSON.stringify(body) : null
-        });
-        
-        if (response.status === 401) {
-            showNotification('Session expired. Please login again.', false);
-            showLoginScreen();
-            throw new Error('Session expired');
-        }
-        
-        if (!response.ok) {
-            throw new Error(`API request failed: ${response.status}`);
-        }
-        
-        return await response.json();
-    } catch (error) {
-        console.error('API call failed:', error);
-        throw error;
-    }
-}
-
-// Game Functions
+// Game Functions (keep these the same)
 async function startSpin() {
     if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
         if (gameState.chips < CONFIG.spinCost) {
@@ -167,11 +115,19 @@ async function startSpin() {
     }
 
     try {
-        const data = await makeApiCall(API_CONFIG.endpoints.game.spin, 'POST', {
-            userId: gameState.userId,
-            cost: CONFIG.spinCost
+        const response = await fetch(`${API_BASE_URL}/api/spin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                cost: CONFIG.spinCost
+            }),
+            credentials: 'include'
         });
 
+        if (!response.ok) throw new Error('Spin failed');
+
+        const data = await response.json();
         gameState.chips = data.newBalance;
         updateCurrencyDisplay();
         
@@ -186,8 +142,7 @@ async function startSpin() {
         gameState.currentSymbols = targetSymbols.map(s => s.name);
 
         reels.forEach((reel, index) => {
-            const duration = CONFIG.spinSettings.minDuration + 
-                           Math.random() * (CONFIG.spinSettings.maxDuration - CONFIG.spinSettings.minDuration);
+            const duration = 1000 + Math.random() * 2000;
             spinReel(reel, targetSymbols[index], duration, index === reels.length - 1);
         });
     } catch (error) {
@@ -255,16 +210,24 @@ async function checkWin() {
 
     if (winAmount > 0) {
         try {
-            const data = await makeApiCall(API_CONFIG.endpoints.game.win, 'POST', {
-                userId: gameState.userId,
-                amount: winAmount
+            const response = await fetch(`${API_BASE_URL}/api/win`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: gameState.userId,
+                    amount: winAmount
+                }),
+                credentials: 'include'
             });
 
-            gameState.chips = data.newBalance;
-            gameState.winAmount = winAmount;
-            gameState.winCombo = winCombo;
-            showWinPopup(winCombo, winAmount);
-            updateCurrencyDisplay();
+            if (response.ok) {
+                const data = await response.json();
+                gameState.chips = data.newBalance;
+                gameState.winAmount = winAmount;
+                gameState.winCombo = winCombo;
+                showWinPopup(winCombo, winAmount);
+                updateCurrencyDisplay();
+            }
         } catch (error) {
             console.error('Win claim error:', error);
         }
@@ -287,74 +250,30 @@ async function claimWin() {
     winPopup.style.display = 'none';
 }
 
-// Authentication Functions
-async function checkAuthStatus() {
-  try {
-    loginScreen.innerHTML = '<div class="loading">Checking session...</div>';
-    
-    const response = await fetch(`${API_BASE_URL}/auth/user`, {
-      credentials: 'include'
-    });
-    
-    if (response.ok) {
-      const data = await response.json();
-      if (data.authenticated) {
-        handleSuccessfulLogin(data);
-        return true;
-      }
-    }
-    
-    // If not authenticated, clear any residual session data
-    await clearSessionCookies();
-    showLoginScreen();
-    return false;
-    
-  } catch (error) {
-    console.error('Auth check failed:', error);
-    showLoginScreen();
-    return false;
-  }
-}
-
-async function clearSessionCookies() {
-  try {
-    // First try the proper endpoint
-    const response = await fetch(`${API_BASE_URL}/auth/clear-cookies`, {
-      method: 'POST',
-      credentials: 'include'
-    });
-    
-    // Fallback to manual cookie clearing if endpoint fails
-    if (!response.ok) {
-      document.cookie = 'connect.sid=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-      document.cookie = 'slot_machine.sid=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-    }
-  } catch (error) {
-    console.error('Failed to clear cookies:', error);
-  }
-}
-
-async function handleDiscordLogin() {
+// Authentication
+async function loginWithToken(token) {
     try {
-        discordLoginBtn.disabled = true;
-        discordLoginBtn.textContent = 'Redirecting...';
-        localStorage.setItem('preAuthUrl', window.location.href);
-        window.location.href = `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.auth.discord}`;
+        const response = await fetch(`${API_BASE_URL}/auth/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token }),
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            const user = await response.json();
+            handleSuccessfulLogin(user);
+            showNotification(`Welcome, ${user.username}!`, true);
+            return true;
+        } else {
+            const error = await response.json();
+            showNotification(error.error || 'Login failed', false);
+            return false;
+        }
     } catch (error) {
         console.error('Login error:', error);
-        showNotification('Failed to initiate login', false);
-        discordLoginBtn.disabled = false;
-        discordLoginBtn.textContent = 'Login with Discord';
-    }
-}
-
-async function handleDevLogin() {
-    try {
-        const user = await makeApiCall(API_CONFIG.endpoints.auth.dev, 'POST');
-        handleSuccessfulLogin(user);
-    } catch (error) {
-        console.error('Dev login failed:', error);
-        showNotification('Development login failed', false);
+        showNotification('Login failed. Please try again.', false);
+        return false;
     }
 }
 
@@ -369,83 +288,73 @@ function handleSuccessfulLogin(user) {
     gameScreen.style.display = 'block';
     updateCurrencyDisplay();
     
-    localStorage.setItem('lastKnownUserId', user.id);
+    // Initialize reels
+    reels.forEach((reel, index) => {
+        const symbol = getRandomSymbol();
+        gameState.currentSymbols[index] = symbol.name;
+        resetReel(reel, symbol);
+    });
 }
 
 function showLoginScreen() {
-    loginScreen.innerHTML = `
-        <div class="login-container">
-            <h2>Login to Play</h2>
-            <button id="discord-login" class="login-btn">
-                Login with Discord
-            </button>
-            ${window.location.hostname === 'localhost' ? 
-              '<button id="dev-login" class="login-btn">Dev Login</button>' : ''}
-        </div>
-    `;
-    
-    document.getElementById('discord-login').addEventListener('click', handleDiscordLogin);
-    
-    if (document.getElementById('dev-login')) {
-        document.getElementById('dev-login').addEventListener('click', handleDevLogin);
-    }
-    
     loginScreen.style.display = 'block';
     gameScreen.style.display = 'none';
+    gameState.userId = null;
 }
 
 async function logout() {
     try {
-        await makeApiCall(API_CONFIG.endpoints.auth.logout, 'POST');
-        localStorage.removeItem('lastKnownUserId');
-        localStorage.removeItem('preAuthUrl');
-        window.location.href = window.location.origin;
+        await fetch(`${API_BASE_URL}/auth/logout`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+        showLoginScreen();
+        showNotification('Logged out successfully', true);
     } catch (error) {
         console.error('Logout failed:', error);
         showNotification('Failed to logout. Please try again.', false);
     }
 }
 
-// Initialize Game
-async function initGame() {
-  try {
-    // Clear any existing session first
-    await clearSessionCookies();
-    
-    // Check URL for auth code
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('code')) {
-      loginScreen.innerHTML = '<div class="loading">Completing login...</div>';
-      
-      // Exchange code for session
-      const authResponse = await fetch(`${API_BASE_URL}/auth/discord/callback?code=${urlParams.get('code')}`, {
-        credentials: 'include'
-      });
-      
-      if (authResponse.ok) {
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
+async function checkAuthStatus() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/user`, {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const user = await response.json();
+            handleSuccessfulLogin(user);
+            return true;
+        } else {
+            showLoginScreen();
+            return false;
+        }
+    } catch (error) {
+        console.error('Auth check failed:', error);
+        showLoginScreen();
+        return false;
     }
-    
-    // Check auth status
-    const isAuthenticated = await checkAuthStatus();
-    
-    // Initialize game if authenticated
-    if (isAuthenticated) {
-      reels.forEach((reel, index) => {
-        const symbol = getRandomSymbol();
-        gameState.currentSymbols[index] = symbol.name;
-        resetReel(reel, symbol);
-      });
-    }
-    
-  } catch (error) {
-    console.error('Initialization error:', error);
-    showNotification('Failed to initialize game. Please refresh.', false);
-    showLoginScreen();
-  }
 }
 
+// Initialize Game
+async function initGame() {
+    // Set up event listeners
+    spinBtn.addEventListener('click', startSpin);
+    claimBtn.addEventListener('click', claimWin);
+    tokenLoginBtn.addEventListener('click', async () => {
+        const token = tokenInput.value.trim();
+        if (token) {
+            await loginWithToken(token);
+        } else {
+            showNotification('Please enter your token', false);
+        }
+    });
+    logoutBtn.addEventListener('click', logout);
+    
+    // Check if user is already logged in
+    await checkAuthStatus();
+}
 
 // Start the game when DOM is loaded
 document.addEventListener('DOMContentLoaded', initGame);
