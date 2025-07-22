@@ -257,24 +257,31 @@ async function loginWithToken(token) {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json' // Explicitly expect JSON
             },
             body: JSON.stringify({ token }),
             credentials: 'include'
         });
 
+        // First check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            throw new Error(`Invalid response: ${text.substring(0, 100)}`);
+        }
+
+        const data = await response.json();
+        
         if (response.ok) {
-            const user = await response.json();
-            handleSuccessfulLogin(user);
+            handleSuccessfulLogin(data);
             return true;
         } else {
-            const error = await response.json();
-            showNotification(error.error || 'Login failed', false);
+            showNotification(data.error || 'Login failed', false);
             return false;
         }
     } catch (error) {
         console.error('Login error:', error);
-        showNotification('Login failed. Please try again.', false);
+        showNotification(`Login failed: ${error.message}`, false);
         return false;
     }
 }
