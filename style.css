@@ -196,12 +196,9 @@ body {
 }
 
 .reel {
-    flex: 1;
     position: relative;
     overflow: hidden;
-    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
-    border-radius: 8px;
-    border: 2px solid var(--primary);
+    height: 180px; /* Match your design */
 }
 
 .symbol {
@@ -211,6 +208,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: transform 0.1s ease-out; /* Smooth movement */
 }
 
 .symbol img {
