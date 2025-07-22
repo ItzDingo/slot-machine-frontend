@@ -38,49 +38,50 @@ let gameState = {
     currentSymbols: [],
     winAmount: 0,
     winCombo: null,
-    userId: null,
-    lastSpinTime: 0
+    userId: null
 };
 
 // DOM Elements
-const elements = {
-    loginScreen: document.getElementById('login-screen'),
-    gameScreen: document.getElementById('game-screen'),
-    tokenInput: document.getElementById('token-input'),
-    loginBtn: document.getElementById('login-btn'),
-    logoutBtn: document.getElementById('logout-btn'),
-    username: document.getElementById('username'),
-    userAvatar: document.getElementById('user-avatar'),
-    chips: document.getElementById('chips'),
-    dice: document.getElementById('dice'),
-    spinBtn: document.getElementById('spin-btn'),
-    reels: [
-        document.getElementById('reel1'),
-        document.getElementById('reel2'),
-        document.getElementById('reel3')
-    ],
-    winPopup: document.getElementById('win-popup'),
-    winCombo: document.getElementById('win-combo'),
-    winAmount: document.getElementById('win-amount'),
-    claimBtn: document.getElementById('claim-btn')
-};
+const loginScreen = document.getElementById('login-screen');
+const gameScreen = document.getElementById('game-screen');
+const tokenInput = document.getElementById('token-input');
+const loginBtn = document.getElementById('login-btn');
+const logoutBtn = document.getElementById('logout-btn');
+const usernameDisplay = document.getElementById('username');
+const userAvatar = document.getElementById('user-avatar');
+const chipsDisplay = document.getElementById('chips');
+const diceDisplay = document.getElementById('dice');
+const spinBtn = document.getElementById('spin-btn');
+const reels = [
+    document.getElementById('reel1'),
+    document.getElementById('reel2'),
+    document.getElementById('reel3')
+];
+const winPopup = document.getElementById('win-popup');
+const winComboDisplay = document.getElementById('win-combo');
+const winAmountDisplay = document.getElementById('win-amount');
+const claimBtn = document.getElementById('claim-btn');
 
 // Helper Functions
 function getRandomSymbol() {
     return CONFIG.symbols[Math.floor(Math.random() * CONFIG.symbols.length)];
 }
 
-function resetReel(reel, symbol) {
+function resetReel(reel, centerSymbol) {
     reel.innerHTML = '';
-    const symbolElement = document.createElement('div');
-    symbolElement.className = 'symbol';
-    symbolElement.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
-    reel.appendChild(symbolElement);
+    for (let i = -1; i <= 1; i++) {
+        const symbol = i === 0 ? centerSymbol : getRandomSymbol();
+        const symbolElement = document.createElement('div');
+        symbolElement.className = 'symbol';
+        symbolElement.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
+        symbolElement.style.transform = `translateY(${i * 100}%)`;
+        reel.appendChild(symbolElement);
+    }
 }
 
 function updateCurrencyDisplay() {
-    elements.chips.textContent = gameState.chips;
-    elements.dice.textContent = gameState.dice;
+    chipsDisplay.textContent = gameState.chips;
+    diceDisplay.textContent = gameState.dice;
 }
 
 function showNotification(message, isSuccess) {
@@ -89,94 +90,31 @@ function showNotification(message, isSuccess) {
     notification.textContent = message;
     document.body.appendChild(notification);
     
-    setTimeout(() => notification.classList.add('show'), 10);
-    setTimeout(() => notification.remove(), 3000);
-}
-
-// Improved Spin Animation
-function spinReel(reel, targetSymbol, duration) {
-    const symbols = CONFIG.symbols;
-    const targetIndex = symbols.findIndex(s => s.name === targetSymbol.name);
-    const spinDistance = 30 + targetIndex; // Total symbols to spin through
-    const startTime = Date.now();
-    let animationFrame;
-    let currentPos = 0;
-
-    // Create initial symbols
-    reel.innerHTML = '';
-    const visibleSymbols = 3;
-    const symbolElements = [];
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
     
-    for (let i = 0; i < visibleSymbols + 2; i++) {
-        const symbolElement = document.createElement('div');
-        symbolElement.className = 'symbol';
-        symbolElement.style.transform = `translateY(${(i-1) * 100}%)`;
-        reel.appendChild(symbolElement);
-        symbolElements.push(symbolElement);
-    }
-
-    function updateSymbols() {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const easedProgress = progress < 0.8 ? 
-            easeOutQuad(progress / 0.8) * 0.8 : 
-            0.8 + easeInQuad((progress - 0.8) / 0.2) * 0.2;
-
-        currentPos = easedProgress * spinDistance;
-        
-        symbolElements.forEach((el, i) => {
-            const symbolPos = (Math.floor(currentPos) + i - 1) % symbols.length;
-            const symbolIndex = (symbolPos + symbols.length) % symbols.length;
-            el.innerHTML = `<img src="${symbols[symbolIndex].img}" alt="${symbols[symbolIndex].name}">`;
-            el.style.transform = `translateY(${(i-1) * 100 + (currentPos % 1) * 100}%)`;
-        });
-
-        if (progress < 1) {
-            animationFrame = requestAnimationFrame(updateSymbols);
-        } else {
-            finishSpin();
-        }
-    }
-
-    function finishSpin() {
-        reel.innerHTML = '';
-        resetReel(reel, targetSymbol);
-        gameState.spinningReels--;
-        if (gameState.spinningReels === 0) {
-            gameState.isSpinning = false;
-            elements.spinBtn.disabled = false;
-            checkWin();
-        }
-    }
-
-    function easeOutQuad(t) { return t * (2 - t); }
-    function easeInQuad(t) { return t * t; }
-
-    gameState.spinningReels++;
-    updateSymbols();
-
-    return () => cancelAnimationFrame(animationFrame);
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
 }
 
 // Game Functions
 async function startSpin() {
-    const now = Date.now();
-    if (gameState.isSpinning || now - gameState.lastSpinTime < 1000) return;
-    gameState.lastSpinTime = now;
-
-    if (gameState.chips < CONFIG.spinCost) {
-        showNotification("Not enough chips!", false);
+    if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
+        if (gameState.chips < CONFIG.spinCost) {
+            showNotification("Not enough chips!", false);
+        }
         return;
     }
 
-    elements.spinBtn.disabled = true;
-    gameState.isSpinning = true;
-
     try {
-        const spinStart = Date.now();
         const response = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
             body: JSON.stringify({
                 userId: gameState.userId,
                 cost: CONFIG.spinCost
@@ -185,41 +123,96 @@ async function startSpin() {
         });
 
         if (!response.ok) throw new Error('Spin failed');
-        const data = await response.json();
-        
-        // Adjust spin duration based on server response time
-        const serverDelay = Date.now() - spinStart;
-        const spinDuration = Math.max(2000 - serverDelay, 1000);
 
+        const data = await response.json();
         gameState.chips = data.newBalance;
         updateCurrencyDisplay();
         
-        const targetSymbols = elements.reels.map(() => getRandomSymbol());
+        gameState.isSpinning = true;
+        gameState.spinningReels = reels.length;
+        gameState.winAmount = 0;
+        gameState.winCombo = null;
+        spinBtn.disabled = true;
+        winPopup.style.display = 'none';
+
+        const targetSymbols = reels.map(() => getRandomSymbol());
         gameState.currentSymbols = targetSymbols.map(s => s.name);
 
-        elements.reels.forEach((reel, index) => {
-            spinReel(reel, targetSymbols[index], spinDuration);
+        reels.forEach((reel, index) => {
+            const duration = 1000 + Math.random() * 2000;
+            spinReel(reel, targetSymbols[index], duration, index === reels.length - 1);
         });
-
     } catch (error) {
         console.error('Spin error:', error);
-        showNotification(error.message, false);
-        gameState.isSpinning = false;
-        elements.spinBtn.disabled = false;
+        showNotification('Failed to start spin. Please try again.', false);
     }
+}
+
+function spinReel(reel, targetSymbol, duration, isLastReel) {
+    const symbols = CONFIG.symbols;
+    let startTime = null;
+    let currentPosition = 0;
+    let currentSymbolIndex = 0;
+
+    function animateSpin(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = timestamp - startTime;
+        const spinProgress = Math.min(progress / duration, 1);
+
+        if (spinProgress < 1) {
+            currentPosition = -100 * spinProgress * 10;
+            currentSymbolIndex = Math.floor(Math.random() * symbols.length);
+            
+            reel.innerHTML = '';
+            for (let i = -1; i <= 1; i++) {
+                const symbol = symbols[(currentSymbolIndex + i + symbols.length) % symbols.length];
+                const symbolElement = document.createElement('div');
+                symbolElement.className = 'symbol';
+                symbolElement.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
+                symbolElement.style.transform = `translateY(${currentPosition + (i * 100)}%)`;
+                reel.appendChild(symbolElement);
+            }
+            
+            requestAnimationFrame(animateSpin);
+        } else {
+            gameState.currentSymbols[reels.indexOf(reel)] = targetSymbol.name;
+            resetReel(reel, targetSymbol);
+            gameState.spinningReels--;
+            
+            if (gameState.spinningReels === 0) {
+                gameState.isSpinning = false;
+                spinBtn.disabled = false;
+                checkWin();
+            }
+        }
+    }
+
+    requestAnimationFrame(animateSpin);
 }
 
 async function checkWin() {
     const combo = gameState.currentSymbols.join('-');
-    let winAmount = CONFIG.payouts[combo] || 
-                   (gameState.currentSymbols[0] === gameState.currentSymbols[1] || 
-                    gameState.currentSymbols[1] === gameState.currentSymbols[2]) ? CONFIG.payouts['ANY_TWO_MATCH'] : 0;
+    let winAmount = 0;
+    let winCombo = null;
+    
+    if (CONFIG.payouts[combo]) {
+        winAmount = CONFIG.payouts[combo];
+        winCombo = combo;
+    } else if (gameState.currentSymbols[0] === gameState.currentSymbols[1] || 
+               gameState.currentSymbols[1] === gameState.currentSymbols[2] || 
+               gameState.currentSymbols[0] === gameState.currentSymbols[2]) {
+        winAmount = CONFIG.payouts['ANY_TWO_MATCH'];
+        winCombo = 'ANY_TWO_MATCH';
+    }
 
     if (winAmount > 0) {
         try {
             const response = await fetch(`${API_BASE_URL}/api/win`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
                 body: JSON.stringify({
                     userId: gameState.userId,
                     amount: winAmount
@@ -231,86 +224,116 @@ async function checkWin() {
                 const data = await response.json();
                 gameState.chips = data.newBalance;
                 gameState.winAmount = winAmount;
-                showWinPopup(combo, winAmount);
+                gameState.winCombo = winCombo;
+                showWinPopup(winCombo, winAmount);
                 updateCurrencyDisplay();
             }
         } catch (error) {
-            console.error('Win error:', error);
+            console.error('Win claim error:', error);
         }
     }
 }
 
 function showWinPopup(combo, amount) {
     const comboDisplay = combo === 'ANY_TWO_MATCH' ? 
-        'Two Matching Symbols' : combo.split('-').join(' ');
-    elements.winCombo.textContent = comboDisplay;
-    elements.winAmount.textContent = amount;
-    elements.winPopup.style.display = 'flex';
+        'Two Matching Symbols' : 
+        combo.split('-').join(' ');
+    
+    winComboDisplay.innerHTML = `<div class="combo-symbols">${comboDisplay}</div>`;
+    winAmountDisplay.textContent = amount;
+    winPopup.style.display = 'flex';
 }
 
-// Authentication and Initialization
+async function claimWin() {
+    gameState.winAmount = 0;
+    gameState.winCombo = null;
+    winPopup.style.display = 'none';
+}
+
+// Authentication
 async function loginWithToken(token) {
     try {
-        elements.loginBtn.disabled = true;
+        loginBtn.disabled = true;
         const response = await fetch(`${API_BASE_URL}/auth/token`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
             body: JSON.stringify({ token }),
             credentials: 'include'
         });
 
-        if (!response.ok) throw new Error(await response.text());
-        const user = await response.json();
-        
-        gameState.userId = user.id;
-        gameState.chips = user.chips;
-        gameState.dice = user.dice;
-        
-        elements.username.textContent = user.username;
-        elements.userAvatar.src = user.avatar || 'assets/default-avatar.png';
-        elements.loginScreen.style.display = 'none';
-        elements.gameScreen.style.display = 'block';
-        updateCurrencyDisplay();
-        
-        elements.reels.forEach((reel, index) => {
-            const symbol = getRandomSymbol();
-            gameState.currentSymbols[index] = symbol.name;
-            resetReel(reel, symbol);
-        });
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            throw new Error(`Invalid response: ${text.substring(0, 100)}`);
+        }
 
-        showNotification('Login successful!', true);
+        const data = await response.json();
+        
+        if (response.ok) {
+            handleSuccessfulLogin(data);
+            showNotification('Login successful!', true);
+            return true;
+        } else {
+            throw new Error(data.error || 'Login failed');
+        }
     } catch (error) {
+        console.error('Login error:', error);
         showNotification(`Login failed: ${error.message}`, false);
+        return false;
     } finally {
-        elements.loginBtn.disabled = false;
+        loginBtn.disabled = false;
     }
 }
 
-// Event Listeners
-elements.loginBtn.addEventListener('click', () => {
-    const token = elements.tokenInput.value.trim();
-    if (token) loginWithToken(token);
-    else showNotification('Please enter your token', false);
-});
+async function logout() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+            method: 'POST',
+            credentials: 'include'
+        });
 
-elements.spinBtn.addEventListener('click', startSpin);
-elements.claimBtn.addEventListener('click', () => {
-    elements.winPopup.style.display = 'none';
-});
-elements.logoutBtn.addEventListener('click', () => {
-    fetch(`${API_BASE_URL}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include'
-    }).then(() => {
-        elements.loginScreen.style.display = 'block';
-        elements.gameScreen.style.display = 'none';
-        gameState.userId = null;
-        showNotification('Logged out', true);
+        if (response.ok) {
+            showLoginScreen();
+            showNotification('Logged out successfully', true);
+        } else {
+            throw new Error('Logout failed');
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        showNotification('Failed to logout. Please try again.', false);
+    }
+}
+
+function handleSuccessfulLogin(user) {
+    gameState.userId = user.id;
+    gameState.chips = user.chips;
+    gameState.dice = user.dice;
+    
+    usernameDisplay.textContent = user.username;
+    userAvatar.src = user.avatar || 'assets/default-avatar.png';
+    loginScreen.style.display = 'none';
+    gameScreen.style.display = 'block';
+    updateCurrencyDisplay();
+    
+    // Initialize reels
+    reels.forEach((reel, index) => {
+        const symbol = getRandomSymbol();
+        gameState.currentSymbols[index] = symbol.name;
+        resetReel(reel, symbol);
     });
-});
+}
 
-// Initialize Game
-async function initGame() {
+function showLoginScreen() {
+    loginScreen.style.display = 'block';
+    gameScreen.style.display = 'none';
+    gameState.userId = null;
+    tokenInput.value = '';
+}
+
+async function checkAuthStatus() {
     try {
         const response = await fetch(`${API_BASE_URL}/auth/user`, {
             credentials: 'include'
@@ -318,25 +341,46 @@ async function initGame() {
         
         if (response.ok) {
             const user = await response.json();
-            gameState.userId = user.id;
-            gameState.chips = user.chips;
-            gameState.dice = user.dice;
-            
-            elements.username.textContent = user.username;
-            elements.userAvatar.src = user.avatar || 'assets/default-avatar.png';
-            elements.loginScreen.style.display = 'none';
-            elements.gameScreen.style.display = 'block';
-            updateCurrencyDisplay();
-            
-            elements.reels.forEach((reel, index) => {
-                const symbol = getRandomSymbol();
-                gameState.currentSymbols[index] = symbol.name;
-                resetReel(reel, symbol);
-            });
+            handleSuccessfulLogin(user);
+            return true;
+        } else {
+            showLoginScreen();
+            return false;
         }
     } catch (error) {
-        console.log('Not logged in');
+        console.error('Auth check error:', error);
+        showLoginScreen();
+        return false;
     }
 }
 
+// Event Listeners
+loginBtn.addEventListener('click', async () => {
+    const token = tokenInput.value.trim();
+    if (token) {
+        await loginWithToken(token);
+    } else {
+        showNotification('Please enter your token', false);
+    }
+});
+
+logoutBtn.addEventListener('click', logout);
+spinBtn.addEventListener('click', startSpin);
+claimBtn.addEventListener('click', claimWin);
+
+// Initialize Game
+async function initGame() {
+    await checkAuthStatus();
+    
+    // Initialize reels if authenticated
+    if (gameState.userId) {
+        reels.forEach((reel, index) => {
+            const symbol = getRandomSymbol();
+            gameState.currentSymbols[index] = symbol.name;
+            resetReel(reel, symbol);
+        });
+    }
+}
+
+// Start the game when DOM is loaded
 document.addEventListener('DOMContentLoaded', initGame);
