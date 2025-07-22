@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com'; // Replace with your actual backend URL
+const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com'; // No trailing slash!
 
 // Game Configuration
 const CONFIG = {
@@ -122,9 +122,19 @@ async function startSpin() {
             credentials: 'include'
         });
 
-        if (!response.ok) throw new Error('Spin failed');
+        // Check for JSON response
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            throw new Error(`Invalid response: ${text.substring(0, 100)}`);
+        }
 
         const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Spin failed');
+        }
+
         gameState.chips = data.newBalance;
         updateCurrencyDisplay();
         
@@ -144,7 +154,7 @@ async function startSpin() {
         });
     } catch (error) {
         console.error('Spin error:', error);
-        showNotification('Failed to start spin. Please try again.', false);
+        showNotification('Failed to start spin: ' + error.message, false);
     }
 }
 
@@ -220,16 +230,27 @@ async function checkWin() {
                 credentials: 'include'
             });
 
+            // Check for JSON response
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                throw new Error(`Invalid response: ${text.substring(0, 100)}`);
+            }
+
+            const data = await response.json();
+            
             if (response.ok) {
-                const data = await response.json();
                 gameState.chips = data.newBalance;
                 gameState.winAmount = winAmount;
                 gameState.winCombo = winCombo;
                 showWinPopup(winCombo, winAmount);
                 updateCurrencyDisplay();
+            } else {
+                throw new Error(data.error || 'Failed to claim win');
             }
         } catch (error) {
             console.error('Win claim error:', error);
+            showNotification('Failed to process win: ' + error.message, false);
         }
     }
 }
@@ -239,7 +260,7 @@ function showWinPopup(combo, amount) {
         'Two Matching Symbols' : 
         combo.split('-').join(' ');
     
-    winComboDisplay.innerHTML = `<div class="combo-symbols">${comboDisplay}</div>`;
+    winComboDisplay.textContent = comboDisplay;
     winAmountDisplay.textContent = amount;
     winPopup.style.display = 'flex';
 }
@@ -257,7 +278,7 @@ async function loginWithToken(token) {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
-                'Accept': 'application/json' // Explicitly expect JSON
+                'Accept': 'application/json'
             },
             body: JSON.stringify({ token }),
             credentials: 'include'
@@ -267,7 +288,7 @@ async function loginWithToken(token) {
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
             const text = await response.text();
-            throw new Error(`Invalid response: ${text.substring(0, 100)}`);
+            throw new Error(`Server returned: ${text.substring(0, 100)}`);
         }
 
         const data = await response.json();
@@ -276,8 +297,7 @@ async function loginWithToken(token) {
             handleSuccessfulLogin(data);
             return true;
         } else {
-            showNotification(data.error || 'Login failed', false);
-            return false;
+            throw new Error(data.error || 'Login failed');
         }
     } catch (error) {
         console.error('Login error:', error);
@@ -301,7 +321,7 @@ async function logout() {
         }
     } catch (error) {
         console.error('Logout error:', error);
-        showNotification('Failed to logout. Please try again.', false);
+        showNotification('Failed to logout: ' + error.message, false);
     }
 }
 
@@ -336,15 +356,19 @@ async function checkAuthStatus() {
         const response = await fetch(`${API_BASE_URL}/auth/user`, {
             credentials: 'include'
         });
-        
-        if (response.ok) {
+
+        // Check for JSON response
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
             const user = await response.json();
-            handleSuccessfulLogin(user);
-            return true;
-        } else {
-            showLoginScreen();
-            return false;
+            if (response.ok) {
+                handleSuccessfulLogin(user);
+                return true;
+            }
         }
+        
+        showLoginScreen();
+        return false;
     } catch (error) {
         console.error('Auth check error:', error);
         showLoginScreen();
@@ -356,7 +380,9 @@ async function checkAuthStatus() {
 loginBtn.addEventListener('click', async () => {
     const token = tokenInput.value.trim();
     if (token) {
+        loginBtn.disabled = true;
         await loginWithToken(token);
+        loginBtn.disabled = false;
     } else {
         showNotification('Please enter your token', false);
     }
@@ -367,18 +393,11 @@ spinBtn.addEventListener('click', startSpin);
 claimBtn.addEventListener('click', claimWin);
 
 // Initialize Game
-async function initGame() {
-    await checkAuthStatus();
-    
-    // Initialize reels if authenticated
-    if (gameState.userId) {
-        reels.forEach((reel, index) => {
-            const symbol = getRandomSymbol();
-            gameState.currentSymbols[index] = symbol.name;
-            resetReel(reel, symbol);
-        });
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        await checkAuthStatus();
+    } catch (error) {
+        console.error('Initialization error:', error);
+        showNotification('Failed to initialize game', false);
     }
-}
-
-// Start the game when DOM is loaded
-document.addEventListener('DOMContentLoaded', initGame);
+});
