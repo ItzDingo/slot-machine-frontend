@@ -1,12 +1,9 @@
-// API Configuration
 const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com';
-const FRONTEND_BASE_URL = 'https://itzdingo.github.io/slot-machine-frontend';
 
-// Game Configuration
 const CONFIG = {
     spinCost: 10,
-    initialChips: 0,  // Will be loaded from backend
-    initialDice: 0,   // Will be loaded from backend
+    initialChips: 0,
+    initialDice: 0,
     spinSettings: {
         minDuration: 5000,
         maxDuration: 7000,
@@ -39,7 +36,6 @@ const CONFIG = {
     }
 };
 
-// Game State
 let gameState = {
     chips: 0,
     dice: 0,
@@ -51,7 +47,6 @@ let gameState = {
     userId: null
 };
 
-// DOM Elements
 const spinBtn = document.getElementById('spin-btn');
 const reels = [
     document.getElementById('reel1'),
@@ -71,34 +66,19 @@ const logoutBtn = document.getElementById('logout-btn');
 const userAvatar = document.getElementById('user-avatar');
 const loggedInUser = document.getElementById('logged-in-user');
 
-
-// Add this at the top of your script.js
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check if we're returning from Discord auth
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('code')){
-        // We came back from OAuth, do immediate check
+    if (urlParams.has('code')) {
         await checkAuthStatus();
-        // Clean the URL
         window.history.replaceState({}, document.title, window.location.pathname);
     } else {
-        // Normal page load
-        const lastUserId = localStorage.getItem('lastKnownUserId');
-        if (lastUserId) {
-            // We have a cached user, verify immediately
-            await checkAuthStatus();
-        } else {
-            // No cached user, wait a bit longer
-            setTimeout(checkAuthStatus, 500);
-        }
+        setTimeout(checkAuthStatus, 500);
     }
 });
 
-// Initialize Game
-initGame();
-
 async function initGame() {
-    // Set up event listeners
+    await checkAuthStatus();
+    
     spinBtn.addEventListener('click', startSpin);
     claimBtn.addEventListener('click', claimWin);
     discordLoginBtn.addEventListener('click', () => {
@@ -106,76 +86,20 @@ async function initGame() {
     });
     logoutBtn.addEventListener('click', logout);
     
-    // Check auth status with retry logic
-    await checkAuthStatusWithRetry();
-    
-    // Initialize reels if authenticated
     if (gameState.userId) {
-        initializeReels();
-    }
-}
-
-async function checkAuthStatusWithRetry(retryCount = 0) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/auth/user`, {
-            credentials: 'include',
-            headers: {
-                'Cache-Control': 'no-cache'
-            }
+        reels.forEach((reel, index) => {
+            const symbol = getRandomSymbol();
+            gameState.currentSymbols[index] = symbol.name;
+            resetReel(reel, symbol);
         });
-        
-        if (response.ok) {
-            const user = await response.json();
-            handleSuccessfulAuth(user);
-        } else {
-            showLoginScreen();
-        }
-    } catch (error) {
-        console.error('Auth check failed:', error);
-        if (retryCount < 3) {
-            await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
-            await checkAuthStatusWithRetry(retryCount + 1);
-        } else {
-            showLoginScreen();
-        }
     }
-}
-
-function handleSuccessfulAuth(user) {
-    gameState.userId = user.id;
-    gameState.chips = user.chips;
-    gameState.dice = user.dice;
-    
-    // Update UI
-    loggedInUser.textContent = user.username;
-    userAvatar.src = user.avatar || 'assets/default-avatar.png';
-    loginScreen.style.display = 'none';
-    gameScreen.style.display = 'block';
-    updateCurrencyDisplay();
-    
-    // Store user ID in localStorage as backup
-    localStorage.setItem('lastKnownUserId', user.id);
-    
-    // Initialize game components
-    initializeReels();
-}
-
-function initializeReels() {
-    reels.forEach((reel, index) => {
-        const symbol = getRandomSymbol();
-        gameState.currentSymbols[index] = symbol.name;
-        resetReel(reel, symbol);
-    });
 }
 
 async function checkAuthStatus() {
     try {
-        // Add timeout and retry logic
         const response = await fetch(`${API_BASE_URL}/auth/user`, {
             credentials: 'include',
-            headers: {
-                'Cache-Control': 'no-cache'
-            }
+            headers: { 'Cache-Control': 'no-cache' }
         });
         
         if (response.ok) {
@@ -184,38 +108,20 @@ async function checkAuthStatus() {
             gameState.chips = user.chips;
             gameState.dice = user.dice;
             
-            // Update UI immediately
-            updateUIAfterLogin(user);
+            loggedInUser.textContent = user.username;
+            userAvatar.src = user.avatar || 'assets/default-avatar.png';
+            loginScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+            updateCurrencyDisplay();
             
-            // Additional check after 1 second to handle race conditions
-            setTimeout(async () => {
-                const verifyResponse = await fetch(`${API_BASE_URL}/auth/user`, {
-                    credentials: 'include'
-                });
-                if (!verifyResponse.ok) {
-                    location.reload(); // Force refresh if session changed
-                }
-            }, 1000);
+            localStorage.setItem('lastKnownUserId', user.id);
         } else {
             showLoginScreen();
         }
     } catch (error) {
         console.error('Auth check failed:', error);
         showLoginScreen();
-        // Retry after 2 seconds if failed
-        setTimeout(checkAuthStatus, 2000);
     }
-}
-
-function updateUIAfterLogin(user) {
-    loggedInUser.textContent = user.username;
-    userAvatar.src = user.avatar || 'assets/default-avatar.png';
-    loginScreen.style.display = 'none';
-    gameScreen.style.display = 'block';
-    updateCurrencyDisplay();
-    
-    // Store user ID in localStorage as backup
-    localStorage.setItem('lastKnownUserId', user.id);
 }
 
 function showLoginScreen() {
@@ -230,10 +136,7 @@ async function logout() {
             method: 'POST',
             credentials: 'include'
         });
-        // Clear all local traces
         localStorage.removeItem('lastKnownUserId');
-        gameState.userId = null;
-        // Force full reload
         window.location.href = window.location.origin;
     } catch (error) {
         console.error('Logout failed:', error);
@@ -250,12 +153,9 @@ async function startSpin() {
     }
 
     try {
-        // Deduct chips via API
         const response = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 userId: gameState.userId,
                 cost: CONFIG.spinCost
@@ -263,15 +163,12 @@ async function startSpin() {
             credentials: 'include'
         });
 
-        if (!response.ok) {
-            throw new Error('Spin failed');
-        }
+        if (!response.ok) throw new Error('Spin failed');
 
         const data = await response.json();
         gameState.chips = data.newBalance;
         updateCurrencyDisplay();
         
-        // Reset state
         gameState.isSpinning = true;
         gameState.spinningReels = reels.length;
         gameState.winAmount = 0;
@@ -279,11 +176,9 @@ async function startSpin() {
         spinBtn.disabled = true;
         winPopup.style.display = 'none';
 
-        // Set target symbols
         const targetSymbols = reels.map(() => getRandomSymbol());
         gameState.currentSymbols = targetSymbols.map(s => s.name);
 
-        // Start spinning all reels
         reels.forEach((reel, index) => {
             const duration = CONFIG.spinSettings.minDuration + 
                            Math.random() * (CONFIG.spinSettings.maxDuration - CONFIG.spinSettings.minDuration);
@@ -295,14 +190,51 @@ async function startSpin() {
     }
 }
 
-// spinReel function remains the same as it's purely frontend animation
 function spinReel(reel, targetSymbol, duration, isLastReel) {
-    // ... (keep the existing spinReel implementation)
+    const symbols = CONFIG.symbols;
+    let startTime = null;
+    let spinInterval;
+    let currentPosition = 0;
+    let currentSymbolIndex = 0;
+
+    function animateSpin(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = timestamp - startTime;
+        const spinProgress = Math.min(progress / duration, 1);
+
+        if (spinProgress < 1) {
+            currentPosition = -100 * spinProgress * 10;
+            currentSymbolIndex = Math.floor(Math.random() * symbols.length);
+            
+            reel.innerHTML = '';
+            for (let i = -1; i <= 1; i++) {
+                const symbol = symbols[(currentSymbolIndex + i + symbols.length) % symbols.length];
+                const symbolElement = document.createElement('div');
+                symbolElement.className = 'symbol';
+                symbolElement.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
+                symbolElement.style.transform = `translateY(${currentPosition + (i * 100)}%)`;
+                reel.appendChild(symbolElement);
+            }
+            
+            requestAnimationFrame(animateSpin);
+        } else {
+            gameState.currentSymbols[reels.indexOf(reel)] = targetSymbol.name;
+            resetReel(reel, targetSymbol);
+            gameState.spinningReels--;
+            
+            if (gameState.spinningReels === 0) {
+                gameState.isSpinning = false;
+                spinBtn.disabled = false;
+                checkWin();
+            }
+        }
+    }
+
+    requestAnimationFrame(animateSpin);
 }
 
 async function checkWin() {
     const combo = gameState.currentSymbols.join('-');
-    
     let winAmount = 0;
     let winCombo = null;
     
@@ -320,9 +252,7 @@ async function checkWin() {
         try {
             const response = await fetch(`${API_BASE_URL}/api/win`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     userId: gameState.userId,
                     amount: winAmount
@@ -349,25 +279,17 @@ function showWinPopup(combo, amount) {
         'Two Matching Symbols' : 
         combo.split('-').join(' ');
     
-    winComboDisplay.innerHTML = `
-        <div class="combo-symbols">${comboDisplay}</div>
-    `;
+    winComboDisplay.innerHTML = `<div class="combo-symbols">${comboDisplay}</div>`;
     winAmountDisplay.textContent = amount;
     winPopup.style.display = 'flex';
 }
 
 async function claimWin() {
-    try {
-        // The win is already claimed in checkWin, just close the popup
-        gameState.winAmount = 0;
-        gameState.winCombo = null;
-        winPopup.style.display = 'none';
-    } catch (error) {
-        console.error('Claim win error:', error);
-    }
+    gameState.winAmount = 0;
+    gameState.winCombo = null;
+    winPopup.style.display = 'none';
 }
 
-// Helper Functions
 function getRandomSymbol() {
     return CONFIG.symbols[Math.floor(Math.random() * CONFIG.symbols.length)];
 }
@@ -389,24 +311,4 @@ function updateCurrencyDisplay() {
     diceDisplay.textContent = gameState.dice;
 }
 
-// Easing functions
-function easeIn(t) { return t * t; }
-function easeOut(t) { return t * (2 - t); }
-
-// Add loading state management
-function setLoading(isLoading) {
-    if (isLoading) {
-        document.body.classList.add('loading');
-    } else {
-        document.body.classList.remove('loading');
-    }
-}   
-
-window.addEventListener('load', async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('code') || localStorage.getItem('lastKnownUserId')) {
-        await checkAuthStatusWithRetry();
-        // Clean the URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-    }
-});
+initGame();
