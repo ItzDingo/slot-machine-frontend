@@ -1,4 +1,5 @@
 const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com';
+const FRONTEND_BASE_URL = 'https://itzdingo.github.io/slot-machine-frontend';
 
 const CONFIG = {
     spinCost: 10,
@@ -68,11 +69,33 @@ const loggedInUser = document.getElementById('logged-in-user');
 
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
+    
+    // Handle OAuth callback
     if (urlParams.has('code')) {
-        await checkAuthStatus();
-        window.history.replaceState({}, document.title, window.location.pathname);
-    } else {
-        setTimeout(checkAuthStatus, 500);
+        try {
+            await checkAuthStatus();
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (error) {
+            console.error('Auth failed:', error);
+            showLoginScreen();
+        }
+    } 
+    // Normal page load
+    else {
+        // Check auth status with retry logic
+        const retryAuthCheck = async (attempt = 0) => {
+            try {
+                await checkAuthStatus();
+            } catch (error) {
+                if (attempt < 3) {
+                    setTimeout(() => retryAuthCheck(attempt + 1), 1000 * (attempt + 1));
+                } else {
+                    showLoginScreen();
+                }
+            }
+        };
+        
+        retryAuthCheck();
     }
 });
 
@@ -97,31 +120,60 @@ async function initGame() {
 
 async function checkAuthStatus() {
     try {
+        // First check if we have a cached user ID
+        const cachedUserId = localStorage.getItem('lastKnownUserId');
+        if (!cachedUserId) {
+            showLoginScreen();
+            return;
+        }
+
+        // Verify with backend
         const response = await fetch(`${API_BASE_URL}/auth/user`, {
             credentials: 'include',
-            headers: { 'Cache-Control': 'no-cache' }
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Authorization': `Bearer ${cachedUserId}`
+            }
         });
         
         if (response.ok) {
             const user = await response.json();
-            gameState.userId = user.id;
-            gameState.chips = user.chips;
-            gameState.dice = user.dice;
+            handleSuccessfulLogin(user);
             
-            loggedInUser.textContent = user.username;
-            userAvatar.src = user.avatar || 'assets/default-avatar.png';
-            loginScreen.style.display = 'none';
-            gameScreen.style.display = 'block';
-            updateCurrencyDisplay();
-            
-            localStorage.setItem('lastKnownUserId', user.id);
+            // Additional verification after 1 second
+            setTimeout(async () => {
+                const verifyResponse = await fetch(`${API_BASE_URL}/auth/user`, {
+                    credentials: 'include'
+                });
+                if (!verifyResponse.ok) {
+                    localStorage.removeItem('lastKnownUserId');
+                    window.location.reload();
+                }
+            }, 1000);
         } else {
             showLoginScreen();
         }
     } catch (error) {
         console.error('Auth check failed:', error);
         showLoginScreen();
+        // Retry after 2 seconds
+        setTimeout(checkAuthStatus, 2000);
     }
+}
+
+function handleSuccessfulLogin(user) {
+    gameState.userId = user.id;
+    gameState.chips = user.chips;
+    gameState.dice = user.dice;
+    
+    loggedInUser.textContent = user.username;
+    userAvatar.src = user.avatar || 'assets/default-avatar.png';
+    loginScreen.style.display = 'none';
+    gameScreen.style.display = 'block';
+    updateCurrencyDisplay();
+    
+    // Store user ID in localStorage
+    localStorage.setItem('lastKnownUserId', user.id);
 }
 
 function showLoginScreen() {
@@ -137,7 +189,8 @@ async function logout() {
             credentials: 'include'
         });
         localStorage.removeItem('lastKnownUserId');
-        window.location.href = window.location.origin;
+        // Force full reload to clear all state
+        window.location.href = FRONTEND_BASE_URL;
     } catch (error) {
         console.error('Logout failed:', error);
         alert('Failed to logout. Please try again.');
@@ -189,6 +242,7 @@ async function startSpin() {
         alert('Failed to start spin. Please try again.');
     }
 }
+
 
 function spinReel(reel, targetSymbol, duration, isLastReel) {
     const symbols = CONFIG.symbols;
