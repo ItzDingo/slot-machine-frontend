@@ -1,17 +1,8 @@
 const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com';
-const FRONTEND_BASE_URL = 'https://itzdingo.github.io/slot-machine-frontend';
 
+// Game Configuration
 const CONFIG = {
     spinCost: 10,
-    initialChips: 0,
-    initialDice: 0,
-    spinSettings: {
-        minDuration: 5000,
-        maxDuration: 7000,
-        spinUpTime: 200,
-        spinDownTime: 500,
-        maxSpeed: 20
-    },
     symbols: [
         { name: '7', img: 'assets/7.png' },
         { name: 'dollar', img: 'assets/dollar.png' },
@@ -37,6 +28,7 @@ const CONFIG = {
     }
 };
 
+// Game State
 let gameState = {
     chips: 0,
     dice: 0,
@@ -48,6 +40,7 @@ let gameState = {
     userId: null
 };
 
+// DOM Elements
 const spinBtn = document.getElementById('spin-btn');
 const reels = [
     document.getElementById('reel1'),
@@ -66,28 +59,11 @@ const gameScreen = document.getElementById('game-screen');
 const logoutBtn = document.getElementById('logout-btn');
 const userAvatar = document.getElementById('user-avatar');
 const loggedInUser = document.getElementById('logged-in-user');
+const notification = document.getElementById('notification');
+const notificationMsg = document.getElementById('notification-message');
 
-document.addEventListener('DOMContentLoaded', async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    // Handle OAuth callback
-    if (urlParams.has('code')) {
-        try {
-            await checkAuthStatus();
-            window.history.replaceState({}, document.title, window.location.pathname);
-        } catch (error) {
-            showNotification('Login failed. Please try again.', false);
-            showLoginScreen();
-        }
-    } else {
-        await checkAuthStatus();
-    }
-});
-
+// Notification System
 function showNotification(message, isSuccess) {
-    const notification = document.getElementById('notification');
-    const notificationMsg = document.getElementById('notification-message');
-    
     notification.className = isSuccess ? 'notification-success' : 'notification-error';
     notificationMsg.textContent = message;
     notification.classList.add('notification-show');
@@ -97,25 +73,7 @@ function showNotification(message, isSuccess) {
     }, 3000);
 }
 
-async function initGame() {
-    await checkAuthStatus();
-    
-    spinBtn.addEventListener('click', startSpin);
-    claimBtn.addEventListener('click', claimWin);
-    discordLoginBtn.addEventListener('click', () => {
-        window.location.href = `${API_BASE_URL}/auth/discord`;
-    });
-    logoutBtn.addEventListener('click', logout);
-    
-    if (gameState.userId) {
-        reels.forEach((reel, index) => {
-            const symbol = getRandomSymbol();
-            gameState.currentSymbols[index] = symbol.name;
-            resetReel(reel, symbol);
-        });
-    }
-}
-
+// Authentication
 async function checkAuthStatus() {
     try {
         const response = await fetch(`${API_BASE_URL}/auth/user`, {
@@ -129,7 +87,6 @@ async function checkAuthStatus() {
             showNotification(`Welcome, ${user.username}!`, true);
         } else {
             showLoginScreen();
-            // Check if we came from a failed login attempt
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('login_failed')) {
                 showNotification('Login failed. Please try again.', false);
@@ -169,18 +126,18 @@ async function logout() {
             credentials: 'include'
         });
         localStorage.removeItem('lastKnownUserId');
-        // Force full reload to clear all state
-        window.location.href = FRONTEND_BASE_URL;
+        window.location.href = window.location.origin;
     } catch (error) {
         console.error('Logout failed:', error);
-        alert('Failed to logout. Please try again.');
+        showNotification('Failed to logout. Please try again.', false);
     }
 }
 
+// Game Functions
 async function startSpin() {
     if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
         if (gameState.chips < CONFIG.spinCost) {
-            alert("Not enough chips!");
+            showNotification("Not enough chips!", false);
         }
         return;
     }
@@ -219,15 +176,13 @@ async function startSpin() {
         });
     } catch (error) {
         console.error('Spin error:', error);
-        alert('Failed to start spin. Please try again.');
+        showNotification('Failed to start spin. Please try again.', false);
     }
 }
-
 
 function spinReel(reel, targetSymbol, duration, isLastReel) {
     const symbols = CONFIG.symbols;
     let startTime = null;
-    let spinInterval;
     let currentPosition = 0;
     let currentSymbolIndex = 0;
 
@@ -324,6 +279,7 @@ async function claimWin() {
     winPopup.style.display = 'none';
 }
 
+// Helper Functions
 function getRandomSymbol() {
     return CONFIG.symbols[Math.floor(Math.random() * CONFIG.symbols.length)];
 }
@@ -345,4 +301,36 @@ function updateCurrencyDisplay() {
     diceDisplay.textContent = gameState.dice;
 }
 
-initGame();
+// Initialize Game
+document.addEventListener('DOMContentLoaded', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (urlParams.has('code')) {
+        try {
+            await checkAuthStatus();
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (error) {
+            showNotification('Login failed. Please try again.', false);
+            showLoginScreen();
+        }
+    } else {
+        await checkAuthStatus();
+    }
+
+    // Set up event listeners
+    spinBtn.addEventListener('click', startSpin);
+    claimBtn.addEventListener('click', claimWin);
+    discordLoginBtn.addEventListener('click', () => {
+        window.location.href = `${API_BASE_URL}/auth/discord`;
+    });
+    logoutBtn.addEventListener('click', logout);
+    
+    // Initialize reels if authenticated
+    if (gameState.userId) {
+        reels.forEach((reel, index) => {
+            const symbol = getRandomSymbol();
+            gameState.currentSymbols[index] = symbol.name;
+            resetReel(reel, symbol);
+        });
+    }
+});
