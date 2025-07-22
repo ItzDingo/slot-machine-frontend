@@ -77,31 +77,40 @@ function showNotification(message, isSuccess) {
 // Replace your checkAuthStatus function with this:
 async function checkAuthStatus() {
     try {
-        const response = await fetch(`${API_BASE_URL}/auth/user`, {
-            credentials: 'include',
-            headers: {
-                // Remove Cache-Control header as it's causing preflight issues
-                'Authorization': localStorage.getItem('lastKnownUserId') 
-                    ? `Bearer ${localStorage.getItem('lastKnownUserId')}`
-                    : undefined
-            }
-        });
-        
-        if (response.ok) {
-            const user = await response.json();
-            handleSuccessfulLogin(user);
-            showNotification(`Welcome, ${user.username}!`, true);
-        } else {
+        // First check localStorage for cached user
+        const cachedUserId = localStorage.getItem('lastKnownUserId');
+        if (!cachedUserId) {
             showLoginScreen();
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('login_failed')) {
-                showNotification('Login failed. Please try again.', false);
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
+            return;
         }
+
+        const response = await fetch(`${API_BASE_URL}/auth/user`, {
+            credentials: 'include' // This is crucial for sending cookies
+        });
+
+        if (response.status === 401) {
+            // Session expired or invalid
+            localStorage.removeItem('lastKnownUserId');
+            showLoginScreen();
+            return;
+        }
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const user = await response.json();
+        handleSuccessfulLogin(user);
+        showNotification(`Welcome back, ${user.username}!`, true);
+
     } catch (error) {
         console.error('Auth check failed:', error);
         showLoginScreen();
+        
+        // Check if we came from a failed login redirect
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('login_failed')) {
+            showNotification('Login failed. Please try again.', false);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
     }
 }
 
@@ -311,18 +320,27 @@ function updateCurrencyDisplay() {
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     
-    if (urlParams.has('code')) {
+    // Handle successful login redirect
+    if (urlParams.has('login_success')) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        showNotification('Login successful! Loading your data...', true);
+    }
+    
+    // Initialize game regardless of auth state
+    initGame();
+    
+    // Check auth status with retry logic
+    const checkAuthWithRetry = async (attempt = 0) => {
         try {
             await checkAuthStatus();
-            window.history.replaceState({}, document.title, window.location.pathname);
         } catch (error) {
-            showNotification('Login failed. Please try again.', false);
-            showLoginScreen();
+            if (attempt < 2) { // Retry up to 2 times
+                setTimeout(() => checkAuthWithRetry(attempt + 1), 1000 * (attempt + 1));
+            }
         }
-    } else {
-        await checkAuthStatus();
     }
-
+    
+    checkAuthWithRetry();
     // Set up event listeners
     spinBtn.addEventListener('click', startSpin);
     claimBtn.addEventListener('click', claimWin);
