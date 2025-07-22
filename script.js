@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com/';
+const API_BASE_URL = 'https://your-backend-url.onrender.com';
 
 // Game Configuration
 const CONFIG = {
@@ -38,7 +38,9 @@ let gameState = {
     currentSymbols: [],
     winAmount: 0,
     winCombo: null,
-    userId: null
+    userId: null,
+    username: null,
+    avatar: null
 };
 
 // DOM Elements
@@ -249,23 +251,26 @@ async function loginWithToken(token) {
     try {
         const response = await fetch(`${API_BASE_URL}/auth/token`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
             body: JSON.stringify({ token }),
             credentials: 'include'
         });
 
-        if (response.ok) {
-            const user = await response.json();
-            handleSuccessfulLogin(user);
-            return true;
-        } else {
-            const error = await response.json();
-            showNotification(error.error || 'Login failed', false);
-            return false;
+        const data = await response.json();
+        
+        if (!response.ok || !data.success) {
+            throw new Error(data.error || 'Login failed');
         }
+
+        handleSuccessfulLogin(data.user);
+        showNotification('Login successful!', true);
+        return true;
     } catch (error) {
         console.error('Login error:', error);
-        showNotification('Login failed. Please try again.', false);
+        showNotification(error.message || 'Login failed. Please try again.', false);
         return false;
     }
 }
@@ -291,6 +296,8 @@ async function logout() {
 
 function handleSuccessfulLogin(user) {
     gameState.userId = user.id;
+    gameState.username = user.username;
+    gameState.avatar = user.avatar;
     gameState.chips = user.chips;
     gameState.dice = user.dice;
     
@@ -312,23 +319,28 @@ function showLoginScreen() {
     loginScreen.style.display = 'block';
     gameScreen.style.display = 'none';
     gameState.userId = null;
+    gameState.username = null;
+    gameState.avatar = null;
+    gameState.chips = 0;
+    gameState.dice = 0;
     tokenInput.value = '';
 }
 
 async function checkAuthStatus() {
     try {
-        const response = await fetch(`${API_BASE_URL}/auth/user`, {
+        const response = await fetch(`${API_BASE_URL}/auth/check`, {
             credentials: 'include'
         });
         
         if (response.ok) {
-            const user = await response.json();
-            handleSuccessfulLogin(user);
-            return true;
-        } else {
-            showLoginScreen();
-            return false;
+            const data = await response.json();
+            if (data.success) {
+                handleSuccessfulLogin(data.user);
+                return true;
+            }
         }
+        showLoginScreen();
+        return false;
     } catch (error) {
         console.error('Auth check error:', error);
         showLoginScreen();
