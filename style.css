@@ -1,3 +1,4 @@
+/* Base Styles */
 body {
     margin: 0;
     height: 100vh;
@@ -10,9 +11,8 @@ body {
     text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
 }
 
-
-/* Notification Styles */
-#notification {
+/* Notification System */
+.notification {
     position: fixed;
     top: 20px;
     left: 50%;
@@ -28,131 +28,102 @@ body {
     text-align: center;
 }
 
-.notification-show {
-    opacity: 1 !important;
+.notification.show {
+    opacity: 1;
 }
 
-.notification-success {
+.notification.success {
     background-color: #4CAF50;
     border: 2px solid #45a049;
 }
 
-.notification-error {
+.notification.error {
     background-color: #f44336;
     border: 2px solid #d32f2f;
 }
 
-/* Add these new styles to your existing CSS */
-
-/* Discord Login Styles */
-.discord-login-box {
-    background: rgba(10, 10, 10, 0.85);
-    padding: 2rem;
-    border-radius: 15px;
-    border: 3px solid #5865F2;
+/* Login Screen */
+.login-container {
     text-align: center;
-    max-width: 400px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: 500px;
 }
 
-.discord-login-box p {
+.token-login-container {
+    background: rgba(10, 10, 10, 0.9);
+    padding: 2.5rem;
+    border-radius: 15px;
+    border: 3px solid #FFD700;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+    backdrop-filter: blur(5px);
+}
+
+.token-login-title {
+    color: #FFD700;
     margin-bottom: 1.5rem;
-    color: white;
+    font-size: 2rem;
 }
 
-.discord-login-btn {
-    background: #5865F2;
+.token-input-group {
+    margin-bottom: 1.5rem;
+}
+
+.token-input {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 5px;
+    border: 2px solid #FFD700;
+    background: rgba(30, 30, 30, 0.8);
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s;
+}
+
+.token-input:focus {
+    outline: none;
+    border-color: #FF5733;
+    box-shadow: 0 0 10px rgba(255, 87, 51, 0.5);
+}
+
+.token-submit {
+    background: linear-gradient(to bottom, #FF5733, #C70039);
     color: white;
     border: none;
-    padding: 12px 24px;
+    padding: 12px 30px;
     border-radius: 5px;
     font-size: 1.1rem;
     font-weight: bold;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin: 0 auto;
-    transition: all 0.2s;
+    transition: all 0.3s;
+    width: 100%;
+    margin-top: 10px;
 }
 
-.discord-login-btn:hover {
-    background: #4752C4;
-    transform: scale(1.05);
+.token-submit:hover {
+    background: linear-gradient(to bottom, #FF6B3B, #D1003D);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(199, 0, 57, 0.4);
 }
 
-.discord-login-btn img {
-    width: 24px;
-    height: 24px;
-}
-
-.bot-info {
+.token-instructions {
+    color: #AAA;
     margin-top: 1.5rem;
     font-size: 0.9rem;
-    color: #aaa;
+    line-height: 1.5;
 }
 
-.bot-info code {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 2px 5px;
+.token-instructions code {
+    background: rgba(255, 215, 0, 0.1);
+    padding: 2px 6px;
     border-radius: 3px;
+    color: #FFD700;
+    font-family: monospace;
 }
 
-/* User Info Styles */
-.user-info {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    background: rgba(30, 30, 30, 0.7);
-    padding: 15px;
-    border-radius: 10px;
-    border: 2px solid #5865F2;
-}
-
-.user-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: 3px solid #5865F2;
-}
-
-.user-details {
-    flex: 1;
-}
-
-.username {
-    font-weight: bold;
-    font-size: 1.2rem;
-    color: white;
-}
-
-.discord-connected {
-    font-size: 0.8rem;
-    color: #5865F2;
-    margin: 3px 0;
-}
-
-.logout-btn {
-    background: #ff3333;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.logout-btn:hover {
-    background: #cc0000;
-}
-
-
+/* Game Container */
 .casino-container {
     text-align: center;
-    background: rgba(10, 10, 10, 0.85);
+    background: rgba(10, 10, 10, 0.9);
     padding: 2.5rem;
     border-radius: 15px;
     border: 3px solid #FFD700;
@@ -161,24 +132,58 @@ body {
         inset 0 0 15px rgba(255, 215, 0, 0.2);
     backdrop-filter: blur(5px);
     max-width: 90%;
+    width: 100%;
 }
 
-.slot-machine {
+/* User Info */
+.user-info {
     display: flex;
     gap: 15px;
-    margin: 2rem auto;
-    width: 350px;
-    height: 180px;
-    background: rgba(20, 20, 20, 0.9);
-    border: 4px solid #FFD700;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    background: rgba(30, 30, 30, 0.7);
+    padding: 15px;
     border-radius: 10px;
-    padding: 25px;
-    box-shadow: 
-        inset 0 0 20px rgba(0, 0, 0, 0.5),
-        0 5px 15px rgba(0, 0, 0, 0.6);
-    position: relative;
+    border: 2px solid #FF5733;
 }
 
+.user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid #FF5733;
+    object-fit: cover;
+}
+
+.user-details {
+    flex: 1;
+    text-align: left;
+}
+
+.username {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: white;
+    margin-bottom: 5px;
+}
+
+.logout-btn {
+    background: linear-gradient(to bottom, #FF3333, #CC0000);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background: linear-gradient(to bottom, #FF4444, #DD0000);
+    transform: translateY(-1px);
+}
+
+/* Currency Display */
 .currency-display {
     display: flex;
     gap: 20px;
@@ -198,6 +203,23 @@ body {
     width: 30px;
     height: 30px;
     object-fit: contain;
+}
+
+/* Slot Machine */
+.slot-machine {
+    display: flex;
+    gap: 15px;
+    margin: 2rem auto;
+    width: 350px;
+    height: 180px;
+    background: rgba(20, 20, 20, 0.9);
+    border: 4px solid #FFD700;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 
+        inset 0 0 20px rgba(0, 0, 0, 0.5),
+        0 5px 15px rgba(0, 0, 0, 0.6);
+    position: relative;
 }
 
 .reel {
@@ -243,8 +265,9 @@ body {
     transition: transform 0.1s;
 }
 
+/* Spin Button */
 .spin-button {
-    background: linear-gradient(to bottom, #FF3333, #CC0000);
+    background: linear-gradient(to bottom, #FF5733, #C70039);
     color: white;
     border: none;
     border-radius: 50%;
@@ -254,7 +277,7 @@ body {
     font-weight: bold;
     cursor: pointer;
     box-shadow: 
-        0 0 20px rgba(255, 0, 0, 0.7),
+        0 0 20px rgba(255, 87, 51, 0.7),
         inset 0 -8px 15px rgba(0, 0, 0, 0.5),
         0 5px 10px rgba(0, 0, 0, 0.3);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
@@ -265,16 +288,16 @@ body {
 }
 
 .spin-button:hover {
-    background: linear-gradient(to bottom, #FF4444, #DD0000);
+    background: linear-gradient(to bottom, #FF6B3B, #D1003D);
     box-shadow: 
-        0 0 25px rgba(255, 0, 0, 0.9),
+        0 0 25px rgba(255, 87, 51, 0.9),
         inset 0 -8px 15px rgba(0, 0, 0, 0.5);
 }
 
 .spin-button:active {
     transform: scale(0.95);
     box-shadow: 
-        0 0 15px rgba(255, 0, 0, 0.5),
+        0 0 15px rgba(255, 87, 51, 0.5),
         inset 0 -5px 10px rgba(0, 0, 0, 0.7);
 }
 
@@ -285,6 +308,7 @@ body {
     transform: scale(0.98);
 }
 
+/* Win Popup */
 .win-popup {
     display: none;
     position: fixed;
@@ -341,12 +365,45 @@ body {
     transform: scale(1.05);
 }
 
+/* Animations */
 @keyframes pulse {
     from { text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
     to { text-shadow: 0 0 15px rgba(255, 215, 0, 0.9); }
 }
 
-h1 {
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+.pulse-text {
     animation: pulse 2s infinite alternate;
-    margin-bottom: 1.5rem;
+}
+
+.float-element {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .casino-container, .token-login-container {
+        padding: 1.5rem;
+        max-width: 95%;
+    }
+    
+    .slot-machine {
+        width: 300px;
+        height: 150px;
+        padding: 15px;
+    }
+    
+    .user-info {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .user-details {
+        text-align: center;
+    }
 }
