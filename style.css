@@ -208,7 +208,8 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: transform 0.1s ease-out; /* Smooth movement */
+    transition: transform 0.1s ease-out;
+    will-change: transform;
 }
 
 .symbol img {
