@@ -419,7 +419,7 @@ body {
 }
 
 .win-amount::before {
-    content: '+';
+    content: '';
 }
 
 #claim-btn {
