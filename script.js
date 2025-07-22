@@ -264,18 +264,44 @@ async function checkAuthStatus() {
         if (response.ok) {
             const user = await response.json();
             handleSuccessfulLogin(user);
-            showNotification(`Welcome, ${user.username}!`, true);
+            showNotification(`Welcome back, ${user.username}!`, true);
+            return true;
         } else {
+            // Clear any invalid session data
+            localStorage.removeItem('lastKnownUserId');
             showLoginScreen();
+            
+            // Check for login failure in URL params
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('login_failed')) {
                 showNotification('Login failed. Please try again.', false);
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
+            return false;
         }
     } catch (error) {
         console.error('Auth check failed:', error);
         showLoginScreen();
+        return false;
+    }
+}
+
+async function handleDiscordLogin() {
+    try {
+        // Show loading state
+        discordLoginBtn.disabled = true;
+        discordLoginBtn.textContent = 'Redirecting...';
+        
+        // Store current URL for redirect back after auth
+        localStorage.setItem('preAuthUrl', window.location.href);
+        
+        // Redirect to Discord auth
+        window.location.href = `${API_BASE_URL}/auth/discord`;
+    } catch (error) {
+        console.error('Login error:', error);
+        showNotification('Failed to initiate login', false);
+        discordLoginBtn.disabled = false;
+        discordLoginBtn.textContent = 'Login with Discord';
     }
 }
 
@@ -318,17 +344,35 @@ async function initGame() {
     // Set up event listeners
     spinBtn.addEventListener('click', startSpin);
     claimBtn.addEventListener('click', claimWin);
-    discordLoginBtn.addEventListener('click', () => {
-        window.location.href = `${API_BASE_URL}/auth/discord`;
-    });
+    discordLoginBtn.addEventListener('click', handleDiscordLogin);
     logoutBtn.addEventListener('click', logout);
     
-    // Check authentication status
+    // Check for auth code in URL (OAuth callback)
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('code')) {
-        await checkAuthStatus();
-        window.history.replaceState({}, document.title, window.location.pathname);
+        try {
+            // Show loading state during auth processing
+            loginScreen.innerHTML = '<div class="loading">Authenticating...</div>';
+            
+            const authSuccess = await checkAuthStatus();
+            if (authSuccess) {
+                // Clean URL after successful auth
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                // Restore pre-auth URL if exists
+                const preAuthUrl = localStorage.getItem('preAuthUrl');
+                if (preAuthUrl) {
+                    localStorage.removeItem('preAuthUrl');
+                    window.location.href = preAuthUrl;
+                }
+            }
+        } catch (error) {
+            console.error('Auth processing error:', error);
+            showNotification('Authentication failed', false);
+            showLoginScreen();
+        }
     } else {
+        // Regular auth check
         await checkAuthStatus();
     }
     
