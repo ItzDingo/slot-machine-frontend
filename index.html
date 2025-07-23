@@ -8,7 +8,7 @@
 </head>
 <body>
     <!-- Login Screen -->
-    <div id="login-screen" class="login-container">
+    <div id="login-screen" class="screen">
         <div class="login-box">
             <h1>Casino Games</h1>
             <div class="token-form">
@@ -24,111 +24,125 @@
     </div>
 
     <!-- Game Select Screen -->
-    <div id="game-select-screen" class="game-select-container">
-        <h1>Select Game</h1>
-        <button id="slot-machine-btn" class="game-select-btn">Slot Machine</button>
-        <button id="mines-game-btn" class="game-select-btn">Mines Game</button>
+    <div id="game-select-screen" class="screen">
+        <div class="game-select-container">
+            <h1>Select Game</h1>
+            <div class="game-buttons">
+                <button id="slot-machine-btn" class="game-select-btn">
+                    <img src="assets/slot-icon.png" alt="Slot Machine">
+                    <span>Slot Machine</span>
+                </button>
+                <button id="mines-game-btn" class="game-select-btn">
+                    <img src="assets/mines-icon.png" alt="Mines Game">
+                    <span>Mines Game</span>
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Slot Machine Game Screen -->
-    <div id="game-screen" class="game-container">
-        <div class="user-panel">
-            <div class="user-info">
-                <img id="user-avatar" src="assets/default-avatar.png" alt="User Avatar">
-                <div class="user-details">
-                    <span id="username">Guest</span>
-                    <button id="logout-btn">Logout</button>
+    <div id="game-screen" class="screen">
+        <div class="game-container">
+            <div class="user-panel">
+                <div class="user-info">
+                    <img id="user-avatar" src="assets/default-avatar.png" alt="User Avatar">
+                    <div class="user-details">
+                        <span id="username">Guest</span>
+                        <button id="logout-btn">Logout</button>
+                    </div>
+                </div>
+                <div class="currency-display">
+                    <div class="currency">
+                        <img src="assets/chip.png" alt="Chips">
+                        <span id="chips">0</span>
+                    </div>
+                    <div class="currency">
+                        <img src="assets/dice.png" alt="Dice">
+                        <span id="dice">0</span>
+                    </div>
                 </div>
             </div>
-            <div class="currency-display">
-                <div class="currency">
-                    <img src="assets/chip.png" alt="Chips">
-                    <span id="chips">0</span>
-                </div>
-                <div class="currency">
-                    <img src="assets/dice.png" alt="Dice">
-                    <span id="dice">0</span>
-                </div>
+
+            <div class="slot-machine">
+                <div class="reel" id="reel1"></div>
+                <div class="reel" id="reel2"></div>
+                <div class="reel" id="reel3"></div>
             </div>
-        </div>
 
-        <div class="slot-machine">
-            <div class="reel" id="reel1"></div>
-            <div class="reel" id="reel2"></div>
-            <div class="reel" id="reel3"></div>
+            <button id="spin-btn" class="spin-button">SPIN</button>
         </div>
-
-        <button id="spin-btn" class="spin-button">SPIN</button>
     </div>
 
     <!-- Mines Game Screen -->
-    <div id="mines-game-screen" class="game-container">
-        <div id="mines-user-panel" class="user-panel">
-            <div class="user-info">
-                <img id="mines-avatar" src="assets/default-avatar.png" alt="User Avatar">
-                <div class="user-details">
-                    <span id="mines-username">Guest</span>
-                    <button id="mines-logout-btn">Logout</button>
+    <div id="mines-game-screen" class="screen">
+        <div class="game-container">
+            <div class="user-panel">
+                <div class="user-info">
+                    <img id="mines-avatar" src="assets/default-avatar.png" alt="User Avatar">
+                    <div class="user-details">
+                        <span id="mines-username">Guest</span>
+                        <button id="mines-logout-btn">Logout</button>
+                    </div>
+                </div>
+                <div class="currency-display">
+                    <div class="currency">
+                        <img src="assets/chip.png" alt="Chips">
+                        <span id="mines-chips">0</span>
+                    </div>
+                    <div class="currency">
+                        <img src="assets/dice.png" alt="Dice">
+                        <span id="mines-dice">0</span>
+                    </div>
                 </div>
             </div>
-            <div class="currency-display">
-                <div class="currency">
-                    <img src="assets/chip.png" alt="Chips">
-                    <span id="mines-chips">0</span>
-                </div>
-                <div class="currency">
-                    <img src="assets/dice.png" alt="Dice">
-                    <span id="mines-dice">0</span>
-                </div>
-            </div>
-        </div>
 
-        <div class="mines-controls">
-            <div class="mines-input-group">
-                <label for="mines-bet-input">Bet Amount (1-100 chips)</label>
-                <input type="number" id="mines-bet-input" min="1" max="100" placeholder="Enter bet amount">
+            <div class="mines-controls">
+                <div class="mines-input-group">
+                    <label for="mines-bet-input">Bet Amount (1-100 chips)</label>
+                    <input type="number" id="mines-bet-input" min="1" max="100" placeholder="Enter bet amount">
+                </div>
+                
+                <div class="mines-input-group">
+                    <label for="mines-count-input">Number of Mines (1-7)</label>
+                    <input type="number" id="mines-count-input" min="1" max="7" placeholder="Select mines">
+                </div>
+                
+                <button id="mines-start-btn" class="mines-action-btn">Start Game</button>
             </div>
             
-            <div class="mines-input-group">
-                <label for="mines-count-input">Number of Mines (1-7)</label>
-                <input type="number" id="mines-count-input" min="1" max="7" placeholder="Select mines">
+            <div class="mines-info">
+                <div>
+                    <span>Current Win:</span>
+                    <span id="mines-current-win">0</span>
+                </div>
+                <div>
+                    <span>Multiplier:</span>
+                    <span id="mines-multiplier">1.00x</span>
+                </div>
             </div>
             
-            <button id="mines-start-btn" class="mines-start-btn">Start Game</button>
+            <div id="mines-grid" class="mines-grid"></div>
+            
+            <button id="mines-cashout-btn" class="mines-action-btn">Cash Out</button>
         </div>
-        
-        <div class="mines-info">
-            <div>
-                <span>Current Win</span>
-                <span id="mines-current-win">0</span>
-            </div>
-            <div>
-                <span>Multiplier</span>
-                <span id="mines-multiplier">1.00x</span>
-            </div>
-        </div>
-        
-        <div id="mines-grid"></div>
-        
-        <button id="mines-cashout-btn" class="mines-cashout-btn">Cash Out</button>
     </div>
 
     <!-- Slot Machine Win Popup -->
-    <div id="win-popup" class="win-popup">
-        <div class="win-content">
+    <div id="win-popup" class="popup">
+        <div class="popup-content">
             <h3>YOU WON!</h3>
             <div id="win-combo" class="win-combo"></div>
             <div class="win-amount">+<span id="win-amount">0</span> chips</div>
-            <button id="claim-btn" class="claim-btn">CLAIM</button>
+            <button id="claim-btn" class="action-btn">CLAIM</button>
         </div>
     </div>
 
     <!-- Mines Game Over Popup -->
-    <div id="mines-game-over-popup" class="win-popup">
-        <div class="mines-game-over-content">
+    <div id="mines-game-over-popup" class="popup">
+        <div class="popup-content">
             <h3 id="mines-game-over-message">Game Over!</h3>
             <div id="mines-game-over-amount">+0</div>
-            <button id="mines-game-over-close">Continue</button>
+            <button id="mines-game-over-close" class="action-btn">Continue</button>
         </div>
     </div>
 
