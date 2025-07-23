@@ -161,6 +161,23 @@ body {
     box-shadow: 0 0 15px rgba(255, 87, 51, 0.7);
 }
 
+.back-to-menu-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 8px 15px;
+    background: #4a4a4a;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 100;
+}
+
+.back-to-menu-btn:hover {
+    background: #5a5a5a;
+}
+
 /* Slot Machine Game */
 .game-container {
     display: none;
@@ -188,7 +205,7 @@ body {
     gap: 15px;
 }
 
-#user-avatar, #mines-avatar {
+#user-avatar {
     width: 60px;
     height: 60px;
     border-radius: 50%;
@@ -197,7 +214,7 @@ body {
     transition: transform 0.3s;
 }
 
-#user-avatar:hover, #mines-avatar:hover {
+#user-avatar:hover {
     transform: scale(1.05);
 }
 
@@ -207,13 +224,13 @@ body {
     gap: 5px;
 }
 
-#username, #mines-username {
+#username {
     font-weight: bold;
     color: white;
     font-size: 1.1rem;
 }
 
-#logout-btn, #mines-logout-btn {
+#logout-btn {
     background: #333;
     color: white;
     border: none;
@@ -224,7 +241,7 @@ body {
     font-size: 0.8rem;
 }
 
-#logout-btn:hover, #mines-logout-btn:hover {
+#logout-btn:hover {
     background: #555;
     transform: translateY(-1px);
 }
@@ -374,25 +391,6 @@ body {
     display: none;
 }
 
-/* Back to Menu Button */
-.back-to-menu-btn {
-    background: #333;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    padding: 10px 20px;
-    font-size: 1rem;
-    cursor: pointer;
-    margin: 1rem auto 0;
-    display: block;
-    transition: all 0.3s;
-}
-
-.back-to-menu-btn:hover {
-    background: #555;
-    transform: translateY(-2px);
-}
-
 /* Win Popup */
 .win-popup {
     display: none;
@@ -497,31 +495,6 @@ body {
     box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
 }
 
-.mines-stats {
-    display: flex;
-    justify-content: space-around;
-    margin: 15px 0;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
-}
-
-.stat-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.stat-item span:first-child {
-    color: var(--primary);
-    font-size: 0.9rem;
-}
-
-.stat-item span:last-child {
-    font-size: 1.2rem;
-    font-weight: bold;
-}
-
 .mines-controls {
     display: flex;
     flex-direction: column;
@@ -549,12 +522,6 @@ body {
     font-size: 1rem;
 }
 
-.mines-input-group input:disabled {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: #444;
-    color: #888;
-}
-
 .mines-start-btn {
     background: var(--secondary);
     color: white;
@@ -569,12 +536,6 @@ body {
 .mines-start-btn:hover {
     background: #E04B2D;
     transform: translateY(-2px);
-}
-
-.mines-start-btn:disabled {
-    background: #666;
-    cursor: not-allowed;
-    transform: none;
 }
 
 .mines-info {
@@ -657,12 +618,6 @@ body {
 
 .mines-cashout-btn:hover {
     transform: scale(1.02);
-}
-
-.mines-cashout-btn:disabled {
-    background: #666;
-    cursor: not-allowed;
-    transform: none;
 }
 
 /* Mines Game Over Popup */
