@@ -73,11 +73,11 @@ let gameState = {
         totalCells: 0,
         minePositions: [],
         currentWin: 0,
-        isActive: false
+        gameActive: false
     },
-    stats: {
-        minesWins: 0,
-        minesGames: 0
+    minesStats: {
+        totalGames: 0,
+        wins: 0
     }
 };
 
@@ -88,6 +88,7 @@ const elements = {
     tokenInput: document.getElementById('token-input'),
     loginBtn: document.getElementById('login-btn'),
     logoutBtn: document.getElementById('logout-btn'),
+    minesLogoutBtn: document.getElementById('mines-logout-btn'),
     usernameDisplay: document.getElementById('username'),
     userAvatar: document.getElementById('user-avatar'),
     chipsDisplay: document.getElementById('chips'),
@@ -121,12 +122,10 @@ const elements = {
     minesAvatar: document.getElementById('mines-avatar'),
     minesChips: document.getElementById('mines-chips'),
     minesDice: document.getElementById('mines-dice'),
-    minesLogoutBtn: document.getElementById('mines-logout-btn'),
-    minesStats: document.getElementById('mines-stats'),
-    minesWinCount: document.getElementById('mines-win-count'),
-    minesWinPercentage: document.getElementById('mines-win-percentage'),
-    returnToMenuBtn: document.getElementById('return-to-menu-btn'),
-    minesReturnToMenuBtn: document.getElementById('mines-return-to-menu-btn')
+    backToMenuBtn: document.getElementById('back-to-menu-btn'),
+    minesBackToMenuBtn: document.getElementById('mines-back-to-menu-btn'),
+    minesWinsCounter: document.getElementById('mines-wins-counter'),
+    minesWinRate: document.getElementById('mines-win-rate')
 };
 
 function createLoadingIndicator() {
@@ -169,14 +168,6 @@ function showNotification(message, isSuccess) {
     
     setTimeout(() => notification.classList.add('show'), 10);
     setTimeout(() => notification.remove(), 3000);
-}
-
-function updateMinesStats() {
-    elements.minesWinCount.textContent = gameState.stats.minesWins;
-    const percentage = gameState.stats.minesGames > 0 
-        ? Math.round((gameState.stats.minesWins / gameState.stats.minesGames) * 100)
-        : 0;
-    elements.minesWinPercentage.textContent = `${percentage}%`;
 }
 
 // Slot Machine Functions
@@ -439,33 +430,33 @@ function setupMinesGameUI() {
         totalCells: 0,
         minePositions: [],
         currentWin: 0,
-        isActive: false
+        gameActive: false
     };
     
     elements.minesCurrentWin.textContent = '0';
     elements.minesMultiplier.textContent = '1.00x';
     elements.minesGrid.innerHTML = '';
-    enableMinesControls();
-}
-
-function enableMinesControls() {
+    
+    // Enable inputs and start button
     elements.minesBetInput.disabled = false;
     elements.minesCountInput.disabled = false;
     elements.minesStartBtn.disabled = false;
     elements.minesCashoutBtn.disabled = true;
-    gameState.minesGame.isActive = false;
+    
+    updateMinesStatsDisplay();
 }
 
-function disableMinesControls() {
-    elements.minesBetInput.disabled = true;
-    elements.minesCountInput.disabled = true;
-    elements.minesStartBtn.disabled = true;
-    elements.minesCashoutBtn.disabled = false;
-    gameState.minesGame.isActive = true;
+function updateMinesStatsDisplay() {
+    elements.minesWinsCounter.textContent = gameState.minesStats.wins;
+    const winRate = gameState.minesStats.totalGames > 0 
+        ? Math.round((gameState.minesStats.wins / gameState.minesStats.totalGames) * 100)
+        : 0;
+    elements.minesWinRate.textContent = `${winRate}%`;
 }
 
 function startNewMinesGame() {
-    if (!gameState.userId || gameState.minesGame.isActive) {
+    if (!gameState.userId) {
+        showLoginScreen();
         return;
     }
 
@@ -497,7 +488,14 @@ function startNewMinesGame() {
         return;
     }
     
-    disableMinesControls();
+    // Lock inputs and start button
+    elements.minesBetInput.disabled = true;
+    elements.minesCountInput.disabled = true;
+    elements.minesStartBtn.disabled = true;
+    elements.minesCashoutBtn.disabled = false;
+    
+    gameState.minesStats.totalGames++;
+    updateMinesStatsDisplay();
     
     fetch(`${API_BASE_URL}/api/spin`, {
         method: 'POST',
@@ -520,6 +518,7 @@ function startNewMinesGame() {
         gameState.minesGame.minesCount = minesCount;
         gameState.minesGame.multiplier = CONFIG.mines.multipliers[minesCount];
         gameState.minesGame.currentWin = betAmount;
+        gameState.minesGame.gameActive = true;
         
         const gridSize = CONFIG.mines.gridSizes[minesCount];
         gameState.minesGame.totalCells = gridSize * gridSize;
@@ -529,7 +528,7 @@ function startNewMinesGame() {
     .catch(error => {
         console.error('Mines game start error:', error);
         showNotification('Failed to start mines game', false);
-        enableMinesControls();
+        setupMinesGameUI();
     });
 }
 
@@ -559,7 +558,7 @@ function placeMines(minesCount, gridSize) {
 }
 
 function revealMineCell(index) {
-    if (!gameState.minesGame.isActive) return;
+    if (!gameState.minesGame.gameActive) return;
     
     const cell = elements.minesGrid.children[index];
     
@@ -588,7 +587,7 @@ function revealMineCell(index) {
 }
 
 function cashoutMinesGame() {
-    if (!gameState.minesGame.isActive || gameState.minesGame.revealedCells === 0) {
+    if (!gameState.minesGame.gameActive || gameState.minesGame.revealedCells === 0) {
         showNotification("You need to reveal at least one cell to cashout", false);
         return;
     }
@@ -597,6 +596,9 @@ function cashoutMinesGame() {
 }
 
 function endMinesGame(isWin) {
+    gameState.minesGame.gameActive = false;
+    elements.minesCashoutBtn.disabled = true;
+    
     gameState.minesGame.minePositions.forEach(pos => {
         const cell = elements.minesGrid.children[pos];
         if (!cell.classList.contains('revealed')) {
@@ -605,10 +607,9 @@ function endMinesGame(isWin) {
         }
     });
     
-    gameState.stats.minesGames++;
     if (isWin) {
-        gameState.stats.minesWins++;
-        updateMinesStats();
+        gameState.minesStats.wins++;
+        updateMinesStatsDisplay();
         
         fetch(`${API_BASE_URL}/api/win`, {
             method: 'POST',
@@ -636,13 +637,10 @@ function endMinesGame(isWin) {
             showNotification('Failed to claim win', false);
         });
     } else {
-        updateMinesStats();
         elements.minesGameOverMessage.textContent = "Game Over!";
         elements.minesGameOverAmount.textContent = `-${gameState.minesGame.betAmount}`;
         elements.minesGameOverPopup.style.display = 'flex';
     }
-    
-    enableMinesControls();
 }
 
 function closeMinesGameOverPopup() {
@@ -712,25 +710,14 @@ function handleSuccessfulLogin(user) {
     gameState.chips = user.chips;
     gameState.dice = user.dice;
     
-    // Update both username displays
     elements.usernameDisplay.textContent = user.username;
+    elements.userAvatar.src = user.avatar || 'assets/default-avatar.png';
     elements.minesUsername.textContent = user.username;
-    
-    // Update both avatars with circle styling
-    const avatarUrl = user.avatar || 'assets/default-avatar.png';
-    elements.userAvatar.src = avatarUrl;
-    elements.userAvatar.className = 'avatar-circle';
-    elements.minesAvatar.src = avatarUrl;
-    elements.minesAvatar.className = 'avatar-circle';
-    
-    // Style logout buttons consistently
-    elements.logoutBtn.className = 'logout-button';
-    elements.minesLogoutBtn.className = 'logout-button';
+    elements.minesAvatar.src = user.avatar || 'assets/default-avatar.png';
     
     elements.loginScreen.style.display = 'none';
     showGameSelectScreen();
     updateCurrencyDisplay();
-    updateMinesStats();
     
     elements.reels.forEach((reel, index) => {
         const symbol = getRandomSymbol();
@@ -773,66 +760,13 @@ async function checkAuthStatus() {
     }
 }
 
-// Add CSS animations and styles
+// Add new CSS animation for landing bounce
 const style = document.createElement('style');
 style.textContent = `
     @keyframes landingBounce {
         0% { transform: translateY(0%) scale(1); }
         50% { transform: translateY(-20%) scale(1.1); }
         100% { transform: translateY(0%) scale(1); }
-    }
-    
-    .avatar-circle {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid #fff;
-    }
-    
-    .logout-button {
-        background: #ff4d4d;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        margin-left: 10px;
-    }
-    
-    .logout-button:hover {
-        background: #ff3333;
-    }
-    
-    .mines-stats {
-        display: flex;
-        justify-content: space-around;
-        margin: 10px 0;
-        background: rgba(0,0,0,0.2);
-        padding: 10px;
-        border-radius: 5px;
-    }
-    
-    .mines-stats div {
-        text-align: center;
-    }
-    
-    .mines-stats span {
-        display: block;
-        font-weight: bold;
-    }
-    
-    .return-to-menu-btn {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        background: #666;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
-        cursor: pointer;
     }
 `;
 document.head.appendChild(style);
@@ -857,8 +791,8 @@ elements.minesGameBtn.addEventListener('click', startMinesGame);
 elements.minesStartBtn.addEventListener('click', startNewMinesGame);
 elements.minesCashoutBtn.addEventListener('click', cashoutMinesGame);
 document.getElementById('mines-game-over-close').addEventListener('click', closeMinesGameOverPopup);
-elements.returnToMenuBtn.addEventListener('click', showGameSelectScreen);
-elements.minesReturnToMenuBtn.addEventListener('click', showGameSelectScreen);
+elements.backToMenuBtn.addEventListener('click', showGameSelectScreen);
+elements.minesBackToMenuBtn.addEventListener('click', showGameSelectScreen);
 
 // Initialize Game
 async function initGame() {
