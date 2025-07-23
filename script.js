@@ -77,7 +77,9 @@ let gameState = {
     },
     minesStats: {
         totalGames: 0,
-        wins: 0
+        wins: 0,
+        totalWins: 0,
+        totalGamesPlayed: 0
     }
 };
 
@@ -238,8 +240,8 @@ function initSpinState() {
 
 function startEnhancedSpinAnimation(targetSymbols) {
     gameState.currentSymbols = targetSymbols.map(s => s.name);
-    const baseDuration = 3500;
-    const spinCycles = 7;
+    const baseDuration = 5000; // Increased from 3500 to 5000 for longer spin
+    const spinCycles = 10; // Increased from 7 to 10 for more cycles
     
     elements.reels.forEach((reel, index) => {
         if (!reel) return;
@@ -440,8 +442,7 @@ function startMinesGame() {
     setupMinesGameUI();
 }
 
-
-function setupMinesGameUI() {
+async function setupMinesGameUI() {
     gameState.minesGame = {
         betAmount: 0,
         minesCount: 0,
@@ -462,6 +463,23 @@ function setupMinesGameUI() {
     if (elements.minesStartBtn) elements.minesStartBtn.disabled = false;
     if (elements.minesCashoutBtn) elements.minesCashoutBtn.disabled = true;
     
+    // Load mines stats from server
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/mines/stats?userId=${gameState.userId}`, {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            gameState.minesStats.totalGames = data.totalGames || 0;
+            gameState.minesStats.wins = data.wins || 0;
+            gameState.minesStats.totalWins = data.totalWins || 0;
+            gameState.minesStats.totalGamesPlayed = data.totalGamesPlayed || 0;
+        }
+    } catch (error) {
+        console.error('Failed to load mines stats:', error);
+    }
+    
     updateMinesStats();
 }
 
@@ -473,7 +491,7 @@ function updateMinesStats() {
     safeUpdate(elements.minesWinRate, `${winRate}%`);
 }
 
-function startNewMinesGame() {
+async function startNewMinesGame() {
     if (!gameState.userId) {
         showLoginScreen();
         return;
@@ -515,20 +533,21 @@ function startNewMinesGame() {
     gameState.minesStats.totalGames++;
     updateMinesStats();
     
-    fetch(`${API_BASE_URL}/api/spin`, {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-            userId: gameState.userId,
-            cost: betAmount
-        }),
-        credentials: 'include'
-    })
-    .then(response => response.json())
-    .then(data => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/spin`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                cost: betAmount
+            }),
+            credentials: 'include'
+        });
+
+        const data = await response.json();
         gameState.chips = data.newBalance;
         updateCurrencyDisplay();
         
@@ -542,12 +561,26 @@ function startNewMinesGame() {
         gameState.minesGame.totalCells = gridSize * gridSize;
         createMinesGrid(gridSize);
         placeMines(minesCount, gridSize);
-    })
-    .catch(error => {
+
+        // Save game start to server
+        await fetch(`${API_BASE_URL}/api/mines/start`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                betAmount,
+                minesCount
+            }),
+            credentials: 'include'
+        });
+    } catch (error) {
         console.error('Mines game start error:', error);
         showNotification('Failed to start mines game', false);
         setupMinesGameUI();
-    });
+    }
 }
 
 function createMinesGrid(size) {
@@ -616,7 +649,7 @@ function cashoutMinesGame() {
     endMinesGame(true);
 }
 
-function endMinesGame(isWin) {
+async function endMinesGame(isWin) {
     gameState.minesGame.gameActive = false;
     if (elements.minesCashoutBtn) elements.minesCashoutBtn.disabled = true;
     
@@ -632,34 +665,71 @@ function endMinesGame(isWin) {
     
     if (isWin) {
         gameState.minesStats.wins++;
+        gameState.minesStats.totalWins++;
         updateMinesStats();
         
-        fetch(`${API_BASE_URL}/api/win`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                userId: gameState.userId,
-                amount: gameState.minesGame.currentWin
-            }),
-            credentials: 'include'
-        })
-        .then(response => response.json())
-        .then(data => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/win`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: gameState.userId,
+                    amount: gameState.minesGame.currentWin
+                }),
+                credentials: 'include'
+            });
+
+            const data = await response.json();
             gameState.chips = data.newBalance;
             updateCurrencyDisplay();
             
+            // Save win to server
+            await fetch(`${API_BASE_URL}/api/mines/win`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: gameState.userId,
+                    amount: gameState.minesGame.currentWin,
+                    minesCount: gameState.minesGame.minesCount,
+                    revealedCells: gameState.minesGame.revealedCells
+                }),
+                credentials: 'include'
+            });
+
             if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "You Won!";
             if (elements.minesGameOverAmount) elements.minesGameOverAmount.textContent = `+${gameState.minesGame.currentWin}`;
             if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'flex';
-        })
-        .catch(error => {
+        } catch (error) {
             console.error('Win claim error:', error);
             showNotification('Failed to claim win', false);
-        });
+        }
     } else {
+        // Save loss to server
+        try {
+            await fetch(`${API_BASE_URL}/api/mines/loss`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: gameState.userId,
+                    amount: gameState.minesGame.betAmount,
+                    minesCount: gameState.minesGame.minesCount,
+                    revealedCells: gameState.minesGame.revealedCells
+                }),
+                credentials: 'include'
+            });
+        } catch (error) {
+            console.error('Failed to save mines loss:', error);
+        }
+
         if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "Game Over!";
         if (elements.minesGameOverAmount) elements.minesGameOverAmount.textContent = `-${gameState.minesGame.betAmount}`;
         if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'flex';
