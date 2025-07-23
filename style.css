@@ -376,7 +376,7 @@ body {
 
 /* NEW: Button Press Animation */
 #spin-btn:active {
-    animation: quickSpin 2s ease-out;
+    animation: quickSpin 3s ease-out;
     transform: scale(0.95);
 }
 
@@ -386,10 +386,6 @@ body {
     100% { transform: rotate(360deg) scale(0.95); }
 }
 
-#spin-btn.playing {
-    animation: quickSpin 2s ease-out;
-    transform: scale(0.95);
-}
 
 /* Win Popup */
 .win-popup {
