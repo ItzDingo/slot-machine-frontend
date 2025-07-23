@@ -5,10 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Casino Games</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Added minimal CSS to make screens work */
+        .login-container,
+        .game-select-container,
+        .game-container {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+        .active-screen {
+            display: flex;
+        }
+    </style>
 </head>
 <body>
     <!-- Login Screen -->
-    <div id="login-screen" class="login-container">
+    <div id="login-screen" class="login-container active-screen">
         <div class="login-box">
             <h1>Casino Games</h1>
             <div class="token-form">
@@ -132,6 +145,19 @@
         </div>
     </div>
 
+    <script>
+        // Minimal screen management script
+        function showScreen(screenId) {
+            document.querySelectorAll('.login-container, .game-select-container, .game-container').forEach(screen => {
+                screen.classList.remove('active-screen');
+            });
+            document.getElementById(screenId).classList.add('active-screen');
+        }
+
+        // Game selection buttons
+        document.getElementById('slot-machine-btn')?.addEventListener('click', () => showScreen('game-screen'));
+        document.getElementById('mines-game-btn')?.addEventListener('click', () => showScreen('mines-game-screen'));
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
