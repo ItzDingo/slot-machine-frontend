@@ -376,13 +376,19 @@ body {
 
 /* NEW: Button Press Animation */
 #spin-btn:active {
-    animation: quickSpin 0.8s ease-out;
+    animation: quickSpin 2s ease-out;
     transform: scale(0.95);
 }
 
 @keyframes quickSpin {
     0% { transform: rotate(0deg) scale(0.95); }
+    80% { transform: rotate(360deg) scale(0.95); }
     100% { transform: rotate(360deg) scale(0.95); }
+}
+
+#spin-btn.playing {
+    animation: quickSpin 2s ease-out;
+    transform: scale(0.95);
 }
 
 /* Win Popup */
