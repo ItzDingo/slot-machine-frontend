@@ -161,23 +161,6 @@ body {
     box-shadow: 0 0 15px rgba(255, 87, 51, 0.7);
 }
 
-.back-to-menu-btn {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    padding: 8px 15px;
-    background: #4a4a4a;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    z-index: 100;
-}
-
-.back-to-menu-btn:hover {
-    background: #5a5a5a;
-}
-
 /* Slot Machine Game */
 .game-container {
     display: none;
