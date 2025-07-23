@@ -53,7 +53,7 @@ const CONFIG = {
     }
 };
 
-// Game State
+// Enhanced Game State
 let gameState = {
     chips: 0,
     dice: 0,
@@ -63,6 +63,7 @@ let gameState = {
     winAmount: 0,
     winCombo: null,
     userId: null,
+    authChecked: false,
     currentGame: null,
     minesGame: {
         betAmount: 0,
@@ -71,11 +72,11 @@ let gameState = {
         revealedCells: 0,
         totalCells: 0,
         minePositions: [],
-        currentWin: 0,
-        isActive: false
+        currentWin: 0
     }
 };
 
+// DOM Elements
 // DOM Elements
 const elements = {
     loginScreen: document.getElementById('login-screen'),
@@ -101,8 +102,8 @@ const elements = {
     
     // Mines Game elements
     gameSelectScreen: document.getElementById('game-select-screen'),
-    slotMachineBtn: document.getElementById('slot-machine-btn'),
-    minesGameBtn: document.getElementById('mines-game-btn'),
+    slotMachineBtn: document.getElementById('slot-machine-btn'),  // Added this line
+    minesGameBtn: document.getElementById('mines-game-btn'),      // Added this line
     minesGameScreen: document.getElementById('mines-game-screen'),
     minesBetInput: document.getElementById('mines-bet-input'),
     minesCountInput: document.getElementById('mines-count-input'),
@@ -113,11 +114,7 @@ const elements = {
     minesCashoutBtn: document.getElementById('mines-cashout-btn'),
     minesGameOverPopup: document.getElementById('mines-game-over-popup'),
     minesGameOverMessage: document.getElementById('mines-game-over-message'),
-    minesGameOverAmount: document.getElementById('mines-game-over-amount'),
-    minesUserPanel: document.getElementById('mines-user-panel'),
-    minesChipsDisplay: document.getElementById('mines-chips'),
-    minesDiceDisplay: document.getElementById('mines-dice'),
-    minesAvatar: document.getElementById('mines-avatar')
+    minesGameOverAmount: document.getElementById('mines-game-over-amount')
 };
 
 function createLoadingIndicator() {
@@ -148,8 +145,6 @@ function resetReel(reel, centerSymbol) {
 function updateCurrencyDisplay() {
     elements.chipsDisplay.textContent = gameState.chips;
     elements.diceDisplay.textContent = gameState.dice;
-    elements.minesChipsDisplay.textContent = gameState.chips;
-    elements.minesDiceDisplay.textContent = gameState.dice;
 }
 
 function showNotification(message, isSuccess) {
@@ -162,86 +157,7 @@ function showNotification(message, isSuccess) {
     setTimeout(() => notification.remove(), 3000);
 }
 
-// Slot Machine Functions
-function initSpinState() {
-    gameState.isSpinning = true;
-    gameState.spinningReels = elements.reels.length;
-    gameState.winAmount = 0;
-    gameState.winCombo = null;
-    elements.spinBtn.disabled = true;
-    elements.winPopup.style.display = 'none';
-    elements.loadingIndicator.classList.add('show');
-}
-
-function startVisualSpin(targetSymbols) {
-    gameState.currentSymbols = targetSymbols.map(s => s.name);
-    const baseDuration = 3500; // Longer duration as requested
-    
-    elements.reels.forEach((reel, index) => {
-        const duration = baseDuration + (index * 500); // Even longer delay between reels
-        spinReel(reel, targetSymbols[index], duration);
-    });
-}
-
-function spinReel(reel, targetSymbol, duration) {
-    const symbols = CONFIG.symbols;
-    let startTime = null;
-    const symbolHeight = 100;
-    const totalSymbols = 5;
-
-    const symbolElements = [];
-    for (let i = 0; i < totalSymbols; i++) {
-        const symbolElement = document.createElement('div');
-        symbolElement.className = 'symbol';
-        reel.appendChild(symbolElement);
-        symbolElements.push(symbolElement);
-    }
-
-    function animateSpin(timestamp) {
-        if (!startTime) startTime = timestamp;
-        const progress = timestamp - startTime;
-        const spinProgress = Math.min(progress / duration, 1);
-        const easedProgress = 1 - Math.pow(1 - spinProgress, 3);
-
-        if (spinProgress < 1) {
-            const basePosition = -easedProgress * (symbolHeight * 15); // More spins
-            
-            symbolElements.forEach((element, i) => {
-                const position = basePosition + (i * symbolHeight);
-                const symbolIndex = Math.floor(-basePosition / symbolHeight) + i;
-                const symbol = symbols[symbolIndex % symbols.length];
-                
-                element.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
-                element.style.transform = `translateY(${position}%)`;
-            });
-            
-            requestAnimationFrame(animateSpin);
-        } else {
-            reel.innerHTML = '';
-            resetReel(reel, targetSymbol);
-            gameState.spinningReels--;
-            
-            if (gameState.spinningReels === 0) {
-                completeSpin();
-            }
-        }
-    }
-
-    requestAnimationFrame(animateSpin);
-}
-
-function completeSpin() {
-    resetSpinState();
-    checkWin();
-    highlightWinningSymbols();
-}
-
-function resetSpinState() {
-    gameState.isSpinning = false;
-    elements.spinBtn.disabled = false;
-    elements.loadingIndicator.classList.remove('show');
-}
-
+// Enhanced Slot Machine Functions
 async function startSpin() {
     if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
         if (gameState.chips < CONFIG.spinCost) {
@@ -252,7 +168,7 @@ async function startSpin() {
 
     initSpinState();
     const targetSymbols = elements.reels.map(() => getRandomSymbol());
-    startVisualSpin(targetSymbols);
+    startEnhancedSpinAnimation(targetSymbols);
     
     try {
         const response = await fetch(`${API_BASE_URL}/api/spin`, {
@@ -285,8 +201,194 @@ async function startSpin() {
     }
 }
 
-// Mines Game Functions
+function initSpinState() {
+    gameState.isSpinning = true;
+    gameState.spinningReels = elements.reels.length;
+    gameState.winAmount = 0;
+    gameState.winCombo = null;
+    elements.spinBtn.disabled = true;
+    elements.winPopup.style.display = 'none';
+    elements.loadingIndicator.classList.add('show');
+}
+
+function startEnhancedSpinAnimation(targetSymbols) {
+    gameState.currentSymbols = targetSymbols.map(s => s.name);
+    const baseDuration = 2500;
+    const spinCycles = 5;
+    
+    elements.reels.forEach((reel, index) => {
+        const duration = baseDuration + (index * 300);
+        enhancedSpinReel(reel, targetSymbols[index], duration, spinCycles);
+    });
+}
+
+function enhancedSpinReel(reel, targetSymbol, duration, cycles) {
+    const symbols = CONFIG.symbols;
+    let startTime = null;
+    const symbolHeight = 100;
+    const totalSymbols = 5;
+
+    const symbolElements = [];
+    for (let i = 0; i < totalSymbols; i++) {
+        const symbolElement = document.createElement('div');
+        symbolElement.className = 'symbol';
+        reel.appendChild(symbolElement);
+        symbolElements.push(symbolElement);
+    }
+
+    function animateSpin(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = timestamp - startTime;
+        const spinProgress = Math.min(progress / duration, 1);
+        
+        // Cubic easing for smoother acceleration/deceleration
+        const easedProgress = spinProgress < 0.5 
+            ? 4 * spinProgress * spinProgress * spinProgress 
+            : 1 - Math.pow(-2 * spinProgress + 2, 3) / 2;
+
+        if (spinProgress < 1) {
+            const basePosition = -easedProgress * (symbolHeight * cycles * symbols.length);
+            
+            symbolElements.forEach((element, i) => {
+                const position = basePosition + (i * symbolHeight);
+                const symbolIndex = Math.floor(-basePosition / symbolHeight) + i;
+                const symbol = symbols[symbolIndex % symbols.length];
+                
+                element.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
+                element.style.transform = `translateY(${position}%)`;
+                
+                // Add slight rotation effect during spin
+                if (spinProgress < 0.9) {
+                    element.style.transform += ` rotateX(${spinProgress * 360}deg)`;
+                }
+            });
+            
+            requestAnimationFrame(animateSpin);
+        } else {
+            // Final landing animation
+            reel.innerHTML = '';
+            resetReel(reel, targetSymbol);
+            
+            // Add bounce effect when landing
+            const centerSymbol = reel.querySelector('.symbol:nth-child(2)');
+            centerSymbol.style.animation = 'landingBounce 0.5s ease-out';
+            
+            gameState.spinningReels--;
+            
+            if (gameState.spinningReels === 0) {
+                completeSpin();
+            }
+        }
+    }
+
+    requestAnimationFrame(animateSpin);
+}
+
+function completeSpin() {
+    resetSpinState();
+    checkWin();
+    highlightWinningSymbols();
+}
+
+function resetSpinState() {
+    gameState.isSpinning = false;
+    elements.spinBtn.disabled = false;
+    elements.loadingIndicator.classList.remove('show');
+}
+
+function highlightWinningSymbols() {
+    if (!gameState.winCombo) return;
+    
+    elements.reels.forEach((reel, index) => {
+        const symbols = reel.querySelectorAll('.symbol');
+        if (gameState.winCombo === 'ANY_TWO_MATCH' || 
+            gameState.currentSymbols.filter(s => s === gameState.currentSymbols[index]).length >= 2) {
+            symbols[1].classList.add('win-highlight');
+        }
+    });
+}
+
+async function checkWin() {
+    const combo = gameState.currentSymbols.join('-');
+    let winAmount = 0;
+    let winCombo = null;
+    
+    if (CONFIG.payouts[combo]) {
+        winAmount = CONFIG.payouts[combo];
+        winCombo = combo;
+    } else if (hasTwoMatchingSymbols()) {
+        winAmount = CONFIG.payouts['ANY_TWO_MATCH'];
+        winCombo = 'ANY_TWO_MATCH';
+    }
+
+    if (winAmount > 0) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/win`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: gameState.userId,
+                    amount: winAmount
+                }),
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                updateGameStateAfterWin(data, winAmount, winCombo);
+                showWinPopup(winCombo, winAmount);
+            }
+        } catch (error) {
+            console.error('Win claim error:', error);
+        }
+    }
+}
+
+function hasTwoMatchingSymbols() {
+    const [a, b, c] = gameState.currentSymbols;
+    return a === b || b === c || a === c;
+}
+
+function updateGameStateAfterWin(data, amount, combo) {
+    gameState.chips = data.newBalance;
+    gameState.winAmount = amount;
+    gameState.winCombo = combo;
+    updateCurrencyDisplay();
+}
+
+function showWinPopup(combo, amount) {
+    const comboDisplay = combo === 'ANY_TWO_MATCH' 
+        ? 'Two Matching Symbols' 
+        : createComboSymbolsDisplay(combo);
+    
+    elements.winComboDisplay.innerHTML = comboDisplay;
+    elements.winAmountDisplay.textContent = `+${amount}`;
+    elements.winPopup.style.display = 'flex';
+}
+
+function createComboSymbolsDisplay(combo) {
+    const symbols = combo.split('-').map(name => {
+        const symbol = CONFIG.symbols.find(s => s.name === name);
+        return `<img src="${symbol.img}" alt="${symbol.name}" class="combo-symbol">`;
+    });
+    return `<div class="combo-symbols">${symbols.join('')}</div>`;
+}
+
+async function claimWin() {
+    gameState.winAmount = 0;
+    gameState.winCombo = null;
+    elements.winPopup.style.display = 'none';
+}
+
+// Mines Game Functions (updated to properly load user data)
 function showGameSelectScreen() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
     elements.gameSelectScreen.style.display = 'block';
     elements.gameScreen.style.display = 'none';
     elements.minesGameScreen.style.display = 'none';
@@ -294,6 +396,10 @@ function showGameSelectScreen() {
 }
 
 function startSlotMachineGame() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
     gameState.currentGame = 'slots';
     elements.gameSelectScreen.style.display = 'none';
     elements.gameScreen.style.display = 'block';
@@ -301,6 +407,10 @@ function startSlotMachineGame() {
 }
 
 function startMinesGame() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
     gameState.currentGame = 'mines';
     elements.gameSelectScreen.style.display = 'none';
     elements.gameScreen.style.display = 'none';
@@ -309,29 +419,15 @@ function startMinesGame() {
 }
 
 function setupMinesGameUI() {
-    // Update mines game user panel
-    elements.minesAvatar.src = elements.userAvatar.src;
-    updateCurrencyDisplay();
-    
-    // Reset game state but keep bet/mines if game is active
-    if (!gameState.minesGame.isActive) {
-        gameState.minesGame = {
-            betAmount: 0,
-            minesCount: 0,
-            multiplier: 1.0,
-            revealedCells: 0,
-            totalCells: 0,
-            minePositions: [],
-            currentWin: 0,
-            isActive: false
-        };
-        
-        elements.minesBetInput.value = '';
-        elements.minesCountInput.value = '';
-        elements.minesBetInput.disabled = false;
-        elements.minesCountInput.disabled = false;
-        elements.minesStartBtn.disabled = false;
-    }
+    gameState.minesGame = {
+        betAmount: 0,
+        minesCount: 0,
+        multiplier: 1.0,
+        revealedCells: 0,
+        totalCells: 0,
+        minePositions: [],
+        currentWin: 0
+    };
     
     elements.minesCurrentWin.textContent = '0';
     elements.minesMultiplier.textContent = '1.00x';
@@ -339,6 +435,11 @@ function setupMinesGameUI() {
 }
 
 function startNewMinesGame() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
+
     const betAmount = parseInt(elements.minesBetInput.value);
     const minesCount = parseInt(elements.minesCountInput.value);
     
@@ -367,11 +468,6 @@ function startNewMinesGame() {
         return;
     }
     
-    // Disable input changes during game
-    elements.minesBetInput.disabled = true;
-    elements.minesCountInput.disabled = true;
-    elements.minesStartBtn.disabled = true;
-    
     // Deduct chips via API
     fetch(`${API_BASE_URL}/api/spin`, {
         method: 'POST',
@@ -394,7 +490,6 @@ function startNewMinesGame() {
         gameState.minesGame.minesCount = minesCount;
         gameState.minesGame.multiplier = CONFIG.mines.multipliers[minesCount];
         gameState.minesGame.currentWin = betAmount;
-        gameState.minesGame.isActive = true;
         
         const gridSize = CONFIG.mines.gridSizes[minesCount];
         gameState.minesGame.totalCells = gridSize * gridSize;
@@ -404,7 +499,6 @@ function startNewMinesGame() {
     .catch(error => {
         console.error('Mines game start error:', error);
         showNotification('Failed to start mines game', false);
-        setupMinesGameUI();
     });
 }
 
@@ -434,8 +528,6 @@ function placeMines(minesCount, gridSize) {
 }
 
 function revealMineCell(index) {
-    if (!gameState.minesGame.isActive) return;
-    
     const cell = elements.minesGrid.children[index];
     
     if (cell.classList.contains('revealed')) {
@@ -463,7 +555,7 @@ function revealMineCell(index) {
 }
 
 function cashoutMinesGame() {
-    if (!gameState.minesGame.isActive || gameState.minesGame.revealedCells === 0) {
+    if (gameState.minesGame.revealedCells === 0) {
         showNotification("You need to reveal at least one cell to cashout", false);
         return;
     }
@@ -472,9 +564,6 @@ function cashoutMinesGame() {
 }
 
 function endMinesGame(isWin) {
-    gameState.minesGame.isActive = false;
-    
-    // Show all mines
     gameState.minesGame.minePositions.forEach(pos => {
         const cell = elements.minesGrid.children[pos];
         if (!cell.classList.contains('revealed')) {
@@ -509,7 +598,6 @@ function endMinesGame(isWin) {
         .catch(error => {
             console.error('Win claim error:', error);
             showNotification('Failed to claim win', false);
-            setupMinesGameUI();
         });
     } else {
         elements.minesGameOverMessage.textContent = "Game Over!";
@@ -523,7 +611,7 @@ function closeMinesGameOverPopup() {
     setupMinesGameUI();
 }
 
-// Authentication Functions
+// Enhanced Authentication Functions
 async function loginWithToken(token) {
     try {
         elements.loginBtn.disabled = true;
@@ -587,16 +675,21 @@ function handleSuccessfulLogin(user) {
     
     elements.usernameDisplay.textContent = user.username;
     elements.userAvatar.src = user.avatar || 'assets/default-avatar.png';
-    elements.minesAvatar.src = user.avatar || 'assets/default-avatar.png';
     elements.loginScreen.style.display = 'none';
     showGameSelectScreen();
     updateCurrencyDisplay();
     
+    // Preload symbols for slot machine
     elements.reels.forEach((reel, index) => {
         const symbol = getRandomSymbol();
         gameState.currentSymbols[index] = symbol.name;
         resetReel(reel, symbol);
     });
+    
+    // Force a UI update in case we're switching from mines game
+    if (gameState.currentGame === 'mines') {
+        setupMinesGameUI();
+    }
 }
 
 function showLoginScreen() {
@@ -629,6 +722,17 @@ async function checkAuthStatus() {
     }
 }
 
+// Add new CSS animation for landing bounce
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes landingBounce {
+        0% { transform: translateY(0%) scale(1); }
+        50% { transform: translateY(-20%) scale(1.1); }
+        100% { transform: translateY(0%) scale(1); }
+    }
+`;
+document.head.appendChild(style);
+
 // Event Listeners
 elements.loginBtn.addEventListener('click', async () => {
     const token = elements.tokenInput.value.trim();
@@ -651,7 +755,15 @@ document.getElementById('mines-game-over-close').addEventListener('click', close
 
 // Initialize Game
 async function initGame() {
-    await checkAuthStatus();
+    try {
+        const authCheck = await checkAuthStatus();
+        if (authCheck && !gameState.authChecked) {
+            gameState.authChecked = true;
+            // Additional initialization if needed
+        }
+    } catch (error) {
+        console.error('Initialization error:', error);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
