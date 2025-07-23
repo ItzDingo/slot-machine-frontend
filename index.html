@@ -3,103 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Slot Machine Game</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Slot Machine</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- Login Screen -->
-    <div id="login-screen" class="screen">
-        <div class="login-container">
-            <h1>Welcome</h1>
-            <input type="text" id="token-input" placeholder="Enter your token">
-            <button id="login-btn">Login</button>
+    <div id="login-screen" class="login-container">
+        <div class="login-box">
+            <h1>Slot Machine</h1>
+            <div class="token-form">
+                <h2>Token Login</h2>
+                <p>Enter your unique token below</p>
+                <input type="text" id="token-input" placeholder="Paste your token here">
+                <button id="login-btn">Login</button>
+                <p class="instructions">
+                    Get your token by typing <code>/token</code> in Discord
+                </p>
+            </div>
         </div>
     </div>
 
-    <!-- Game Select Screen -->
-    <div id="game-select-screen" class="screen" style="display: none;">
-        <div class="game-select-container">
-            <h1>Choose a Game</h1>
-            <button id="slot-machine-btn">Slot Machine</button>
-            <button id="mines-game-btn">Mines Game</button>
-            <button id="logout-btn">Logout</button>
-        </div>
-    </div>
-
-    <!-- Slot Machine Game Screen -->
-    <div id="game-screen" class="screen" style="display: none;">
-        <div class="game-container">
-            <div class="user-panel">
-                <img id="user-avatar" src="assets/default-avatar.png" alt="Avatar">
-                <span id="username">Guest</span>
+    <!-- Game Screen -->
+    <div id="game-screen" class="game-container">
+        <div class="user-panel">
+            <div class="user-info">
+                <img id="user-avatar" src="assets/default-avatar.png" alt="User Avatar">
+                <div class="user-details">
+                    <span id="username">Guest</span>
+                    <button id="logout-btn">Logout</button>
+                </div>
+            </div>
+            <div class="currency-display">
                 <div class="currency">
-                    <span>Chips: <span id="chips">0</span></span>
-                    <span>Dice: <span id="dice">0</span></span>
+                    <img src="assets/chip.png" alt="Chips">
+                    <span id="chips">0</span>
                 </div>
-                <button id="logout-btn">Logout</button>
-            </div>
-
-            <div class="slot-machine">
-                <div class="reels-container">
-                    <div id="reel1" class="reel"></div>
-                    <div id="reel2" class="reel"></div>
-                    <div id="reel3" class="reel"></div>
+                <div class="currency">
+                    <img src="assets/dice.png" alt="Dice">
+                    <span id="dice">0</span>
                 </div>
-                <button id="spin-btn">Spin (10 chips)</button>
             </div>
         </div>
 
-        <!-- Win Popup -->
-        <div id="win-popup" class="popup" style="display: none;">
-            <div class="popup-content">
-                <h2>You Won!</h2>
-                <p>Combo: <span id="win-combo"></span></p>
-                <p>Amount: <span id="win-amount"></span></p>
-                <button id="claim-btn">Claim</button>
-            </div>
+        <div class="slot-machine">
+            <div class="reel" id="reel1"></div>
+            <div class="reel" id="reel2"></div>
+            <div class="reel" id="reel3"></div>
         </div>
+
+        <button id="spin-btn" class="spin-button">SPIN</button>
     </div>
 
-    <!-- Mines Game Screen -->
-    <div id="mines-game-screen" class="screen" style="display: none;">
-        <div class="mines-game-container">
-            <div id="mines-user-panel" class="user-panel">
-                <img id="mines-avatar" src="assets/default-avatar.png" alt="Avatar">
-                <div class="currency">
-                    <span>Chips: <span id="mines-chips">0</span></span>
-                    <span>Dice: <span id="mines-dice">0</span></span>
-                </div>
-                <button id="logout-btn">Logout</button>
-            </div>
-
-            <div class="mines-controls">
-                <div class="input-group">
-                    <label for="mines-bet-input">Bet Amount:</label>
-                    <input type="number" id="mines-bet-input" min="1" max="100" placeholder="1-100">
-                </div>
-                <div class="input-group">
-                    <label for="mines-count-input">Number of Mines:</label>
-                    <input type="number" id="mines-count-input" min="1" max="7" placeholder="1-7">
-                </div>
-                <button id="mines-start-btn">Start Game</button>
-            </div>
-
-            <div class="mines-game-info">
-                <p>Current Win: <span id="mines-current-win">0</span></p>
-                <p>Multiplier: <span id="mines-multiplier">1.00x</span></p>
-                <button id="mines-cashout-btn">Cashout</button>
-            </div>
-
-            <div id="mines-grid" class="mines-grid"></div>
-        </div>
-
-        <!-- Mines Game Over Popup -->
-        <div id="mines-game-over-popup" class="popup" style="display: none;">
-            <div class="popup-content">
-                <h2 id="mines-game-over-message">Game Over!</h2>
-                <p id="mines-game-over-amount">-0</p>
-                <button id="mines-game-over-close">Close</button>
-            </div>
+    <!-- Win Popup -->
+    <div id="win-popup" class="win-popup">
+        <div class="win-content">
+            <h3>YOU WON!</h3>
+            <div id="win-combo" class="win-combo"></div>
+            <div class="win-amount">+<span id="win-amount">0</span> chips</div>
+            <button id="claim-btn" class="claim-btn">CLAIM</button>
         </div>
     </div>
 
