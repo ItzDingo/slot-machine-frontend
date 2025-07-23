@@ -53,7 +53,7 @@ const CONFIG = {
     }
 };
 
-// Game State
+// Enhanced Game State
 let gameState = {
     chips: 0,
     dice: 0,
@@ -63,7 +63,7 @@ let gameState = {
     winAmount: 0,
     winCombo: null,
     userId: null,
-    spinAnimations: [],
+    authChecked: false,
     currentGame: null,
     minesGame: {
         betAmount: 0,
@@ -97,9 +97,9 @@ const elements = {
     winComboDisplay: document.getElementById('win-combo'),
     winAmountDisplay: document.getElementById('win-amount'),
     claimBtn: document.getElementById('claim-btn'),
-    loadingIndicator: null,
+    loadingIndicator: createLoadingIndicator(),
     
-    // New Mines Game elements
+    // Mines Game elements
     gameSelectScreen: document.getElementById('game-select-screen'),
     slotMachineBtn: document.getElementById('slot-machine-btn'),
     minesGameBtn: document.getElementById('mines-game-btn'),
@@ -116,7 +116,6 @@ const elements = {
     minesGameOverAmount: document.getElementById('mines-game-over-amount')
 };
 
-// Initialize loading indicator
 function createLoadingIndicator() {
     const indicator = document.createElement('div');
     indicator.className = 'spin-loading';
@@ -124,8 +123,6 @@ function createLoadingIndicator() {
     document.body.appendChild(indicator);
     return indicator;
 }
-
-elements.loadingIndicator = createLoadingIndicator();
 
 // Helper Functions
 function getRandomSymbol() {
@@ -159,7 +156,50 @@ function showNotification(message, isSuccess) {
     setTimeout(() => notification.remove(), 3000);
 }
 
-// Slot Machine Game Functions
+// Enhanced Slot Machine Functions
+async function startSpin() {
+    if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
+        if (gameState.chips < CONFIG.spinCost) {
+            showNotification("Not enough chips!", false);
+        }
+        return;
+    }
+
+    initSpinState();
+    const targetSymbols = elements.reels.map(() => getRandomSymbol());
+    startEnhancedSpinAnimation(targetSymbols);
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/spin`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                cost: CONFIG.spinCost
+            }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) throw new Error('Spin failed');
+
+        const data = await response.json();
+        gameState.chips = data.newBalance;
+        updateCurrencyDisplay();
+    } catch (error) {
+        console.error('Spin error:', error);
+        showNotification('Failed to process spin. Please try again.', false);
+        resetSpinState();
+        elements.reels.forEach((reel, index) => {
+            const symbol = getRandomSymbol();
+            resetReel(reel, symbol);
+            gameState.currentSymbols[index] = symbol.name;
+        });
+    }
+}
+
 function initSpinState() {
     gameState.isSpinning = true;
     gameState.spinningReels = elements.reels.length;
@@ -170,17 +210,18 @@ function initSpinState() {
     elements.loadingIndicator.classList.add('show');
 }
 
-function startVisualSpin(targetSymbols) {
+function startEnhancedSpinAnimation(targetSymbols) {
     gameState.currentSymbols = targetSymbols.map(s => s.name);
     const baseDuration = 2500;
+    const spinCycles = 5;
     
     elements.reels.forEach((reel, index) => {
         const duration = baseDuration + (index * 300);
-        spinReel(reel, targetSymbols[index], duration);
+        enhancedSpinReel(reel, targetSymbols[index], duration, spinCycles);
     });
 }
 
-function spinReel(reel, targetSymbol, duration) {
+function enhancedSpinReel(reel, targetSymbol, duration, cycles) {
     const symbols = CONFIG.symbols;
     let startTime = null;
     const symbolHeight = 100;
@@ -198,10 +239,14 @@ function spinReel(reel, targetSymbol, duration) {
         if (!startTime) startTime = timestamp;
         const progress = timestamp - startTime;
         const spinProgress = Math.min(progress / duration, 1);
-        const easedProgress = 1 - Math.pow(1 - spinProgress, 3);
+        
+        // Cubic easing for smoother acceleration/deceleration
+        const easedProgress = spinProgress < 0.5 
+            ? 4 * spinProgress * spinProgress * spinProgress 
+            : 1 - Math.pow(-2 * spinProgress + 2, 3) / 2;
 
         if (spinProgress < 1) {
-            const basePosition = -easedProgress * (symbolHeight * 10);
+            const basePosition = -easedProgress * (symbolHeight * cycles * symbols.length);
             
             symbolElements.forEach((element, i) => {
                 const position = basePosition + (i * symbolHeight);
@@ -210,12 +255,23 @@ function spinReel(reel, targetSymbol, duration) {
                 
                 element.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
                 element.style.transform = `translateY(${position}%)`;
+                
+                // Add slight rotation effect during spin
+                if (spinProgress < 0.9) {
+                    element.style.transform += ` rotateX(${spinProgress * 360}deg)`;
+                }
             });
             
             requestAnimationFrame(animateSpin);
         } else {
+            // Final landing animation
             reel.innerHTML = '';
             resetReel(reel, targetSymbol);
+            
+            // Add bounce effect when landing
+            const centerSymbol = reel.querySelector('.symbol:nth-child(2)');
+            centerSymbol.style.animation = 'landingBounce 0.5s ease-out';
+            
             gameState.spinningReels--;
             
             if (gameState.spinningReels === 0) {
@@ -249,49 +305,6 @@ function highlightWinningSymbols() {
             symbols[1].classList.add('win-highlight');
         }
     });
-}
-
-async function startSpin() {
-    if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
-        if (gameState.chips < CONFIG.spinCost) {
-            showNotification("Not enough chips!", false);
-        }
-        return;
-    }
-
-    initSpinState();
-    const targetSymbols = elements.reels.map(() => getRandomSymbol());
-    startVisualSpin(targetSymbols);
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/spin`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                userId: gameState.userId,
-                cost: CONFIG.spinCost
-            }),
-            credentials: 'include'
-        });
-
-        if (!response.ok) throw new Error('Spin failed');
-
-        const data = await response.json();
-        gameState.chips = data.newBalance;
-        updateCurrencyDisplay();
-    } catch (error) {
-        console.error('Spin error:', error);
-        showNotification('Failed to process spin. Please try again.', false);
-        resetSpinState();
-        elements.reels.forEach((reel, index) => {
-            const symbol = getRandomSymbol();
-            resetReel(reel, symbol);
-            gameState.currentSymbols[index] = symbol.name;
-        });
-    }
 }
 
 async function checkWin() {
@@ -369,14 +382,23 @@ async function claimWin() {
     elements.winPopup.style.display = 'none';
 }
 
-// Mines Game Functions
+// Mines Game Functions (updated to properly load user data)
 function showGameSelectScreen() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
     elements.gameSelectScreen.style.display = 'block';
     elements.gameScreen.style.display = 'none';
     elements.minesGameScreen.style.display = 'none';
+    updateCurrencyDisplay();
 }
 
 function startSlotMachineGame() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
     gameState.currentGame = 'slots';
     elements.gameSelectScreen.style.display = 'none';
     elements.gameScreen.style.display = 'block';
@@ -384,6 +406,10 @@ function startSlotMachineGame() {
 }
 
 function startMinesGame() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
     gameState.currentGame = 'mines';
     elements.gameSelectScreen.style.display = 'none';
     elements.gameScreen.style.display = 'none';
@@ -408,6 +434,11 @@ function setupMinesGameUI() {
 }
 
 function startNewMinesGame() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
+
     const betAmount = parseInt(elements.minesBetInput.value);
     const minesCount = parseInt(elements.minesCountInput.value);
     
@@ -436,18 +467,38 @@ function startNewMinesGame() {
         return;
     }
     
-    gameState.chips -= betAmount;
-    updateCurrencyDisplay();
-    
-    gameState.minesGame.betAmount = betAmount;
-    gameState.minesGame.minesCount = minesCount;
-    gameState.minesGame.multiplier = CONFIG.mines.multipliers[minesCount];
-    gameState.minesGame.currentWin = betAmount;
-    
-    const gridSize = CONFIG.mines.gridSizes[minesCount];
-    gameState.minesGame.totalCells = gridSize * gridSize;
-    createMinesGrid(gridSize);
-    placeMines(minesCount, gridSize);
+    // Deduct chips via API
+    fetch(`${API_BASE_URL}/api/spin`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            userId: gameState.userId,
+            cost: betAmount
+        }),
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        gameState.chips = data.newBalance;
+        updateCurrencyDisplay();
+        
+        gameState.minesGame.betAmount = betAmount;
+        gameState.minesGame.minesCount = minesCount;
+        gameState.minesGame.multiplier = CONFIG.mines.multipliers[minesCount];
+        gameState.minesGame.currentWin = betAmount;
+        
+        const gridSize = CONFIG.mines.gridSizes[minesCount];
+        gameState.minesGame.totalCells = gridSize * gridSize;
+        createMinesGrid(gridSize);
+        placeMines(minesCount, gridSize);
+    })
+    .catch(error => {
+        console.error('Mines game start error:', error);
+        showNotification('Failed to start mines game', false);
+    });
 }
 
 function createMinesGrid(size) {
@@ -521,17 +572,37 @@ function endMinesGame(isWin) {
     });
     
     if (isWin) {
-        gameState.chips += gameState.minesGame.currentWin;
-        updateCurrencyDisplay();
-        
-        elements.minesGameOverMessage.textContent = "You Won!";
-        elements.minesGameOverAmount.textContent = `+${gameState.minesGame.currentWin}`;
+        // Claim win via API
+        fetch(`${API_BASE_URL}/api/win`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                amount: gameState.minesGame.currentWin
+            }),
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then(data => {
+            gameState.chips = data.newBalance;
+            updateCurrencyDisplay();
+            
+            elements.minesGameOverMessage.textContent = "You Won!";
+            elements.minesGameOverAmount.textContent = `+${gameState.minesGame.currentWin}`;
+            elements.minesGameOverPopup.style.display = 'flex';
+        })
+        .catch(error => {
+            console.error('Win claim error:', error);
+            showNotification('Failed to claim win', false);
+        });
     } else {
         elements.minesGameOverMessage.textContent = "Game Over!";
         elements.minesGameOverAmount.textContent = `-${gameState.minesGame.betAmount}`;
+        elements.minesGameOverPopup.style.display = 'flex';
     }
-    
-    elements.minesGameOverPopup.style.display = 'flex';
 }
 
 function closeMinesGameOverPopup() {
@@ -539,7 +610,7 @@ function closeMinesGameOverPopup() {
     setupMinesGameUI();
 }
 
-// Authentication Functions
+// Enhanced Authentication Functions
 async function loginWithToken(token) {
     try {
         elements.loginBtn.disabled = true;
@@ -607,11 +678,17 @@ function handleSuccessfulLogin(user) {
     showGameSelectScreen();
     updateCurrencyDisplay();
     
+    // Preload symbols for slot machine
     elements.reels.forEach((reel, index) => {
         const symbol = getRandomSymbol();
         gameState.currentSymbols[index] = symbol.name;
         resetReel(reel, symbol);
     });
+    
+    // Force a UI update in case we're switching from mines game
+    if (gameState.currentGame === 'mines') {
+        setupMinesGameUI();
+    }
 }
 
 function showLoginScreen() {
@@ -644,6 +721,17 @@ async function checkAuthStatus() {
     }
 }
 
+// Add new CSS animation for landing bounce
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes landingBounce {
+        0% { transform: translateY(0%) scale(1); }
+        50% { transform: translateY(-20%) scale(1.1); }
+        100% { transform: translateY(0%) scale(1); }
+    }
+`;
+document.head.appendChild(style);
+
 // Event Listeners
 elements.loginBtn.addEventListener('click', async () => {
     const token = elements.tokenInput.value.trim();
@@ -666,7 +754,15 @@ document.getElementById('mines-game-over-close').addEventListener('click', close
 
 // Initialize Game
 async function initGame() {
-    await checkAuthStatus();
+    try {
+        const authCheck = await checkAuthStatus();
+        if (authCheck && !gameState.authChecked) {
+            gameState.authChecked = true;
+            // Additional initialization if needed
+        }
+    } catch (error) {
+        console.error('Initialization error:', error);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
