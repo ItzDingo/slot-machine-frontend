@@ -318,7 +318,7 @@ body {
     animation: highlight 0.5s ease-in-out 3;
 }
 
-/* Spin Button */
+/* Spin Button - UPDATED ANIMATIONS */
 #spin-btn {
     background: linear-gradient(to bottom, var(--secondary), #C70039);
     color: white;
@@ -372,6 +372,17 @@ body {
 
 #spin-btn:disabled::before {
     display: none;
+}
+
+/* NEW: Button Press Animation */
+#spin-btn:active {
+    animation: quickSpin 0.8s ease-out;
+    transform: scale(0.95);
+}
+
+@keyframes quickSpin {
+    0% { transform: rotate(0deg) scale(0.95); }
+    100% { transform: rotate(360deg) scale(0.95); }
 }
 
 /* Win Popup */
@@ -658,8 +669,6 @@ body {
 }
 
 /* Mines Game Over Popup */
-
-/* Add this to your existing CSS */
 #mines-avatar {
     width: 60px;
     height: 60px;
@@ -753,7 +762,7 @@ body {
     margin-top: 1rem;
 }
 
-/* Loading Indicator */
+/* Loading Indicator - UPDATED DURATION */
 .spin-loading {
     position: fixed;
     top: 0;
@@ -781,7 +790,7 @@ body {
     border: 5px solid rgba(255, 215, 0, 0.3);
     border-radius: 50%;
     border-top-color: var(--primary);
-    animation: spin 5s linear infinite;
+    animation: spin 1.5s linear infinite; /* Reduced from 5s to 1.5s */
 }
 
 /* Notifications */
@@ -817,7 +826,7 @@ body {
     border: 1px solid #f44336;
 }
 
-/* Animations */
+/* Animations - UPDATED */
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
@@ -843,9 +852,16 @@ body {
     to { opacity: 1; }
 }
 
-@keyframes land {
-    0% { transform: translateY(-20px); opacity: 0; }
-    100% { transform: translateY(0); opacity: 1; }
+@keyframes landingBounce {
+    0% { transform: translateY(0%) scale(1); }
+    50% { transform: translateY(-20%) scale(1.1); }
+    100% { transform: translateY(0%) scale(1); }
+}
+
+/* NEW: Quick spin animation for button press */
+@keyframes quickSpin {
+    0% { transform: rotate(0deg) scale(0.95); }
+    100% { transform: rotate(360deg) scale(0.95); }
 }
 
 /* Responsive */
