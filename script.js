@@ -115,9 +115,9 @@ const elements = {
     minesGameOverMessage: document.getElementById('mines-game-over-message'),
     minesGameOverAmount: document.getElementById('mines-game-over-amount'),
     minesUserPanel: document.getElementById('mines-user-panel'),
-    minesChipsDisplay: document.getElementById('mines-chips'),
-    minesDiceDisplay: document.getElementById('mines-dice'),
-    minesAvatar: document.getElementById('mines-avatar')
+    minesChipsDisplay: document.getElementById('mines-chips') || { textContent: '' },
+    minesDiceDisplay: document.getElementById('mines-dice') || { textContent: '' },
+    minesAvatar: document.getElementById('mines-avatar') || { src: '' }
 };
 
 function createLoadingIndicator() {
@@ -148,8 +148,8 @@ function resetReel(reel, centerSymbol) {
 function updateCurrencyDisplay() {
     elements.chipsDisplay.textContent = gameState.chips;
     elements.diceDisplay.textContent = gameState.dice;
-    elements.minesChipsDisplay.textContent = gameState.chips;
-    elements.minesDiceDisplay.textContent = gameState.dice;
+    if (elements.minesChipsDisplay) elements.minesChipsDisplay.textContent = gameState.chips;
+    if (elements.minesDiceDisplay) elements.minesDiceDisplay.textContent = gameState.dice;
 }
 
 function showNotification(message, isSuccess) {
@@ -175,10 +175,10 @@ function initSpinState() {
 
 function startVisualSpin(targetSymbols) {
     gameState.currentSymbols = targetSymbols.map(s => s.name);
-    const baseDuration = 3500; // Longer duration as requested
+    const baseDuration = 3500;
     
     elements.reels.forEach((reel, index) => {
-        const duration = baseDuration + (index * 500); // Even longer delay between reels
+        const duration = baseDuration + (index * 500);
         spinReel(reel, targetSymbols[index], duration);
     });
 }
@@ -204,7 +204,7 @@ function spinReel(reel, targetSymbol, duration) {
         const easedProgress = 1 - Math.pow(1 - spinProgress, 3);
 
         if (spinProgress < 1) {
-            const basePosition = -easedProgress * (symbolHeight * 15); // More spins
+            const basePosition = -easedProgress * (symbolHeight * 15);
             
             symbolElements.forEach((element, i) => {
                 const position = basePosition + (i * symbolHeight);
@@ -309,11 +309,12 @@ function startMinesGame() {
 }
 
 function setupMinesGameUI() {
-    // Update mines game user panel
-    elements.minesAvatar.src = elements.userAvatar.src;
+    // Safely update mines avatar
+    if (elements.minesAvatar && elements.userAvatar) {
+        elements.minesAvatar.src = elements.userAvatar.src;
+    }
     updateCurrencyDisplay();
     
-    // Reset game state but keep bet/mines if game is active
     if (!gameState.minesGame.isActive) {
         gameState.minesGame = {
             betAmount: 0,
@@ -367,12 +368,10 @@ function startNewMinesGame() {
         return;
     }
     
-    // Disable input changes during game
     elements.minesBetInput.disabled = true;
     elements.minesCountInput.disabled = true;
     elements.minesStartBtn.disabled = true;
     
-    // Deduct chips via API
     fetch(`${API_BASE_URL}/api/spin`, {
         method: 'POST',
         headers: { 
@@ -474,7 +473,6 @@ function cashoutMinesGame() {
 function endMinesGame(isWin) {
     gameState.minesGame.isActive = false;
     
-    // Show all mines
     gameState.minesGame.minePositions.forEach(pos => {
         const cell = elements.minesGrid.children[pos];
         if (!cell.classList.contains('revealed')) {
@@ -484,7 +482,6 @@ function endMinesGame(isWin) {
     });
     
     if (isWin) {
-        // Claim win via API
         fetch(`${API_BASE_URL}/api/win`, {
             method: 'POST',
             headers: { 
@@ -587,7 +584,12 @@ function handleSuccessfulLogin(user) {
     
     elements.usernameDisplay.textContent = user.username;
     elements.userAvatar.src = user.avatar || 'assets/default-avatar.png';
-    elements.minesAvatar.src = user.avatar || 'assets/default-avatar.png';
+    
+    // Safely update mines avatar if element exists
+    if (elements.minesAvatar) {
+        elements.minesAvatar.src = user.avatar || 'assets/default-avatar.png';
+    }
+    
     elements.loginScreen.style.display = 'none';
     showGameSelectScreen();
     updateCurrencyDisplay();
