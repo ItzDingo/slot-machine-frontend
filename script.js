@@ -194,6 +194,14 @@
         }
 
 
+        if (elements.spinBtn) {
+        elements.spinBtn.classList.add('playing');
+        setTimeout(() => {
+            elements.spinBtn.classList.remove('playing');
+        }, 200); // Matches the 2s animation duration
+    }
+
+
         initSpinState();
         const targetSymbols = elements.reels.map(() => getRandomSymbol());
         startEnhancedSpinAnimation(targetSymbols);
