@@ -710,10 +710,11 @@ function handleSuccessfulLogin(user) {
     gameState.chips = user.chips;
     gameState.dice = user.dice;
     
-    elements.usernameDisplay.textContent = user.username;
-    elements.userAvatar.src = user.avatar || 'assets/default-avatar.png';
-    elements.minesUsername.textContent = user.username;
-    elements.minesAvatar.src = user.avatar || 'assets/default-avatar.png';
+    // Safely update display elements if they exist
+    if (elements.usernameDisplay) elements.usernameDisplay.textContent = user.username;
+    if (elements.userAvatar) elements.userAvatar.src = user.avatar || 'assets/default-avatar.png';
+    if (elements.minesUsername) elements.minesUsername.textContent = user.username;
+    if (elements.minesAvatar) elements.minesAvatar.src = user.avatar || 'assets/default-avatar.png';
     
     elements.loginScreen.style.display = 'none';
     showGameSelectScreen();
