@@ -240,8 +240,8 @@ function initSpinState() {
 
 function startEnhancedSpinAnimation(targetSymbols) {
     gameState.currentSymbols = targetSymbols.map(s => s.name);
-    const baseDuration = 5000; // Increased from 3500 to 5000 for longer spin
-    const spinCycles = 10; // Increased from 7 to 10 for more cycles
+    const baseDuration = 1000; // Increased from 3500 to 5000 for longer spin
+    const spinCycles = 1; // Increased from 7 to 10 for more cycles
     
     elements.reels.forEach((reel, index) => {
         if (!reel) return;
