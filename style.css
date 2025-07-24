@@ -161,11 +161,11 @@ body {
     box-shadow: 0 0 15px rgba(255, 87, 51, 0.7);
 }
 
-/* Slot Machine Game */
+/* Game Container (shared) */
 .game-container {
     display: none;
     width: 100%;
-    max-width: 600px;
+    max-width: 900px;
     background: rgba(20, 20, 20, 0.9);
     border-radius: 15px;
     padding: 2rem;
@@ -175,6 +175,7 @@ body {
     backdrop-filter: blur(5px);
 }
 
+/* User Panel (shared) */
 .user-panel {
     display: flex;
     justify-content: space-between;
@@ -318,7 +319,7 @@ body {
     animation: highlight 0.5s ease-in-out 3;
 }
 
-/* Spin Button - UPDATED ANIMATIONS */
+/* Spin Button */
 #spin-btn {
     background: linear-gradient(to bottom, var(--secondary), #C70039);
     color: white;
@@ -374,24 +375,318 @@ body {
     display: none;
 }
 
-/* NEW: Button Press Animation */
 #spin-btn:active {
     animation: quickSpin 2s ease-out;
     transform: scale(0.95);
 }
 
-@keyframes quickSpin {
-    0% { transform: rotate(0deg) scale(0.95); }
-    80% { transform: rotate(360deg) scale(0.95); }
-    100% { transform: rotate(360deg) scale(0.95); }
+/* Mines Game */
+.mines-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
 }
 
-#spin-btn.playing {
-    animation: quickSpin 2s ease-out;
+.mines-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.mines-input-group label {
+    color: var(--primary);
+    font-weight: bold;
+}
+
+.mines-input-group input {
+    padding: 10px;
+    border-radius: 5px;
+    border: 2px solid var(--primary);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1rem;
+}
+
+.mines-start-btn {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.mines-start-btn:hover {
+    background: #E04B2D;
+    transform: translateY(-2px);
+}
+
+.mines-info {
+    display: flex;
+    justify-content: space-between;
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.mines-info div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px;
+}
+
+.mines-info span:first-child {
+    color: var(--primary);
+    font-size: 0.8rem;
+    margin-bottom: 3px;
+}
+
+.mines-info span:last-child {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+#mines-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+    margin: 20px 0;
+}
+
+.mines-cell {
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+    border: 2px solid var(--primary);
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.mines-cell:hover {
     transform: scale(0.95);
 }
 
-/* Win Popup */
+.mines-cell.revealed {
+    background: rgba(255, 215, 0, 0.1);
+    border-color: var(--secondary);
+}
+
+.mines-cell.mine {
+    background: rgba(244, 67, 54, 0.3);
+    border-color: var(--error);
+}
+
+.mines-cell img {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+}
+
+.mines-cashout-btn {
+    background: linear-gradient(to bottom, var(--primary), #D4AF37);
+    color: #000;
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+.mines-cashout-btn:hover {
+    transform: scale(1.02);
+}
+
+/* Blinko Game */
+.blinko-container {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+}
+
+.blinko-controls {
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.blinko-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.blinko-input-group label {
+    color: var(--primary);
+    font-weight: bold;
+}
+
+.blinko-input-group input,
+.blinko-input-group select {
+    padding: 10px;
+    border-radius: 5px;
+    border: 2px solid var(--primary);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1rem;
+}
+
+.blinko-input-group select option {
+    background: var(--dark);
+}
+
+.blinko-drop-btn {
+    background: linear-gradient(to bottom, var(--secondary), #C70039);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.blinko-drop-btn:hover {
+    background: #E04B2D;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(224, 75, 45, 0.4);
+}
+
+.blinko-drop-btn:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.blinko-back-btn {
+    background: #444;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.blinko-back-btn:hover {
+    background: #555;
+    transform: translateY(-2px);
+}
+
+.blinko-game-area {
+    flex: 1;
+    position: relative;
+    height: 500px;
+    background: rgba(30, 30, 30, 0.7);
+    border-radius: 10px;
+    border: 2px solid var(--primary);
+    overflow: hidden;
+}
+
+#blinko-board {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+}
+
+.blinko-peg {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: var(--primary);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
+    z-index: 10;
+}
+
+.blinko-ball {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: var(--secondary);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    transition: transform 0.1s linear;
+}
+
+#blinko-buckets {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    z-index: 5;
+}
+
+.blinko-bucket {
+    flex: 1;
+    max-width: 40px;
+    height: 100%;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    color: var(--primary);
+    position: relative;
+}
+
+.blinko-bucket::after {
+    content: attr(data-multiplier);
+    position: absolute;
+    bottom: -25px;
+    color: var(--primary);
+    font-size: 0.8rem;
+}
+
+.blinko-stats {
+    margin-top: 20px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.blinko-stats div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.blinko-stats span:first-child {
+    color: var(--primary);
+    font-size: 0.8rem;
+    margin-bottom: 3px;
+}
+
+.blinko-stats span:last-child {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+/* Win Popups */
 .win-popup {
     display: none;
     position: fixed;
@@ -467,7 +762,12 @@ body {
     font-weight: bold;
 }
 
-#claim-btn {
+#blinko-win-position {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.claim-btn {
     background: linear-gradient(to bottom, var(--primary), #D4AF37);
     color: #000;
     border: none;
@@ -479,445 +779,11 @@ body {
     transition: transform 0.3s;
 }
 
-#claim-btn:hover {
+.claim-btn:hover {
     transform: scale(1.05);
 }
 
-/* Mines Game Screen */
-#mines-game-screen {
-    display: none;
-    width: 100%;
-    max-width: 600px;
-    background: rgba(20, 20, 20, 0.9);
-    border-radius: 15px;
-    padding: 2rem;
-    border: 3px solid var(--primary);
-    box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
-}
-
-.mines-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.mines-input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.mines-input-group label {
-    color: var(--primary);
-    font-weight: bold;
-}
-
-.mines-input-group input {
-    padding: 10px;
-    border-radius: 5px;
-    border: 2px solid var(--primary);
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    font-size: 1rem;
-}
-
-.mines-start-btn {
-    background: var(--secondary);
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.mines-start-btn:hover {
-    background: #E04B2D;
-    transform: translateY(-2px);
-}
-
-.mines-info {
-    display: flex;
-    justify-content: space-between;
-    margin: 15px 0;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
-}
-
-.mines-info div {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 5px;
-}
-
-.mines-info span:first-child {
-    color: var(--primary);
-    font-size: 0.8rem;
-    margin-bottom: 3px;
-}
-
-.mines-info span:last-child {
-    font-size: 1rem;
-    font-weight: bold;
-}
-
-#mines-grid {
-    display: grid;
-    gap: 5px;
-    margin: 20px 0;
-}
-
-.mines-cell {
-    aspect-ratio: 1;
-    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
-    border: 2px solid var(--primary);
-    border-radius: 5px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-weight: bold;
-    font-size: 1.2rem;
-}
-
-.mines-cell:hover {
-    transform: scale(0.95);
-}
-
-.mines-cell.revealed {
-    background: rgba(255, 215, 0, 0.1);
-    border-color: var(--secondary);
-}
-
-.mines-cell.mine {
-    background: rgba(244, 67, 54, 0.3);
-    border-color: var(--error);
-}
-
-.mines-cell img {
-    width: 60%;
-    height: 60%;
-    object-fit: contain;
-}
-
-.mines-cashout-btn {
-    background: linear-gradient(to bottom, var(--primary), #D4AF37);
-    color: #000;
-    border: none;
-    padding: 12px;
-    border-radius: 5px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s;
-    width: 100%;
-}
-
-.mines-cashout-btn:hover {
-    transform: scale(1.02);
-}
-
-/* Blinko Game Screen */
-#blinko-game-screen {
-    display: none;
-    width: 100%;
-    max-width: 600px;
-    background: rgba(20, 20, 20, 0.9);
-    border-radius: 15px;
-    padding: 2rem;
-    border: 3px solid var(--primary);
-    box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
-}
-
-.blinko-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.blinko-input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.blinko-input-group label {
-    color: var(--primary);
-    font-weight: bold;
-}
-
-.blinko-input-group input, .blinko-input-group select {
-    padding: 10px;
-    border-radius: 5px;
-    border: 2px solid var(--primary);
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    font-size: 1rem;
-}
-
-.blinko-start-btn {
-    background: var(--secondary);
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.blinko-start-btn:hover {
-    background: #E04B2D;
-    transform: translateY(-2px);
-}
-
-.blinko-info {
-    display: flex;
-    justify-content: space-between;
-    margin: 15px 0;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
-}
-
-.blinko-info div {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 5px;
-}
-
-.blinko-info span:first-child {
-    color: var(--primary);
-    font-size: 0.8rem;
-    margin-bottom: 3px;
-}
-
-.blinko-info span:last-child {
-    font-size: 1rem;
-    font-weight: bold;
-}
-
-/* Blinko Board Styles */
-#blinko-board-container {
-    position: relative;
-    width: 100%;
-    height: 400px;
-    margin: 20px auto;
-    overflow: hidden;
-}
-
-#blinko-board {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    background: rgba(30, 30, 30, 0.8);
-    border: 3px solid var(--primary);
-    border-radius: 5px;
-}
-
-.blinko-row {
-    position: absolute;
-    width: 100%;
-    height: 30px;
-}
-
-.blinko-peg {
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: var(--primary);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.blinko-ball {
-    position: absolute;
-    width: 15px;
-    height: 15px;
-    background-color: var(--secondary);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10;
-}
-
-#blinko-buckets {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    display: flex;
-    height: 30px;
-}
-
-.blinko-bucket {
-    position: relative;
-    border: 1px solid var(--primary);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    color: var(--primary);
-    font-size: 0.8rem;
-    overflow: hidden;
-}
-
-.blinko-bucket::after {
-    content: attr(data-multiplier);
-    position: absolute;
-    bottom: -20px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 0.7rem;
-}
-
-/* Back to Menu Button */
-#back-to-menu-btn, #mines-back-to-menu-btn, #blinko-back-to-menu-btn {
-    background: #444;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s;
-    width: 100%;
-    margin-top: 10px;
-}
-
-#back-to-menu-btn:hover, #mines-back-to-menu-btn:hover, #blinko-back-to-menu-btn:hover {
-    background: #555;
-    transform: translateY(-2px);
-}
-
-/* Mines Stats */
-.mines-info {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin: 15px 0;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
-}
-
-/* Mines Game Over Popup */
-#mines-game-over-popup, #blinko-game-over-popup {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 100;
-    justify-content: center;
-    align-items: center;
-}
-
-.mines-game-over-content, .blinko-game-over-content {
-    background: var(--dark);
-    border: 3px solid var(--primary);
-    border-radius: 10px;
-    padding: 2rem;
-    text-align: center;
-    width: 90%;
-    max-width: 300px;
-}
-
-#mines-game-over-message, #blinko-game-over-message {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    color: var(--primary);
-}
-
-#mines-game-over-amount, #blinko-game-over-amount {
-    font-size: 1.8rem;
-    font-weight: bold;
-    margin: 1rem 0;
-}
-
-#mines-game-over-close, #blinko-game-over-close {
-    background: var(--secondary);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 1rem;
-}
-
-/* Loading Indicator - UPDATED DURATION */
-.spin-loading {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-}
-
-.spin-loading.show {
-    opacity: 1;
-    pointer-events: all;
-}
-
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid rgba(255, 215, 0, 0.3);
-    border-radius: 50%;
-    border-top-color: var(--primary);
-    animation: spin 1.5s linear infinite;
-}
-
-/* Notifications */
-.notification {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 15px 25px;
-    border-radius: 5px;
-    color: white;
-    font-weight: bold;
-    z-index: 1000;
-    opacity: 0;
-    transition: opacity 0.3s;
-    max-width: 80%;
-    text-align: center;
-    backdrop-filter: blur(5px);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-}
-
-.notification.show {
-    opacity: 1;
-}
-
-.notification.success {
-    background-color: rgba(76, 175, 80, 0.9);
-    border: 1px solid #4CAF50;
-}
-
-.notification.error {
-    background-color: rgba(244, 67, 54, 0.9);
-    border: 1px solid #f44336;
-}
-
-/* Animations - UPDATED */
+/* Animations */
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
@@ -949,19 +815,32 @@ body {
     100% { transform: translateY(0%) scale(1); }
 }
 
-/* NEW: Quick spin animation for button press */
 @keyframes quickSpin {
     0% { transform: rotate(0deg) scale(0.95); }
     100% { transform: rotate(360deg) scale(0.95); }
 }
 
-/* Blinko ball animation */
-@keyframes blinkoFall {
-    0% { transform: translate(-50%, 0); }
-    100% { transform: translate(var(--final-x), var(--final-y)); }
+@keyframes pegGlow {
+    0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.7); }
+    50% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.9); }
+    100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.7); }
 }
 
 /* Responsive */
+@media (max-width: 768px) {
+    .blinko-container {
+        flex-direction: column;
+    }
+    
+    .blinko-controls {
+        width: 100%;
+    }
+    
+    .blinko-game-area {
+        height: 400px;
+    }
+}
+
 @media (max-width: 600px) {
     .user-panel {
         flex-direction: column;
@@ -988,10 +867,6 @@ body {
         height: 80px;
         font-size: 1.2rem;
     }
-    
-    #blinko-board-container {
-        height: 250px;
-    }
 }
 
 @media (max-width: 400px) {
@@ -1005,11 +880,7 @@ body {
         width: 70%;
     }
 
-    .win-content, .mines-game-over-content, .blinko-game-over-content {
+    .win-content, .mines-game-over-content {
         padding: 1.5rem;
-    }
-    
-    #blinko-board-container {
-        height: 200px;
     }
 }
