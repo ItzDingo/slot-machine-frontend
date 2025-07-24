@@ -76,29 +76,29 @@ const CONFIG = {
     minBet: 1,
     maxBet: 1000,
     segments: [
-        { value: 1, multiplier: 1, color: '#CCB800' }, // Darker Yellow
-        { value: 3, multiplier: 3, color: '#009933' }, // Darker Green
-        { value: 1, multiplier: 1, color: '#CCB800' },
-        { value: 10, multiplier: 10, color: '#CC0099' }, // Darker Pink
-        { value: 1, multiplier: 1, color: '#CCB800' },
-        { value: 3, multiplier: 3, color: '#009933' },
-        { value: 1, multiplier: 1, color: '#CCB800' },
-        { value: 5, multiplier: 5, color: '#0033CC' }, // Darker Blue
-        { value: 1, multiplier: 1, color: '#CCB800' },
-        { value: 3, multiplier: 3, color: '#009933' },
-        { value: 1, multiplier: 1, color: '#CCB800' },
-        { value: 20, multiplier: 20, color: '#CC3300' }, // Darker Orange
+        // Make sure you have exactly 24 segments (for even distribution)
         { value: 1, multiplier: 1, color: '#CCB800' },
         { value: 3, multiplier: 3, color: '#009933' },
         { value: 1, multiplier: 1, color: '#CCB800' },
         { value: 5, multiplier: 5, color: '#0033CC' },
-        { value: 1, multiplier: 1, color: '#CCB800' },
-        { value: 3, multiplier: 3, color: '#009933' },
         { value: 1, multiplier: 1, color: '#CCB800' },
         { value: 10, multiplier: 10, color: '#CC0099' },
         { value: 1, multiplier: 1, color: '#CCB800' },
         { value: 3, multiplier: 3, color: '#009933' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 20, multiplier: 20, color: '#CC3300' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 3, multiplier: 3, color: '#009933' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
         { value: 5, multiplier: 5, color: '#0033CC' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 10, multiplier: 10, color: '#CC0099' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 3, multiplier: 3, color: '#009933' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 5, multiplier: 5, color: '#0033CC' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 3, multiplier: 3, color: '#009933' },
         { value: 1, multiplier: 1, color: '#CCB800' },
         { value: 5, multiplier: 5, color: '#0033CC' }
         ],
@@ -1267,4 +1267,16 @@ async function initGame() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', initGame);
+function initializeWheel() {
+    createWheelSegments();
+    // Reset wheel position
+    if (elements.wheelContainer) {
+        elements.wheelContainer.style.transform = 'rotate(0deg)';
+        elements.wheelContainer.style.transition = 'none';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initGame();
+    initializeWheel();
+});
