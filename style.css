@@ -590,11 +590,15 @@ body {
 }
 
 .blinko-game-area {
+    position: relative;
     width: 100%;
     height: 500px;
-    position: relative;
     overflow: hidden;
+    background: rgba(30, 30, 30, 0.7);
+    border-radius: 10px;
+    border: 2px solid var(--primary);
 }
+
 
 #blinko-board {
     position: relative;
@@ -610,7 +614,7 @@ body {
     background: var(--primary);
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    box-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
     z-index: 10;
 }
 
@@ -631,24 +635,20 @@ body {
     left: 0;
     right: 0;
     height: 40px;
-    display: flex;
-    justify-content: space-between;
-    z-index: 5;
-    gap: 2px;
 }
 
 .blinko-bucket {
+    position: absolute;
     height: 40px;
-    border: 1px solid rgba(255, 215, 0, 0.3);
     display: flex;
     justify-content: center;
     align-items: center;
     font-weight: bold;
     color: var(--primary);
-    position: relative;
     font-size: 0.9rem;
-    padding: 0 5px;
     text-align: center;
+    z-index: 5;
+    border-top: 2px solid var(--primary);
 }
 
 .blinko-bucket::after {
