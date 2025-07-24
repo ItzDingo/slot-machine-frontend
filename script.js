@@ -1041,6 +1041,16 @@ function stopBlinkoAnimation() {
 }
 
 function updateBlinkoRisk() {
+    // Check if there are balls currently dropping
+    if (gameState.blinkoGame.balls.length > 0) {
+        showNotification("Cannot change risk level while balls are dropping!", false);
+        // Reset select to current risk
+        if (elements.blinkoRiskSelect) {
+            elements.blinkoRiskSelect.value = gameState.blinkoGame.currentRisk;
+        }
+        return;
+    }
+    
     const risk = elements.blinkoRiskSelect?.value || 'medium';
     gameState.blinkoGame.currentRisk = risk;
     
