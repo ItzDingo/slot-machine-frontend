@@ -177,13 +177,13 @@ const elements = {
     blinkoTotalWon: document.getElementById('blinko-total-won')
 };
 
-// Enhanced Blinko Game Variables for nerve-wracking gameplay
+// Enhanced Blinko Game Variables for triangular gameplay
 let blinkoCtx;
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 700;
 const PEG_RADIUS = 6;
 const BALL_RADIUS = 5;
-const GRAVITY = 0.08; // Reduced gravity for more bouncing and slower falling
+const GRAVITY = 0.08;
 const BOUNCE = 0.88;
 const FRICTION = 0.996;
 
@@ -223,7 +223,7 @@ function showNotification(message, isSuccess) {
     setTimeout(() => notification.remove(), 3000);
 }
 
-// Slot Machine Functions (unchanged from original)
+// Slot Machine Functions
 async function startSpin() {
     if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
         if (gameState.chips < CONFIG.spinCost) {
@@ -441,7 +441,7 @@ async function claimWin() {
     if (elements.winPopup) elements.winPopup.style.display = 'none';
 }
 
-// Mines Game Functions (unchanged from original)
+// Mines Game Functions
 async function setupMinesGameUI() {
     gameState.minesGame = {
         betAmount: 0,
@@ -718,7 +718,7 @@ function closeMinesGameOverPopup() {
     setupMinesGameUI();
 }
 
-// Enhanced Blinko Game Functions with Improved Peg Layout
+// Enhanced Triangular Blinko Game Functions
 function initBlinkoGame() {
     if (!elements.blinkoCanvas) return;
     
@@ -735,38 +735,41 @@ function setupBlinkoGame() {
     gameState.blinkoGame.pegs = [];
     gameState.blinkoGame.multiplierSlots = [];
     
-    createBlinkoBoard();
+    createTriangularBlinkoBoard();
     updateBlinkoStats();
 }
 
-function createBlinkoBoard() {
-    // Improved peg layout with better spacing for more bouncing and stress
-    const rows = 18; // Increased for more bouncing opportunities
-    const cols = 13; // Reduced to match bucket count
-    const pegSpacingX = 42; // Increased spacing for better ball passage
-    const pegSpacingY = 28; // Slightly reduced for more pegs vertically
-    const startY = 80;
-    const bucketZone = CANVAS_HEIGHT - 80;
-    const minEdgeDistance = 25; // Increased edge distance
+function createTriangularBlinkoBoard() {
+    // Clear existing pegs and slots
+    gameState.blinkoGame.pegs = [];
+    gameState.blinkoGame.multiplierSlots = [];
     
-    // Calculate starting X to center the peg field
-    const totalWidth = (cols - 1) * pegSpacingX;
-    const startX = (CANVAS_WIDTH - totalWidth) / 2;
+    // Triangle configuration - starts with 3 pegs at top, goes to 14 rows
+    const rows = 14;
+    const startPegs = 3;
+    const pegSpacingY = 35; // Vertical spacing between rows
+    const startY = 80; // Starting Y position from top
+    const bucketZone = CANVAS_HEIGHT - 80; // Bottom area for buckets
+    const pegSafeZone = bucketZone - 30; // Leave space above buckets
     
-    // Create main peg grid with zigzag pattern
+    // Create triangular peg layout
     for (let row = 0; row < rows; row++) {
-        const colsInRow = cols - (row % 2); // Alternate row lengths for zigzag
-        const rowStartX = startX + (row % 2) * (pegSpacingX / 2);
+        const pegsInRow = startPegs + row; // Row 0: 3 pegs, Row 1: 4 pegs, ..., Row 13: 16 pegs
+        const y = startY + row * pegSpacingY;
         
-        for (let col = 0; col < colsInRow; col++) {
-            const x = rowStartX + col * pegSpacingX;
-            const y = startY + row * pegSpacingY;
+        // Stop if we're too close to bucket zone
+        if (y >= pegSafeZone) break;
+        
+        // Calculate horizontal spacing to center the triangle
+        const totalWidth = (pegsInRow - 1) * 40; // 40px spacing between pegs
+        const startX = (CANVAS_WIDTH - totalWidth) / 2;
+        
+        // Create pegs for this row
+        for (let peg = 0; peg < pegsInRow; peg++) {
+            const x = startX + peg * 40;
             
-            // Only add peg if it's within bounds and not too close to edges or bucket zone
-            if (x >= minEdgeDistance + 20 && 
-                x <= CANVAS_WIDTH - minEdgeDistance - 20 && 
-                y < bucketZone - 20) {
-                
+            // Ensure pegs are within canvas bounds with margin
+            if (x >= 30 && x <= CANVAS_WIDTH - 30) {
                 gameState.blinkoGame.pegs.push({
                     x: x,
                     y: y,
@@ -777,119 +780,49 @@ function createBlinkoBoard() {
         }
     }
     
-    // Add edge pegs with much better spacing from other pegs
-    const edgePegSpacing = 45; // Increased spacing
-    const edgePegsPerSide = Math.floor((bucketZone - startY - 60) / edgePegSpacing);
-    const edgeOffset = 45; // Increased offset from edges
+    // Create triangular edges - left and right boundaries
+    const edgeRows = Math.min(rows, Math.floor((pegSafeZone - startY) / pegSpacingY));
     
-    // Left edge pegs - positioned further from main grid
-    for (let i = 1; i <= edgePegsPerSide; i++) {
-        const y = startY + 30 + i * edgePegSpacing;
-        if (y < bucketZone - 30) {
-            const edgeX = edgeOffset;
-            
-            // Check if this position conflicts with main grid pegs
-            let tooClose = false;
-            for (let existingPeg of gameState.blinkoGame.pegs) {
-                const distance = Math.sqrt(
-                    (edgeX - existingPeg.x) ** 2 + 
-                    (y - existingPeg.y) ** 2
-                );
-                if (distance < pegSpacingX * 0.8) {
-                    tooClose = true;
-                    break;
-                }
-            }
-            
-            if (!tooClose) {
-                gameState.blinkoGame.pegs.push({
-                    x: edgeX,
-                    y: y,
-                    glowing: false,
-                    glowTime: 0
-                });
-            }
+    // Left edge triangle boundary
+    for (let row = 0; row < edgeRows; row++) {
+        const y = startY + row * pegSpacingY;
+        if (y >= pegSafeZone) break;
+        
+        // Left edge position - forms triangle shape
+        const pegsInRow = startPegs + row;
+        const totalWidth = (pegsInRow - 1) * 40;
+        const rowStartX = (CANVAS_WIDTH - totalWidth) / 2;
+        const leftEdgeX = rowStartX - 25; // Offset from main triangle
+        
+        if (leftEdgeX >= 20) {
+            gameState.blinkoGame.pegs.push({
+                x: leftEdgeX,
+                y: y,
+                glowing: false,
+                glowTime: 0
+            });
+        }
+        
+        // Right edge position - forms triangle shape
+        const rightEdgeX = rowStartX + totalWidth + 25; // Offset from main triangle
+        
+        if (rightEdgeX <= CANVAS_WIDTH - 20) {
+            gameState.blinkoGame.pegs.push({
+                x: rightEdgeX,
+                y: y,
+                glowing: false,
+                glowTime: 0
+            });
         }
     }
     
-    // Right edge pegs - positioned further from main grid
-    for (let i = 1; i <= edgePegsPerSide; i++) {
-        const y = startY + 30 + i * edgePegSpacing;
-        if (y < bucketZone - 30) {
-            const edgeX = CANVAS_WIDTH - edgeOffset;
-            
-            // Check if this position conflicts with main grid pegs
-            let tooClose = false;
-            for (let existingPeg of gameState.blinkoGame.pegs) {
-                const distance = Math.sqrt(
-                    (edgeX - existingPeg.x) ** 2 + 
-                    (y - existingPeg.y) ** 2
-                );
-                if (distance < pegSpacingX * 0.8) {
-                    tooClose = true;
-                    break;
-                }
-            }
-            
-            if (!tooClose) {
-                gameState.blinkoGame.pegs.push({
-                    x: edgeX,
-                    y: y,
-                    glowing: false,
-                    glowTime: 0
-                });
-            }
-        }
-    }
-    
-    // Add some extra stress-inducing pegs in strategic positions
-    const stressPegs = [
-        // Quarter positions for more unpredictable bouncing
-        { x: CANVAS_WIDTH * 0.2, y: startY + pegSpacingY * 3 },
-        { x: CANVAS_WIDTH * 0.8, y: startY + pegSpacingY * 3 },
-        { x: CANVAS_WIDTH * 0.3, y: startY + pegSpacingY * 6 },
-        { x: CANVAS_WIDTH * 0.7, y: startY + pegSpacingY * 6 },
-        { x: CANVAS_WIDTH * 0.25, y: startY + pegSpacingY * 9 },
-        { x: CANVAS_WIDTH * 0.75, y: startY + pegSpacingY * 9 },
-        { x: CANVAS_WIDTH * 0.35, y: startY + pegSpacingY * 12 },
-        { x: CANVAS_WIDTH * 0.65, y: startY + pegSpacingY * 12 },
-        { x: CANVAS_WIDTH * 0.4, y: startY + pegSpacingY * 15 },
-        { x: CANVAS_WIDTH * 0.6, y: startY + pegSpacingY * 15 }
-    ];
-    
-    stressPegs.forEach(pegPos => {
-        if (pegPos.y < bucketZone - 25) {
-            // Check if this position conflicts with existing pegs
-            let tooClose = false;
-            for (let existingPeg of gameState.blinkoGame.pegs) {
-                const distance = Math.sqrt(
-                    (pegPos.x - existingPeg.x) ** 2 + 
-                    (pegPos.y - existingPeg.y) ** 2
-                );
-                if (distance < pegSpacingX * 0.75) { // Slightly closer for more chaos
-                    tooClose = true;
-                    break;
-                }
-            }
-            
-            if (!tooClose) {
-                gameState.blinkoGame.pegs.push({
-                    x: pegPos.x,
-                    y: pegPos.y,
-                    glowing: false,
-                    glowTime: 0
-                });
-            }
-        }
-    });
-    
-    // Create multiplier slots at the bottom - FIXED to 13 slots
-    const slotCount = 13; // Fixed bucket count
+    // Create triangular multiplier slots at the bottom - 13 slots
+    const slotCount = 13;
     const slotWidth = CANVAS_WIDTH / slotCount;
     const slotHeight = 50;
     const slotY = CANVAS_HEIGHT - slotHeight;
     
-    // Create 13-slot multiplier arrays
+    // Use triangular distribution for slot positioning (wider spacing in middle)
     const multipliers13 = {
         low: [5, 3, 2, 1.4, 0.8, 0.6, 0.4, 0.6, 0.8, 1.1, 2, 3, 5],
         medium: [33.0, 11.0, 4.0, 2.0, 1.1, 0.6, 0.3, 0.6, 1.1, 2.0, 4.0, 11.0, 33.0],
@@ -898,6 +831,7 @@ function createBlinkoBoard() {
     
     const currentMultipliers = multipliers13[gameState.blinkoGame.currentRisk];
     
+    // Create slots in triangular formation at bottom
     for (let i = 0; i < slotCount; i++) {
         gameState.blinkoGame.multiplierSlots.push({
             x: i * slotWidth,
@@ -953,16 +887,16 @@ async function dropBlinkoBall() {
         gameState.chips = data.newBalance;
         updateCurrencyDisplay();
         
-        // Create new ball with slight random starting position for variety
+        // Create new ball at the top center of triangle with slight randomness
         const ball = {
-            x: CANVAS_WIDTH / 2 + (Math.random() - 0.5) * 10,
+            x: CANVAS_WIDTH / 2 + (Math.random() - 0.5) * 8,
             y: 30,
-            vx: (Math.random() - 0.5) * 1.5, // Reduced initial velocity
+            vx: (Math.random() - 0.5) * 1.2,
             vy: 0,
             radius: BALL_RADIUS,
             betAmount: betAmount,
             bouncing: false,
-            stuckTimer: 0 // Prevent getting stuck
+            stuckTimer: 0
         };
         
         gameState.blinkoGame.balls.push(ball);
@@ -979,10 +913,10 @@ function updateBlinkoBalls() {
     for (let i = gameState.blinkoGame.balls.length - 1; i >= 0; i--) {
         const ball = gameState.blinkoGame.balls[i];
         
-        // Apply gravity (much slower now)
+        // Apply gravity
         ball.vy += GRAVITY;
         
-        // Apply friction (less friction for more bouncing)
+        // Apply friction
         ball.vx *= FRICTION;
         ball.vy *= FRICTION;
         
@@ -990,45 +924,54 @@ function updateBlinkoBalls() {
         ball.x += ball.vx;
         ball.y += ball.vy;
         
-        // Enhanced side wall bouncing with more energy retention
-        if (ball.x - ball.radius < 40) {
-            ball.x = 40 + ball.radius;
-            ball.vx = Math.abs(ball.vx) * BOUNCE + Math.random() * 0.5;
-        }
-        if (ball.x + ball.radius > CANVAS_WIDTH - 40) {
-            ball.x = CANVAS_WIDTH - 40 - ball.radius;
-            ball.vx = -Math.abs(ball.vx) * BOUNCE - Math.random() * 0.5;
+        // Enhanced triangular boundary collision
+        // Calculate the triangular boundaries based on current Y position
+        const rowFromTop = Math.max(0, (ball.y - 80) / 35);
+        const pegsInCurrentRow = 3 + Math.floor(rowFromTop);
+        const totalWidth = (pegsInCurrentRow - 1) * 40;
+        const leftBoundary = (CANVAS_WIDTH - totalWidth) / 2 - 30;
+        const rightBoundary = (CANVAS_WIDTH - totalWidth) / 2 + totalWidth + 30;
+        
+        // Left triangular boundary
+        if (ball.x - ball.radius < leftBoundary) {
+            ball.x = leftBoundary + ball.radius;
+            ball.vx = Math.abs(ball.vx) * BOUNCE + Math.random() * 0.3;
         }
         
-        // Check collision with pegs (enhanced for more bouncing)
+        // Right triangular boundary  
+        if (ball.x + ball.radius > rightBoundary) {
+            ball.x = rightBoundary - ball.radius;
+            ball.vx = -Math.abs(ball.vx) * BOUNCE - Math.random() * 0.3;
+        }
+        
+        // Check collision with pegs
         gameState.blinkoGame.pegs.forEach(peg => {
             const dx = ball.x - peg.x;
             const dy = ball.y - peg.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
             if (distance < ball.radius + PEG_RADIUS) {
-                // Collision detected - prevent sticking by ensuring minimum separation
+                // Collision detected
                 const angle = Math.atan2(dy, dx);
-                const minDistance = PEG_RADIUS + ball.radius + 2; // Increased buffer
+                const minDistance = PEG_RADIUS + ball.radius + 2;
                 
                 ball.x = peg.x + Math.cos(angle) * minDistance;
                 ball.y = peg.y + Math.sin(angle) * minDistance;
                 
-                // Enhanced bounce calculation with more randomness and energy
+                // Enhanced bounce calculation for triangular layout
                 const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-                const minSpeed = 1.5; // Ensure minimum speed to prevent sticking
+                const minSpeed = 1.3;
                 const actualSpeed = Math.max(speed * BOUNCE, minSpeed);
                 
-                // Add more randomness and energy to bounces
-                const randomFactor = (Math.random() - 0.5) * 3;
+                // Add randomness but keep it more controlled for triangle
+                const randomFactor = (Math.random() - 0.5) * 2.5;
                 ball.vx = Math.cos(angle) * actualSpeed + randomFactor;
-                ball.vy = Math.sin(angle) * actualSpeed + Math.random() * 1.5; // Add downward bias
+                ball.vy = Math.sin(angle) * actualSpeed + Math.random() * 1.2;
                 
-                // Make peg glow longer for visual feedback
+                // Make peg glow
                 peg.glowing = true;
-                peg.glowTime = 45; // Increased from 30
+                peg.glowTime = 40;
                 
-                // Reset stuck timer on successful bounce
                 ball.stuckTimer = 0;
             }
             
@@ -1041,37 +984,37 @@ function updateBlinkoBalls() {
             }
         });
         
-        // Anti-stuck mechanism - ensure ball keeps moving
+        // Anti-stuck mechanism
         if (Math.abs(ball.vx) < 0.3 && Math.abs(ball.vy) < 0.3) {
             ball.stuckTimer++;
-            if (ball.stuckTimer > 60) { // If stuck for too long
-                ball.vx += (Math.random() - 0.5) * 2;
-                ball.vy += Math.random() * 1 + 0.5;
+            if (ball.stuckTimer > 50) {
+                ball.vx += (Math.random() - 0.5) * 1.8;
+                ball.vy += Math.random() * 0.8 + 0.4;
                 ball.stuckTimer = 0;
             }
         } else {
             ball.stuckTimer = 0;
         }
         
-        // Ensure minimum downward velocity to prevent floating
-        if (Math.abs(ball.vy) < 0.2) {
-            ball.vy += 0.3;
+        // Ensure minimum downward velocity
+        if (Math.abs(ball.vy) < 0.15) {
+            ball.vy += 0.25;
         }
         
-        // Check if ball reached bottom (very small gap before buckets)
-        if (ball.y > CANVAS_HEIGHT - 65) {
-            // Find which slot the ball landed in - fixed for 13 slots
+        // Check if ball reached bottom (with space above buckets)
+        if (ball.y > CANVAS_HEIGHT - 70) {
+            // Find which slot the ball landed in
             const slotIndex = Math.floor(ball.x / (CANVAS_WIDTH / 13));
-            const clampedIndex = Math.max(0, Math.min(slotIndex, 12)); // Max index is 12 for 13 slots
+            const clampedIndex = Math.max(0, Math.min(slotIndex, 12));
             const slot = gameState.blinkoGame.multiplierSlots[clampedIndex];
             
             if (slot) {
                 const winAmount = ball.betAmount * slot.multiplier;
                 handleBlinkoWin(winAmount);
                 
-                // Highlight slot briefly with enhanced effect
+                // Highlight slot
                 slot.highlight = true;
-                setTimeout(() => slot.highlight = false, 800); // Longer highlight
+                setTimeout(() => slot.highlight = false, 800);
             }
             
             // Remove ball
@@ -1112,9 +1055,26 @@ async function handleBlinkoWin(amount) {
 function drawBlinkoGame() {
     if (!blinkoCtx) return;
     
-    // Clear canvas with darker background for better contrast
+    // Clear canvas with dark background
     blinkoCtx.fillStyle = '#0a0a0a';
     blinkoCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    
+    // Draw triangular outline/guide (optional - for visual reference)
+    blinkoCtx.strokeStyle = 'rgba(255, 215, 0, 0.1)';
+    blinkoCtx.lineWidth = 1;
+    blinkoCtx.beginPath();
+    
+    // Draw triangle outline
+    const topY = 80;
+    const bottomY = CANVAS_HEIGHT - 110;
+    const centerX = CANVAS_WIDTH / 2;
+    const baseWidth = 500;
+    
+    blinkoCtx.moveTo(centerX, topY);
+    blinkoCtx.lineTo(centerX - baseWidth/2, bottomY);
+    blinkoCtx.lineTo(centerX + baseWidth/2, bottomY);
+    blinkoCtx.closePath();
+    blinkoCtx.stroke();
     
     // Draw pegs with enhanced visuals
     gameState.blinkoGame.pegs.forEach(peg => {
@@ -1122,10 +1082,10 @@ function drawBlinkoGame() {
         blinkoCtx.arc(peg.x, peg.y, PEG_RADIUS, 0, Math.PI * 2);
         
         if (peg.glowing) {
-            const glowIntensity = peg.glowTime / 45;
-            blinkoCtx.fillStyle = `rgba(255, 215, 0, ${0.4 + glowIntensity * 0.6})`;
+            const glowIntensity = peg.glowTime / 40;
+            blinkoCtx.fillStyle = `rgba(255, 215, 0, ${0.5 + glowIntensity * 0.5})`;
             blinkoCtx.shadowColor = '#FFD700';
-            blinkoCtx.shadowBlur = 20 * glowIntensity;
+            blinkoCtx.shadowBlur = 18 * glowIntensity;
         } else {
             blinkoCtx.fillStyle = '#555';
             blinkoCtx.shadowBlur = 0;
@@ -1137,11 +1097,10 @@ function drawBlinkoGame() {
         blinkoCtx.stroke();
     });
     
-    // Draw multiplier slots with enhanced visuals
+    // Draw multiplier slots with triangular spacing
     gameState.blinkoGame.multiplierSlots.forEach((slot, index) => {
         if (slot.highlight) {
             blinkoCtx.fillStyle = 'rgba(255, 215, 0, 0.4)';
-            // Add glow effect for highlighted slots
             blinkoCtx.shadowColor = '#FFD700';
             blinkoCtx.shadowBlur = 15;
         } else {
@@ -1155,7 +1114,7 @@ function drawBlinkoGame() {
         blinkoCtx.lineWidth = 1;
         blinkoCtx.strokeRect(slot.x, slot.y, slot.width, slot.height);
         
-        // Draw multiplier text with better contrast
+        // Draw multiplier text
         blinkoCtx.fillStyle = slot.multiplier >= 1 ? '#4CAF50' : '#f44336';
         blinkoCtx.font = 'bold 11px Arial';
         blinkoCtx.textAlign = 'center';
@@ -1172,7 +1131,7 @@ function drawBlinkoGame() {
         blinkoCtx.beginPath();
         blinkoCtx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
         
-        // Add gradient effect to balls
+        // Gradient effect for balls
         const gradient = blinkoCtx.createRadialGradient(
             ball.x - 2, ball.y - 2, 0,
             ball.x, ball.y, ball.radius
@@ -1186,7 +1145,7 @@ function drawBlinkoGame() {
         blinkoCtx.lineWidth = 1.5;
         blinkoCtx.stroke();
         
-        // Add subtle glow to balls
+        // Add glow to balls
         blinkoCtx.shadowColor = '#FF5733';
         blinkoCtx.shadowBlur = 8;
         blinkoCtx.beginPath();
@@ -1452,6 +1411,20 @@ if (elements.backToMenuBtn) elements.backToMenuBtn.addEventListener('click', sho
 if (elements.minesBackToMenuBtn) elements.minesBackToMenuBtn.addEventListener('click', showGameSelectScreen);
 if (elements.blinkoBackToMenuBtn) elements.blinkoBackToMenuBtn.addEventListener('click', showGameSelectScreen);
 
+// Token input enter key support
+if (elements.tokenInput) {
+    elements.tokenInput.addEventListener('keypress', async (e) => {
+        if (e.key === 'Enter') {
+            const token = e.target.value.trim();
+            if (token) {
+                await loginWithToken(token);
+            } else {
+                showNotification('Please enter your token', false);
+            }
+        }
+    });
+}
+
 // CSS animations
 const style = document.createElement('style');
 style.textContent = `
@@ -1459,6 +1432,50 @@ style.textContent = `
         0% { transform: translateY(0%) scale(1); }
         50% { transform: translateY(-20%) scale(1.1); }
         100% { transform: translateY(0%) scale(1); }
+    }
+    
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: bold;
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    .notification.success {
+        background-color: #4CAF50;
+    }
+    
+    .notification.error {
+        background-color: #f44336;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    .win-highlight {
+        animation: winGlow 1s ease-in-out infinite alternate;
+    }
+    
+    @keyframes winGlow {
+        from {
+            filter: brightness(1) drop-shadow(0 0 5px #FFD700);
+        }
+        to {
+            filter: brightness(1.3) drop-shadow(0 0 15px #FFD700);
+        }
     }
 `;
 document.head.appendChild(style);
@@ -1472,7 +1489,28 @@ async function initGame() {
         }
     } catch (error) {
         console.error('Initialization error:', error);
+        showNotification('Failed to initialize game. Please refresh the page.', false);
     }
 }
 
+// Start the game when DOM is loaded
 document.addEventListener('DOMContentLoaded', initGame);
+
+// Handle page visibility for animation optimization
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && gameState.currentGame === 'blinko') {
+        // Pause Blinko animation when tab is not visible to save resources
+        stopBlinkoAnimation();
+    } else if (!document.hidden && gameState.currentGame === 'blinko') {
+        // Resume Blinko animation when tab becomes visible
+        startBlinkoAnimation();
+    }
+});
+
+// Handle window resize for canvas
+window.addEventListener('resize', () => {
+    if (gameState.currentGame === 'blinko' && elements.blinkoCanvas) {
+        // Redraw canvas on resize
+        drawBlinkoGame();
+    }
+});
