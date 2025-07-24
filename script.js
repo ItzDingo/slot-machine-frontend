@@ -460,7 +460,7 @@ async function startNewMinesGame() {
     const betAmount = parseFloat(elements.minesBetInput?.value);
     const minesCount = parseInt(elements.minesCountInput?.value);
     
-    if (isNaN(betAmount) {
+    if (isNaN(betAmount)) {
         showNotification("Please enter a valid bet amount", false);
         return;
     }
@@ -768,7 +768,7 @@ async function dropBlinkoBall() {
 
     const betAmount = parseFloat(elements.blinkoBetInput?.value);
     
-    if (isNaN(betAmount) {
+    if (isNaN(betAmount)) {
         showNotification("Please enter a valid bet amount", false);
         return;
     }
