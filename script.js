@@ -34,44 +34,45 @@ const CONFIG = {
         maxMines: 10,
         gridSize: 5,
         getMultiplier: function(minesCount, revealedCells) {
-            // Base multipliers that increase with mine count
-            const baseMultipliers = {
-                1: 1.04,  2: 1.07,  3: 1.10,
-                4: 1.14,  5: 1.18,  6: 1.23,
-                7: 1.29,  8: 1.35,  9: 1.42,
-                10: 2
-            };
-            
-            // Growth curve based on revealed cells
-            const growthCurve = [
-                { cells: 1, factor: 1.00 },
-                { cells: 2, factor: 1.05 },
-                { cells: 5, factor: 1.15 },
-                { cells: 10, factor: 1.30 },
-                { cells: 15, factor: 1.50 },
-                { cells: 20, factor: 1.75 },
-                { cells: 24, factor: 2.10 }
-            ];
-            
-            // Find base multiplier
-            const base = baseMultipliers[minesCount] || 1.0;
-            
-            // Find growth factor
-            let growth = 1.0;
-            for (let i = growthCurve.length - 1; i >= 0; i--) {
-                if (revealedCells >= growthCurve[i].cells) {
-                    growth = growthCurve[i].factor;
-                    break;
-                }
-            }
-            
-            // Calculate final multiplier (before house edge)
-            const rawMultiplier = base * growth;
-            
-            // Apply house edge and return with 4 decimal precision
-            const withHouseEdge = rawMultiplier * (1 - this.houseEdge);
-            return parseFloat(withHouseEdge.toFixed(4));
-        },
+    // Base risk multipliers - higher mines = higher base multiplier
+    const baseMultipliers = {
+        1: 1.04,   // Lowest base for 1 mine
+        2: 1.07,
+        3: 1.10,
+        4: 1.15,
+        5: 1.18,
+        6: 1.23,
+        7: 1.30,
+        8: 1.45,
+        9: 1.65,
+        10: 2   // Highest base for 10 mines
+    };
+    
+    // Growth factors - higher mines get more aggressive growth per reveal
+    const growthFactors = {
+        1: 0.02,   // +2% per reveal for 1 mine
+        2: 0.03,
+        3: 0.04,
+        4: 0.05,
+        5: 0.06,
+        6: 0.08,
+        7: 0.10,
+        8: 0.13,
+        9: 0.16,
+        10: 0.20   // +20% per reveal for 10 mines
+    };
+    
+    // Get base and growth values based on mine count
+    const base = baseMultipliers[minesCount] || 1.0;
+    const growth = growthFactors[minesCount] || 0.05;
+    
+    // Calculate multiplier with compounding growth
+    const rawMultiplier = base * Math.pow(1 + growth, revealedCells);
+    
+    // Apply house edge and return with 4 decimal precision
+    const withHouseEdge = rawMultiplier * (1 - this.houseEdge);
+    return parseFloat(withHouseEdge.toFixed(4));
+},
         houseEdge: 0.03  // 3% house edge
     }
 };
@@ -467,7 +468,10 @@ async function setupMinesGameUI() {
         elements.minesCountInput.value = '';
     }
     if (elements.minesStartBtn) elements.minesStartBtn.disabled = false;
-    if (elements.minesCashoutBtn) elements.minesCashoutBtn.disabled = true;
+    if (elements.minesCashoutBtn) {
+    elements.minesCashoutBtn.disabled = true;
+    elements.minesCashoutBtn.classList.add('disabled');
+}
     
     try {
         const response = await fetch(`${API_BASE_URL}/api/mines/stats?userId=${gameState.userId}`, {
@@ -618,6 +622,7 @@ function revealMineCell(index) {
     const cell = elements.minesGrid.children[index];
     if (!cell || cell.classList.contains('revealed')) return;
     
+    // Check if cell contains a mine
     if (gameState.minesGame.minePositions.includes(index)) {
         cell.innerHTML = '<img src="assets/mine.png" alt="Mine">';
         cell.classList.add('mine');
@@ -625,20 +630,23 @@ function revealMineCell(index) {
         return;
     }
     
+    // Reveal the safe cell
     cell.classList.add('revealed');
+    cell.innerHTML = '<div class="safe-cell"></div>'; // Add visual for safe cell
     gameState.minesGame.revealedCells++;
     
-    // Calculate multiplier using the new system
+    // Calculate new multiplier with the updated system
     gameState.minesGame.multiplier = CONFIG.mines.getMultiplier(
         gameState.minesGame.minesCount,
         gameState.minesGame.revealedCells
     );
     
-    // Calculate current win with precise decimal values
+    // Update current win with precise decimal values
     gameState.minesGame.currentWin = parseFloat(
         (gameState.minesGame.betAmount * gameState.minesGame.multiplier).toFixed(4)
     );
     
+    // Update UI
     if (elements.minesCurrentWin) {
         elements.minesCurrentWin.textContent = gameState.minesGame.currentWin.toFixed(4);
     }
@@ -646,13 +654,34 @@ function revealMineCell(index) {
         elements.minesMultiplier.textContent = `${gameState.minesGame.multiplier.toFixed(4)}x`;
     }
     
-    const safeCells = 25 - gameState.minesGame.minesCount;
+    // Enable cashout button after minimum 2 reveals
+    if (gameState.minesGame.revealedCells >= 2 && elements.minesCashoutBtn) {
+        elements.minesCashoutBtn.disabled = false;
+        elements.minesCashoutBtn.classList.remove('disabled');
+    }
+    
+    // Add visual feedback for multiplier increase
+    cell.querySelector('.safe-cell').textContent = `+${(CONFIG.mines.growthFactors[gameState.minesGame.minesCount] * 100).toFixed(0)}%`;
+    setTimeout(() => {
+        if (cell.querySelector('.safe-cell')) {
+            cell.querySelector('.safe-cell').textContent = '';
+        }
+    }, 1000);
+    
+    // Check for automatic win if all safe cells are revealed
+    const safeCells = CONFIG.mines.gridSize * CONFIG.mines.gridSize - gameState.minesGame.minesCount;
     if (gameState.minesGame.revealedCells === safeCells) {
         endMinesGame(true);
     }
 }
 
 function cashoutMinesGame() {
+    // Minimum 2 cells must be revealed before cashing out
+    if (gameState.minesGame.revealedCells < 2) {
+        showNotification("You need to reveal at least 2 cells to cashout", false);
+        return;
+    }
+    
     if (!gameState.minesGame.gameActive || gameState.minesGame.revealedCells === 0) {
         showNotification("You need to reveal at least one cell to cashout", false);
         return;
