@@ -70,14 +70,14 @@ const CONFIG = {
     blinko: {
     minBet: 0.1,
     maxBet: 1000,
-    rows: 15,  // Total rows of pegs
-    pegSpacing: 40,  // Increased from 30
+    rows: 16,  // Creates 16 buckets (rows + 1)
+    pegSpacing: 40,
     ballRadius: 8,
     pegRadius: 6,
     multipliers: {
-        low: [0.1, 0.2, 0.5, 1, 1.5, 2, 3, 5, 8, 12, 20, 30, 50, 75, 100],
-        medium: [0.05, 0.1, 0.3, 0.7, 1.2, 2, 3.5, 6, 10, 18, 30, 50, 80, 120, 200],
-        high: [0.01, 0.05, 0.2, 0.5, 1, 2, 4, 8, 15, 25, 40, 70, 120, 200, 500]
+        low: [50, 25, 15, 10, 5, 3, 0.2, 1, 0.2, 3, 5, 10, 15, 25, 50],
+        medium: [100, 45, 22, 15, 7, 0.4, 0.2, 1.2, 0.2, 0.4, 7, 15, 22, 45, 100],
+        high: [250, 100, 55, 30, 10, 0.4, 0.01, 0.5, 0.02, 0.4, 10, 30, 55, 100, 250]
     },
     physics: {
         gravity: 0.2,
@@ -708,7 +708,6 @@ function setupBlinkoGame() {
 function createBlinkoBoard() {
     if (!elements.blinkoBoard) return;
     
-    // Clear previous elements
     elements.blinkoBoard.innerHTML = '';
     gameState.blinkoGame.pegs = [];
     
@@ -717,19 +716,19 @@ function createBlinkoBoard() {
     const pegSpacing = CONFIG.blinko.pegSpacing;
     const pegRadius = CONFIG.blinko.pegRadius;
     
-    // Calculate dynamic spacing to fill width
-    const maxPegsInRow = CONFIG.blinko.rows;
-    const totalWidthNeeded = (maxPegsInRow - 1) * pegSpacing;
-    const startX = (boardWidth - totalWidthNeeded) / 2;
+    // Calculate total width needed for the base row
+    const baseRowPegs = CONFIG.blinko.rows;
+    const totalWidthNeeded = (baseRowPegs - 1) * pegSpacing;
     
-    // Create pegs in triangular pattern starting with 1 peg
+    // Create pegs in perfect triangle
     for (let row = 0; row < CONFIG.blinko.rows; row++) {
         const pegsInRow = row + 1;
-        const rowStartX = startX + ((maxPegsInRow - pegsInRow) * pegSpacing) / 2;
+        const rowWidth = (pegsInRow - 1) * pegSpacing;
+        const startX = (boardWidth - rowWidth) / 2;
         
         for (let col = 0; col < pegsInRow; col++) {
-            const pegX = rowStartX + col * pegSpacing;
-            const pegY = 30 + row * pegSpacing;  // Start 30px from top
+            const pegX = startX + col * pegSpacing;
+            const pegY = 30 + row * pegSpacing * 0.866; // 0.866 for hexagonal packing
             
             const peg = document.createElement('div');
             peg.className = 'blinko-peg';
@@ -746,10 +745,25 @@ function createBlinkoBoard() {
         }
     }
     
-    // Add invisible walls to keep balls in play area
+    // Set triangular boundaries
+    const triangleHeight = CONFIG.blinko.rows * pegSpacing * 0.866;
+    const baseStartX = (boardWidth - totalWidthNeeded) / 2;
+    
     gameState.blinkoGame.walls = [
-        { x1: startX - pegRadius, y1: 0, x2: startX - pegRadius, y2: boardHeight }, // Left wall
-        { x1: startX + totalWidthNeeded + pegRadius, y1: 0, x2: startX + totalWidthNeeded + pegRadius, y2: boardHeight } // Right wall
+        // Left wall (angled)
+        { 
+            x1: baseStartX, 
+            y1: 30 + triangleHeight,
+            x2: boardWidth / 2,
+            y2: 30
+        },
+        // Right wall (angled)
+        { 
+            x1: boardWidth / 2,
+            y1: 30,
+            x2: baseStartX + totalWidthNeeded,
+            y2: 30 + triangleHeight
+        }
     ];
 }
 
@@ -761,17 +775,30 @@ function createBlinkoBuckets() {
     
     const bucketCount = CONFIG.blinko.rows + 1;
     const boardWidth = elements.blinkoBoard.clientWidth;
-    const maxPegsInRow = CONFIG.blinko.rows;
-    const totalWidthNeeded = (maxPegsInRow - 1) * CONFIG.blinko.pegSpacing;
+    const multipliers = CONFIG.blinko.multipliers[gameState.blinkoGame.riskLevel];
+    
+    // Create mirrored multiplier distribution
+    const halfBuckets = Math.ceil(bucketCount / 2);
+    const bucketMultipliers = [];
+    
+    for (let i = 0; i < halfBuckets; i++) {
+        const progress = i / (halfBuckets - 1);
+        const multiplierIndex = Math.floor(progress * (multipliers.length - 1));
+        bucketMultipliers[i] = multipliers[multiplierIndex];
+    }
+    
+    // Mirror to the right side
+    for (let i = halfBuckets; i < bucketCount; i++) {
+        bucketMultipliers[i] = bucketMultipliers[bucketCount - 1 - i];
+    }
+    
+    const totalWidthNeeded = (bucketCount - 1) * CONFIG.blinko.pegSpacing;
     const startX = (boardWidth - totalWidthNeeded) / 2;
     const bucketWidth = totalWidthNeeded / (bucketCount - 1);
     
-    const multipliers = CONFIG.blinko.multipliers[gameState.blinkoGame.riskLevel];
-    
     for (let i = 0; i < bucketCount; i++) {
-        const bucketX = startX + (i * bucketWidth) - (bucketWidth / 2);
-        const multiplierIndex = Math.floor((i / (bucketCount - 1)) * (multipliers.length - 1));
-        const multiplier = multipliers[multiplierIndex];
+        const bucketX = startX + i * bucketWidth;
+        const multiplier = bucketMultipliers[i];
         
         const bucket = document.createElement('div');
         bucket.className = 'blinko-bucket';
@@ -875,21 +902,21 @@ function createBlinkoBall() {
 
 function animateBlinkoBalls() {
     const physics = CONFIG.blinko.physics;
-    const boardHeight = elements.blinkoBoard?.clientHeight || 500;
+    const boardHeight = elements.blinkoBoard?.clientHeight || 600;
     const boardWidth = elements.blinkoBoard?.clientWidth || 500;
     const bucketHeight = elements.blinkoBuckets?.clientHeight || 40;
     
     let activeBalls = 0;
+    const currentTime = Date.now();
     
+    // Process all active balls
     gameState.blinkoGame.balls.forEach(ball => {
         if (ball.settled) return;
         
         activeBalls++;
         
-        // Apply gravity
+        // Apply physics
         ball.vy += physics.gravity;
-        
-        // Apply friction
         ball.vx *= physics.friction;
         ball.vy *= physics.friction;
         
@@ -897,27 +924,70 @@ function animateBlinkoBalls() {
         ball.x += ball.vx;
         ball.y += ball.vy;
         
-        // Check for collisions with pegs
+        // Check wall collisions (triangle boundaries)
+        const leftWall = gameState.blinkoGame.walls[0];
+        const rightWall = gameState.blinkoGame.walls[1];
+        
+        // Left wall collision
+        if (ball.x < leftWall.x1 + (ball.y - leftWall.y1) * 
+            (leftWall.x2 - leftWall.x1) / (leftWall.y2 - leftWall.y1) + ball.radius) {
+            
+            // Calculate normal vector
+            const wallAngle = Math.atan2(leftWall.y2 - leftWall.y1, leftWall.x2 - leftWall.x1);
+            const normalAngle = wallAngle + Math.PI/2;
+            
+            // Reflect velocity
+            const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+            const incidentAngle = Math.atan2(ball.vy, ball.vx);
+            const newAngle = 2 * normalAngle - incidentAngle;
+            
+            ball.vx = speed * Math.cos(newAngle) * physics.wallBounce;
+            ball.vy = speed * Math.sin(newAngle) * physics.wallBounce;
+            
+            // Push ball out of wall
+            const targetX = leftWall.x1 + (ball.y - leftWall.y1) * 
+                (leftWall.x2 - leftWall.x1) / (leftWall.y2 - leftWall.y1) + ball.radius;
+            ball.x = targetX + 1;
+        }
+        
+        // Right wall collision
+        if (ball.x > rightWall.x1 + (ball.y - rightWall.y1) * 
+            (rightWall.x2 - rightWall.x1) / (rightWall.y2 - rightWall.y1) - ball.radius) {
+            
+            // Calculate normal vector
+            const wallAngle = Math.atan2(rightWall.y2 - rightWall.y1, rightWall.x2 - rightWall.x1);
+            const normalAngle = wallAngle + Math.PI/2;
+            
+            // Reflect velocity
+            const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+            const incidentAngle = Math.atan2(ball.vy, ball.vx);
+            const newAngle = 2 * normalAngle - incidentAngle;
+            
+            ball.vx = speed * Math.cos(newAngle) * physics.wallBounce;
+            ball.vy = speed * Math.sin(newAngle) * physics.wallBounce;
+            
+            // Push ball out of wall
+            const targetX = rightWall.x1 + (ball.y - rightWall.y1) * 
+                (rightWall.x2 - rightWall.x1) / (rightWall.y2 - rightWall.y1) - ball.radius;
+            ball.x = targetX - 1;
+        }
+        
+        // Check peg collisions
         gameState.blinkoGame.pegs.forEach(peg => {
             const dx = ball.x - peg.x;
             const dy = ball.y - peg.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
             if (distance < ball.radius + peg.radius) {
-                // Collision detected
+                // Collision detected - make peg glow
                 peg.element.style.animation = 'pegGlow 0.3s';
-                setTimeout(() => {
-                    peg.element.style.animation = '';
-                }, 300);
+                setTimeout(() => peg.element.style.animation = '', 300);
                 
-                // Calculate collision normal
+                // Calculate collision response
                 const nx = dx / distance;
                 const ny = dy / distance;
-                
-                // Calculate relative velocity
                 const p = 2 * (ball.vx * nx + ball.vy * ny);
                 
-                // Update ball velocity (bounce)
                 ball.vx = (ball.vx - p * nx) * physics.pegBounce;
                 ball.vy = (ball.vy - p * ny) * physics.pegBounce;
                 
@@ -928,50 +998,37 @@ function animateBlinkoBalls() {
             }
         });
         
-        function animateBlinkoBalls() {
-    // ... existing code ...
-    
-    // Check for wall collisions
-    gameState.blinkoGame.walls.forEach(wall => {
-        // Simple line collision detection
-        if (ball.x < wall.x1 + ball.radius && ball.vx < 0) {
-            ball.x = wall.x1 + ball.radius;
-            ball.vx *= -CONFIG.blinko.physics.wallBounce;
-        } else if (ball.x > wall.x2 - ball.radius && ball.vx > 0) {
-            ball.x = wall.x2 - ball.radius;
-            ball.vx *= -CONFIG.blinko.physics.wallBounce;
-        }
-    });
-    
-    // ... rest of the existing code ...
-}
-        
-        // Check if ball reached bottom
+        // Check if ball reached buckets
         if (ball.y > boardHeight - ball.radius - bucketHeight) {
-            // Check which bucket it landed in
-            const bucketIndex = Math.floor(ball.x / CONFIG.blinko.bucketWidth);
-            const bucket = gameState.blinkoGame.buckets[bucketIndex];
+            ball.settled = true;
+            ball.settleTime = currentTime;
             
+            // Find which bucket it landed in
+            const bucketWidth = boardWidth / gameState.blinkoGame.buckets.length;
+            const bucketIndex = Math.min(
+                Math.floor(ball.x / bucketWidth),
+                gameState.blinkoGame.buckets.length - 1
+            );
+            
+            const bucket = gameState.blinkoGame.buckets[bucketIndex];
             if (bucket) {
-                ball.settled = true;
-                ball.bucketIndex = bucketIndex;
-                
-                // Calculate win amount
-                const multiplier = bucket.multiplier;
-                const winAmount = gameState.blinkoGame.betAmount * multiplier;
-                
-                gameState.blinkoGame.currentMultiplier = multiplier;
+                const winAmount = gameState.blinkoGame.betAmount * bucket.multiplier;
                 gameState.blinkoGame.totalWin += winAmount;
                 
-                if (elements.blinkoMultiplier) {
-                    elements.blinkoMultiplier.textContent = `${multiplier.toFixed(2)}x`;
-                }
+                // Update UI
                 if (elements.blinkoWinAmount) {
                     elements.blinkoWinAmount.textContent = gameState.blinkoGame.totalWin.toFixed(2);
                 }
                 
-                // Show win popup
-                showBlinkoWinPopup(bucketIndex, winAmount);
+                // Show win popup for significant wins
+                if (winAmount >= gameState.blinkoGame.betAmount) {
+                    showBlinkoWinPopup(bucketIndex, winAmount);
+                }
+                
+                // Auto-claim small losses immediately
+                if (winAmount < gameState.blinkoGame.betAmount) {
+                    claimBlinkoWin();
+                }
             }
         }
         
@@ -980,15 +1037,16 @@ function animateBlinkoBalls() {
         ball.element.style.top = `${ball.y - ball.radius}px`;
     });
     
-    // Remove settled balls after a delay
+    // Remove settled balls after delay
     gameState.blinkoGame.balls = gameState.blinkoGame.balls.filter(ball => {
-        if (ball.settled && Date.now() - ball.settled > 3000) {
+        if (ball.settled && currentTime - ball.settleTime > 2000) {
             ball.element.remove();
             return false;
         }
         return true;
     });
     
+    // Continue animation if there are active balls
     if (activeBalls > 0) {
         gameState.blinkoGame.animationId = requestAnimationFrame(animateBlinkoBalls);
     } else {
