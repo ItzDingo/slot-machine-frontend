@@ -71,7 +71,7 @@ const CONFIG = {
         minBet: 0.1,
         maxBet: 1000,
         multipliers: {
-            low: [5, 3, 2, 1.4, 0.8, 0.6, 0.4, 0.6, 0.8, 1.1, 2, 3, 5 ],
+            low: [5, 3, 2, 1.4, 0.8, 0.6, 0.4, 0.6, 0.8, 1.1, 2, 3, 5],
             medium: [33.0, 11.0, 4.0, 2.0, 1.1, 0.6, 0.3, 0.6, 1.1, 2.0, 4.0, 11.0, 33.0],
             high: [50, 20, 9, 6, 3, 1, 0.2, 0.5, 3, 6, 9, 20, 50]
         }
@@ -183,7 +183,7 @@ const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 700;
 const PEG_RADIUS = 6;
 const BALL_RADIUS = 5;
-const GRAVITY = 0.12;
+const GRAVITY = 0.08; // Reduced gravity for more bouncing and slower falling
 const BOUNCE = 0.88;
 const FRICTION = 0.996;
 
@@ -740,14 +740,14 @@ function setupBlinkoGame() {
 }
 
 function createBlinkoBoard() {
-    // Improved peg layout with better spacing for smoother ball movement
-    const rows = 16; // Reduced from 20 for better spacing
-    const cols = 15; // Reduced from 19 for better spacing
-    const pegSpacingX = 36; // Increased from 28 for better ball passage
-    const pegSpacingY = 32; // Increased from 26 for better ball passage
+    // Improved peg layout with better spacing for more bouncing and stress
+    const rows = 18; // Increased for more bouncing opportunities
+    const cols = 13; // Reduced to match bucket count
+    const pegSpacingX = 42; // Increased spacing for better ball passage
+    const pegSpacingY = 28; // Slightly reduced for more pegs vertically
     const startY = 80;
-    const bucketZone = CANVAS_HEIGHT - 80; // Increased space for buckets
-    const minEdgeDistance = 15; // Minimum distance from canvas edges
+    const bucketZone = CANVAS_HEIGHT - 80;
+    const minEdgeDistance = 25; // Increased edge distance
     
     // Calculate starting X to center the peg field
     const totalWidth = (cols - 1) * pegSpacingX;
@@ -763,9 +763,9 @@ function createBlinkoBoard() {
             const y = startY + row * pegSpacingY;
             
             // Only add peg if it's within bounds and not too close to edges or bucket zone
-            if (x >= minEdgeDistance && 
-                x <= CANVAS_WIDTH - minEdgeDistance && 
-                y < bucketZone - 20) { // Leave more space above buckets
+            if (x >= minEdgeDistance + 20 && 
+                x <= CANVAS_WIDTH - minEdgeDistance - 20 && 
+                y < bucketZone - 20) {
                 
                 gameState.blinkoGame.pegs.push({
                     x: x,
@@ -777,51 +777,88 @@ function createBlinkoBoard() {
         }
     }
     
-    // Add edge pegs to fill the sides while maintaining good spacing
-    const edgePegSpacing = 40;
-    const edgePegsPerSide = Math.floor((bucketZone - startY - 40) / edgePegSpacing);
+    // Add edge pegs with much better spacing from other pegs
+    const edgePegSpacing = 45; // Increased spacing
+    const edgePegsPerSide = Math.floor((bucketZone - startY - 60) / edgePegSpacing);
+    const edgeOffset = 45; // Increased offset from edges
     
-    // Left edge pegs
+    // Left edge pegs - positioned further from main grid
     for (let i = 1; i <= edgePegsPerSide; i++) {
-        const y = startY + i * edgePegSpacing;
-        if (y < bucketZone - 20) {
-            gameState.blinkoGame.pegs.push({
-                x: minEdgeDistance + PEG_RADIUS * 2,
-                y: y,
-                glowing: false,
-                glowTime: 0
-            });
+        const y = startY + 30 + i * edgePegSpacing;
+        if (y < bucketZone - 30) {
+            const edgeX = edgeOffset;
+            
+            // Check if this position conflicts with main grid pegs
+            let tooClose = false;
+            for (let existingPeg of gameState.blinkoGame.pegs) {
+                const distance = Math.sqrt(
+                    (edgeX - existingPeg.x) ** 2 + 
+                    (y - existingPeg.y) ** 2
+                );
+                if (distance < pegSpacingX * 0.8) {
+                    tooClose = true;
+                    break;
+                }
+            }
+            
+            if (!tooClose) {
+                gameState.blinkoGame.pegs.push({
+                    x: edgeX,
+                    y: y,
+                    glowing: false,
+                    glowTime: 0
+                });
+            }
         }
     }
     
-    // Right edge pegs
+    // Right edge pegs - positioned further from main grid
     for (let i = 1; i <= edgePegsPerSide; i++) {
-        const y = startY + i * edgePegSpacing;
-        if (y < bucketZone - 20) {
-            gameState.blinkoGame.pegs.push({
-                x: CANVAS_WIDTH - minEdgeDistance - PEG_RADIUS * 2,
-                y: y,
-                glowing: false,
-                glowTime: 0
-            });
+        const y = startY + 30 + i * edgePegSpacing;
+        if (y < bucketZone - 30) {
+            const edgeX = CANVAS_WIDTH - edgeOffset;
+            
+            // Check if this position conflicts with main grid pegs
+            let tooClose = false;
+            for (let existingPeg of gameState.blinkoGame.pegs) {
+                const distance = Math.sqrt(
+                    (edgeX - existingPeg.x) ** 2 + 
+                    (y - existingPeg.y) ** 2
+                );
+                if (distance < pegSpacingX * 0.8) {
+                    tooClose = true;
+                    break;
+                }
+            }
+            
+            if (!tooClose) {
+                gameState.blinkoGame.pegs.push({
+                    x: edgeX,
+                    y: y,
+                    glowing: false,
+                    glowTime: 0
+                });
+            }
         }
     }
     
-    // Add some strategic intermediate pegs to fill gaps without overcrowding
-    const intermediatePegs = [
-        // Fill some strategic gaps in the middle area
-        { x: CANVAS_WIDTH * 0.25, y: startY + pegSpacingY * 2.5 },
-        { x: CANVAS_WIDTH * 0.75, y: startY + pegSpacingY * 2.5 },
-        { x: CANVAS_WIDTH * 0.35, y: startY + pegSpacingY * 5.5 },
-        { x: CANVAS_WIDTH * 0.65, y: startY + pegSpacingY * 5.5 },
-        { x: CANVAS_WIDTH * 0.15, y: startY + pegSpacingY * 8.5 },
-        { x: CANVAS_WIDTH * 0.85, y: startY + pegSpacingY * 8.5 },
-        { x: CANVAS_WIDTH * 0.3, y: startY + pegSpacingY * 11.5 },
-        { x: CANVAS_WIDTH * 0.7, y: startY + pegSpacingY * 11.5 }
+    // Add some extra stress-inducing pegs in strategic positions
+    const stressPegs = [
+        // Quarter positions for more unpredictable bouncing
+        { x: CANVAS_WIDTH * 0.2, y: startY + pegSpacingY * 3 },
+        { x: CANVAS_WIDTH * 0.8, y: startY + pegSpacingY * 3 },
+        { x: CANVAS_WIDTH * 0.3, y: startY + pegSpacingY * 6 },
+        { x: CANVAS_WIDTH * 0.7, y: startY + pegSpacingY * 6 },
+        { x: CANVAS_WIDTH * 0.25, y: startY + pegSpacingY * 9 },
+        { x: CANVAS_WIDTH * 0.75, y: startY + pegSpacingY * 9 },
+        { x: CANVAS_WIDTH * 0.35, y: startY + pegSpacingY * 12 },
+        { x: CANVAS_WIDTH * 0.65, y: startY + pegSpacingY * 12 },
+        { x: CANVAS_WIDTH * 0.4, y: startY + pegSpacingY * 15 },
+        { x: CANVAS_WIDTH * 0.6, y: startY + pegSpacingY * 15 }
     ];
     
-    intermediatePegs.forEach(pegPos => {
-        if (pegPos.y < bucketZone - 20) {
+    stressPegs.forEach(pegPos => {
+        if (pegPos.y < bucketZone - 25) {
             // Check if this position conflicts with existing pegs
             let tooClose = false;
             for (let existingPeg of gameState.blinkoGame.pegs) {
@@ -829,7 +866,7 @@ function createBlinkoBoard() {
                     (pegPos.x - existingPeg.x) ** 2 + 
                     (pegPos.y - existingPeg.y) ** 2
                 );
-                if (distance < pegSpacingX * 0.7) { // Minimum distance check
+                if (distance < pegSpacingX * 0.75) { // Slightly closer for more chaos
                     tooClose = true;
                     break;
                 }
@@ -846,12 +883,20 @@ function createBlinkoBoard() {
         }
     });
     
-    // Create multiplier slots at the bottom with very small gap
-    const slotCount = 15;
+    // Create multiplier slots at the bottom - FIXED to 13 slots
+    const slotCount = 13; // Fixed bucket count
     const slotWidth = CANVAS_WIDTH / slotCount;
     const slotHeight = 50;
     const slotY = CANVAS_HEIGHT - slotHeight;
-    const multipliers = CONFIG.blinko.multipliers[gameState.blinkoGame.currentRisk];
+    
+    // Create 13-slot multiplier arrays
+    const multipliers13 = {
+        low: [18.0, 12.0, 6.0, 2.0, 0.8, 0.4, 0.2, 0.4, 0.8, 2.0, 6.0, 12.0, 18.0],
+        medium: [35.0, 20.0, 10.0, 3.0, 1.0, 0.5, 0.2, 0.5, 1.0, 3.0, 10.0, 20.0, 35.0],
+        high: [80.0, 45.0, 25.0, 12.0, 0.8, 0.3, 0.1, 0.3, 0.8, 12.0, 25.0, 45.0, 80.0]
+    };
+    
+    const currentMultipliers = multipliers13[gameState.blinkoGame.currentRisk];
     
     for (let i = 0; i < slotCount; i++) {
         gameState.blinkoGame.multiplierSlots.push({
@@ -859,7 +904,7 @@ function createBlinkoBoard() {
             y: slotY,
             width: slotWidth,
             height: slotHeight,
-            multiplier: multipliers[i],
+            multiplier: currentMultipliers[i],
             highlight: false
         });
     }
@@ -1015,9 +1060,9 @@ function updateBlinkoBalls() {
         
         // Check if ball reached bottom (very small gap before buckets)
         if (ball.y > CANVAS_HEIGHT - 65) {
-            // Find which slot the ball landed in
-            const slotIndex = Math.floor(ball.x / (CANVAS_WIDTH / gameState.blinkoGame.multiplierSlots.length));
-            const clampedIndex = Math.max(0, Math.min(slotIndex, gameState.blinkoGame.multiplierSlots.length - 1));
+            // Find which slot the ball landed in - fixed for 13 slots
+            const slotIndex = Math.floor(ball.x / (CANVAS_WIDTH / 13));
+            const clampedIndex = Math.max(0, Math.min(slotIndex, 12)); // Max index is 12 for 13 slots
             const slot = gameState.blinkoGame.multiplierSlots[clampedIndex];
             
             if (slot) {
@@ -1181,10 +1226,18 @@ function updateBlinkoRisk() {
     const risk = elements.blinkoRiskSelect?.value || 'medium';
     gameState.blinkoGame.currentRisk = risk;
     
-    // Update multiplier slots
-    const multipliers = CONFIG.blinko.multipliers[risk];
+    // Update multiplier slots with 13-slot arrays
+    const multipliers13 = {
+        low: [18.0, 12.0, 6.0, 2.0, 0.8, 0.4, 0.2, 0.4, 0.8, 2.0, 6.0, 12.0, 18.0],
+        medium: [35.0, 20.0, 10.0, 3.0, 1.0, 0.5, 0.2, 0.5, 1.0, 3.0, 10.0, 20.0, 35.0],
+        high: [80.0, 45.0, 25.0, 12.0, 0.8, 0.3, 0.1, 0.3, 0.8, 12.0, 25.0, 45.0, 80.0]
+    };
+    
+    const currentMultipliers = multipliers13[risk];
     gameState.blinkoGame.multiplierSlots.forEach((slot, index) => {
-        slot.multiplier = multipliers[index];
+        if (index < currentMultipliers.length) {
+            slot.multiplier = currentMultipliers[index];
+        }
     });
 }
 
