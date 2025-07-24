@@ -551,17 +551,21 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 5px;
 }
 
 .mines-info span:first-child {
     color: var(--primary);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
+    margin-bottom: 3px;
 }
 
+
 .mines-info span:last-child {
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: bold;
 }
+
 
 #mines-grid {
     display: grid;
@@ -641,38 +645,23 @@ body {
 
 /* Mines Stats */
 .mines-info {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
     margin: 15px 0;
     padding: 10px;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 5px;
 }
 
-.mines-info div {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 5px;
-}
 
-.mines-info span:first-child {
-    color: var(--primary);
-    font-size: 0.8rem;
-    margin-bottom: 3px;
-}
-
-.mines-info span:last-child {
-    font-size: 1rem;
-    font-weight: bold;
-}
 
 @media (max-width: 600px) {
     .mines-info {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr); /* Remove this if deleting entire stats */
     }
 }
+
 
 /* Mines Game Over Popup */
 #mines-avatar {
