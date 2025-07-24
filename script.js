@@ -28,13 +28,12 @@ const CONFIG = {
         'ANY_TWO_MATCH': 20
     },
     mines: {
-        minBet: 0.1,  // Now accepts decimal bets
+        minBet: 0.1,
         maxBet: 1000,
         minMines: 1,
         maxMines: 10,
         gridSize: 5,
         getMultiplier: function(minesCount, revealedCells) {
-            // Base multipliers that increase with mine count
             const baseMultipliers = {
                 1: 1.04,  2: 1.07,  3: 1.10,
                 4: 1.14,  5: 1.18,  6: 1.23,
@@ -42,7 +41,6 @@ const CONFIG = {
                 10: 2
             };
             
-            // Growth curve based on revealed cells
             const growthCurve = [
                 { cells: 1, factor: 1.00 },
                 { cells: 2, factor: 1.05 },
@@ -53,10 +51,8 @@ const CONFIG = {
                 { cells: 24, factor: 2.10 }
             ];
             
-            // Find base multiplier
             const base = baseMultipliers[minesCount] || 1.0;
             
-            // Find growth factor
             let growth = 1.0;
             for (let i = growthCurve.length - 1; i >= 0; i--) {
                 if (revealedCells >= growthCurve[i].cells) {
@@ -65,14 +61,31 @@ const CONFIG = {
                 }
             }
             
-            // Calculate final multiplier (before house edge)
             const rawMultiplier = base * growth;
-            
-            // Apply house edge and return with 4 decimal precision
             const withHouseEdge = rawMultiplier * (1 - this.houseEdge);
             return parseFloat(withHouseEdge.toFixed(4));
         },
-        houseEdge: 0.03  // 3% house edge
+        houseEdge: 0.03
+    },
+    blinko: {
+        minBet: 0.1,
+        maxBet: 1000,
+        rows: 10,
+        riskLevels: {
+            low: {
+                multipliers: [1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0],
+                distribution: [0.1, 0.15, 0.15, 0.15, 0.15, 0.1, 0.1, 0.05, 0.05]
+            },
+            medium: {
+                multipliers: [0.5, 1.0, 1.5, 2.0, 3.0, 5.0, 7.0, 10.0],
+                distribution: [0.15, 0.2, 0.2, 0.2, 0.15, 0.05, 0.03, 0.02]
+            },
+            high: {
+                multipliers: [0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 15.0, 20.0],
+                distribution: [0.2, 0.25, 0.2, 0.15, 0.1, 0.05, 0.03, 0.02]
+            }
+        },
+        houseEdge: 0.05
     }
 };
 
@@ -103,6 +116,21 @@ let gameState = {
         wins: 0,
         totalWins: 0,
         totalGamesPlayed: 0
+    },
+    blinkoGame: {
+        betAmount: 0,
+        riskLevel: 'medium',
+        multiplier: 1.0,
+        currentWin: 0,
+        gameActive: false,
+        ballPosition: 0,
+        buckets: []
+    },
+    blinkoStats: {
+        totalGames: 0,
+        wins: 0,
+        totalWins: 0,
+        totalGamesPlayed: 0
     }
 };
 
@@ -114,6 +142,7 @@ const elements = {
     loginBtn: document.getElementById('login-btn'),
     logoutBtn: document.getElementById('logout-btn'),
     minesLogoutBtn: document.getElementById('mines-logout-btn'),
+    blinkoLogoutBtn: document.getElementById('blinko-logout-btn'),
     usernameDisplay: document.getElementById('username'),
     userAvatar: document.getElementById('user-avatar'),
     chipsDisplay: document.getElementById('chips'),
@@ -131,6 +160,7 @@ const elements = {
     gameSelectScreen: document.getElementById('game-select-screen'),
     slotMachineBtn: document.getElementById('slot-machine-btn'),
     minesGameBtn: document.getElementById('mines-game-btn'),
+    blinkoGameBtn: document.getElementById('blinko-game-btn'),
     minesGameScreen: document.getElementById('mines-game-screen'),
     minesBetInput: document.getElementById('mines-bet-input'),
     minesCountInput: document.getElementById('mines-count-input'),
@@ -146,8 +176,25 @@ const elements = {
     minesAvatar: document.getElementById('mines-avatar'),
     minesChips: document.getElementById('mines-chips'),
     minesDice: document.getElementById('mines-dice'),
+    blinkoGameScreen: document.getElementById('blinko-game-screen'),
+    blinkoBetInput: document.getElementById('blinko-bet-input'),
+    blinkoRiskInput: document.getElementById('blinko-risk-input'),
+    blinkoStartBtn: document.getElementById('blinko-start-btn'),
+    blinkoBoard: document.getElementById('blinko-board'),
+    blinkoBall: document.getElementById('blinko-ball'),
+    blinkoBuckets: document.getElementById('blinko-buckets'),
+    blinkoCurrentWin: document.getElementById('blinko-current-win'),
+    blinkoMultiplier: document.getElementById('blinko-multiplier'),
+    blinkoGameOverPopup: document.getElementById('blinko-game-over-popup'),
+    blinkoGameOverMessage: document.getElementById('blinko-game-over-message'),
+    blinkoGameOverAmount: document.getElementById('blinko-game-over-amount'),
+    blinkoUsername: document.getElementById('blinko-username'),
+    blinkoAvatar: document.getElementById('blinko-avatar'),
+    blinkoChips: document.getElementById('blinko-chips'),
+    blinkoDice: document.getElementById('blinko-dice'),
     backToMenuBtn: document.getElementById('back-to-menu-btn'),
     minesBackToMenuBtn: document.getElementById('mines-back-to-menu-btn'),
+    blinkoBackToMenuBtn: document.getElementById('blinko-back-to-menu-btn'),
     minesWinsCounter: document.getElementById('mines-wins-counter'),
     minesWinRate: document.getElementById('mines-win-rate')
 };
@@ -176,6 +223,8 @@ function updateCurrencyDisplay() {
     if (elements.diceDisplay) elements.diceDisplay.textContent = gameState.dice;
     if (elements.minesChips) elements.minesChips.textContent = gameState.chips.toFixed(2);
     if (elements.minesDice) elements.minesDice.textContent = gameState.dice;
+    if (elements.blinkoChips) elements.blinkoChips.textContent = gameState.chips.toFixed(2);
+    if (elements.blinkoDice) elements.blinkoDice.textContent = gameState.dice;
 }
 
 function showNotification(message, isSuccess) {
@@ -186,7 +235,7 @@ function showNotification(message, isSuccess) {
     setTimeout(() => notification.remove(), 3000);
 }
 
-// Slot Machine Functions (unchanged)
+// Slot Machine Functions
 async function startSpin() {
     if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
         if (gameState.chips < CONFIG.spinCost) {
@@ -404,7 +453,7 @@ async function claimWin() {
     if (elements.winPopup) elements.winPopup.style.display = 'none';
 }
 
-// Mines Game Functions (updated for float numbers)
+// Mines Game Functions
 function showGameSelectScreen() {
     if (!gameState.userId) {
         showLoginScreen();
@@ -413,6 +462,7 @@ function showGameSelectScreen() {
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     if (elements.gameScreen) elements.gameScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
+    if (elements.blinkoGameScreen) elements.blinkoGameScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'block';
     updateCurrencyDisplay();
 }
@@ -426,6 +476,7 @@ function startSlotMachineGame() {
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
+    if (elements.blinkoGameScreen) elements.blinkoGameScreen.style.display = 'none';
     if (elements.gameScreen) elements.gameScreen.style.display = 'block';
 }
 
@@ -438,8 +489,23 @@ function startMinesGame() {
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
     if (elements.gameScreen) elements.gameScreen.style.display = 'none';
+    if (elements.blinkoGameScreen) elements.blinkoGameScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'block';
     setupMinesGameUI();
+}
+
+function startBlinkoGame() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
+    gameState.currentGame = 'blinko';
+    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
+    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
+    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
+    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
+    if (elements.blinkoGameScreen) elements.blinkoGameScreen.style.display = 'block';
+    setupBlinkoGameUI();
 }
 
 async function setupMinesGameUI() {
@@ -628,13 +694,11 @@ function revealMineCell(index) {
     cell.classList.add('revealed');
     gameState.minesGame.revealedCells++;
     
-    // Calculate multiplier using the new system
     gameState.minesGame.multiplier = CONFIG.mines.getMultiplier(
         gameState.minesGame.minesCount,
         gameState.minesGame.revealedCells
     );
     
-    // Calculate current win with precise decimal values
     gameState.minesGame.currentWin = parseFloat(
         (gameState.minesGame.betAmount * gameState.minesGame.multiplier).toFixed(4)
     );
@@ -720,6 +784,235 @@ function closeMinesGameOverPopup() {
     setupMinesGameUI();
 }
 
+// Blinko Game Functions
+function setupBlinkoGameUI() {
+    gameState.blinkoGame = {
+        betAmount: 0,
+        riskLevel: 'medium',
+        multiplier: 1.0,
+        currentWin: 0,
+        gameActive: false,
+        ballPosition: 0,
+        buckets: []
+    };
+    
+    if (elements.blinkoCurrentWin) elements.blinkoCurrentWin.textContent = '0.00';
+    if (elements.blinkoMultiplier) elements.blinkoMultiplier.textContent = '1.00x';
+    if (elements.blinkoBoard) elements.blinkoBoard.innerHTML = '';
+    if (elements.blinkoBuckets) elements.blinkoBuckets.innerHTML = '';
+    if (elements.blinkoBall) elements.blinkoBall.style.display = 'none';
+    
+    if (elements.blinkoBetInput) {
+        elements.blinkoBetInput.disabled = false;
+        elements.blinkoBetInput.value = '';
+    }
+    if (elements.blinkoRiskInput) {
+        elements.blinkoRiskInput.disabled = false;
+        elements.blinkoRiskInput.value = 'medium';
+    }
+    if (elements.blinkoStartBtn) elements.blinkoStartBtn.disabled = false;
+    
+    createBlinkoBoard();
+}
+
+function createBlinkoBoard() {
+    if (!elements.blinkoBoard || !elements.blinkoBuckets) return;
+    
+    elements.blinkoBoard.innerHTML = '';
+    elements.blinkoBuckets.innerHTML = '';
+    
+    const rows = CONFIG.blinko.rows;
+    const pegSpacing = 20;
+    
+    // Create pegs in triangle pattern
+    for (let row = 0; row < rows; row++) {
+        const rowElement = document.createElement('div');
+        rowElement.className = 'blinko-row';
+        rowElement.style.top = `${row * 30}px`;
+        
+        for (let col = 0; col <= row; col++) {
+            const peg = document.createElement('div');
+            peg.className = 'blinko-peg';
+            peg.style.left = `calc(50% - ${row * pegSpacing / 2}px + ${col * pegSpacing}px)`;
+            rowElement.appendChild(peg);
+        }
+        
+        elements.blinkoBoard.appendChild(rowElement);
+    }
+    
+    // Create buckets at the bottom
+    const riskLevel = gameState.blinkoGame.riskLevel || 'medium';
+    const multipliers = CONFIG.blinko.riskLevels[riskLevel].multipliers;
+    
+    for (let i = 0; i < multipliers.length; i++) {
+        const bucket = document.createElement('div');
+        bucket.className = 'blinko-bucket';
+        bucket.dataset.multiplier = multipliers[i];
+        bucket.dataset.index = i;
+        bucket.textContent = `${multipliers[i]}x`;
+        elements.blinkoBuckets.appendChild(bucket);
+    }
+    
+    gameState.blinkoGame.buckets = Array.from(elements.blinkoBuckets.children);
+}
+
+async function startNewBlinkoGame() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
+
+    const betAmount = parseFloat(elements.blinkoBetInput?.value);
+    const riskLevel = elements.blinkoRiskInput?.value || 'medium';
+    
+    if (isNaN(betAmount) || betAmount <= 0) {
+        showNotification("Please enter a valid bet amount", false);
+        return;
+    }
+    
+    if (betAmount < CONFIG.blinko.minBet || betAmount > CONFIG.blinko.maxBet) {
+        showNotification(`Bet amount must be between ${CONFIG.blinko.minBet} and ${CONFIG.blinko.maxBet}`, false);
+        return;
+    }
+    
+    if (betAmount > gameState.chips) {
+        showNotification("Not enough chips for this bet", false);
+        return;
+    }
+    
+    if (elements.blinkoBetInput) elements.blinkoBetInput.disabled = true;
+    if (elements.blinkoRiskInput) elements.blinkoRiskInput.disabled = true;
+    if (elements.blinkoStartBtn) elements.blinkoStartBtn.disabled = true;
+    
+    gameState.blinkoStats.totalGames++;
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/spin`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                cost: betAmount
+            }),
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+        gameState.chips = data.newBalance;
+        updateCurrencyDisplay();
+        
+        gameState.blinkoGame.betAmount = betAmount;
+        gameState.blinkoGame.riskLevel = riskLevel;
+        gameState.blinkoGame.gameActive = true;
+        
+        createBlinkoBoard();
+        dropBlinkoBall();
+    } catch (error) {
+        console.error('Blinko game start error:', error);
+        showNotification('Failed to start Blinko game', false);
+        setupBlinkoGameUI();
+    }
+}
+
+function dropBlinkoBall() {
+    if (!elements.blinkoBall || !gameState.blinkoGame.gameActive) return;
+    
+    const ball = elements.blinkoBall;
+    ball.style.display = 'block';
+    ball.style.top = '0';
+    ball.style.left = '50%';
+    
+    const rows = CONFIG.blinko.rows;
+    const pegSpacing = 20;
+    let position = 0;
+    let x = 0;
+    
+    // Calculate final position (simulating physics)
+    const riskLevel = gameState.blinkoGame.riskLevel;
+    const multipliers = CONFIG.blinko.riskLevels[riskLevel].multipliers;
+    const distribution = CONFIG.blinko.riskLevels[riskLevel].distribution;
+    
+    // Randomly select a bucket based on distribution
+    let random = Math.random();
+    let bucketIndex = 0;
+    let cumulativeProb = 0;
+    
+    for (let i = 0; i < distribution.length; i++) {
+        cumulativeProb += distribution[i];
+        if (random <= cumulativeProb) {
+            bucketIndex = i;
+            break;
+        }
+    }
+    
+    const finalMultiplier = multipliers[bucketIndex];
+    const finalX = (bucketIndex - (multipliers.length - 1) / 2) * pegSpacing * 2;
+    const finalY = rows * 30 + 15; // Ball reaches the bucket
+    
+    // Animate the ball
+    ball.style.setProperty('--final-x', `${finalX}px`);
+    ball.style.setProperty('--final-y', `${finalY}px`);
+    ball.style.animation = 'blinkoFall 2s ease-in forwards';
+    
+    setTimeout(() => {
+        endBlinkoGame(finalMultiplier);
+    }, 2000);
+}
+
+async function endBlinkoGame(multiplier) {
+    gameState.blinkoGame.gameActive = false;
+    const winAmount = gameState.blinkoGame.betAmount * multiplier * (1 - CONFIG.blinko.houseEdge);
+    
+    if (elements.blinkoBall) elements.blinkoBall.style.display = 'none';
+    
+    if (multiplier >= 1) {
+        gameState.blinkoStats.wins++;
+        gameState.blinkoStats.totalWins += winAmount;
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/win`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: gameState.userId,
+                    amount: winAmount
+                }),
+                credentials: 'include'
+            });
+            
+            const data = await response.json();
+            gameState.chips = data.newBalance;
+            updateCurrencyDisplay();
+            
+            if (elements.blinkoGameOverMessage) elements.blinkoGameOverMessage.textContent = "You Won!";
+            if (elements.blinkoGameOverAmount) {
+                elements.blinkoGameOverAmount.textContent = `+${winAmount.toFixed(4)}`;
+            }
+            if (elements.blinkoGameOverPopup) elements.blinkoGameOverPopup.style.display = 'flex';
+        } catch (error) {
+            console.error('Win claim error:', error);
+            showNotification('Failed to claim win', false);
+        }
+    } else {
+        if (elements.blinkoGameOverMessage) elements.blinkoGameOverMessage.textContent = "Game Over!";
+        if (elements.blinkoGameOverAmount) {
+            elements.blinkoGameOverAmount.textContent = `-${gameState.blinkoGame.betAmount.toFixed(4)}`;
+        }
+        if (elements.blinkoGameOverPopup) elements.blinkoGameOverPopup.style.display = 'flex';
+    }
+}
+
+function closeBlinkoGameOverPopup() {
+    if (elements.blinkoGameOverPopup) elements.blinkoGameOverPopup.style.display = 'none';
+    setupBlinkoGameUI();
+}
+
 // Authentication Functions
 async function loginWithToken(token) {
     try {
@@ -786,6 +1079,8 @@ function handleSuccessfulLogin(user) {
     if (elements.userAvatar) elements.userAvatar.src = user.avatar || 'assets/default-avatar.png';
     if (elements.minesUsername) elements.minesUsername.textContent = user.username;
     if (elements.minesAvatar) elements.minesAvatar.src = user.avatar || 'assets/default-avatar.png';
+    if (elements.blinkoUsername) elements.blinkoUsername.textContent = user.username;
+    if (elements.blinkoAvatar) elements.blinkoAvatar.src = user.avatar || 'assets/default-avatar.png';
     
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     showGameSelectScreen();
@@ -800,6 +1095,8 @@ function handleSuccessfulLogin(user) {
     
     if (gameState.currentGame === 'mines') {
         setupMinesGameUI();
+    } else if (gameState.currentGame === 'blinko') {
+        setupBlinkoGameUI();
     }
 }
 
@@ -808,6 +1105,7 @@ function showLoginScreen() {
     if (elements.gameScreen) elements.gameScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
+    if (elements.blinkoGameScreen) elements.blinkoGameScreen.style.display = 'none';
     gameState.userId = null;
     if (elements.tokenInput) elements.tokenInput.value = '';
 }
@@ -841,6 +1139,11 @@ style.textContent = `
         50% { transform: translateY(-20%) scale(1.1); }
         100% { transform: translateY(0%) scale(1); }
     }
+    
+    @keyframes blinkoFall {
+        0% { transform: translate(-50%, 0); }
+        100% { transform: translate(var(--final-x), var(--final-y)); }
+    }
 `;
 document.head.appendChild(style);
 
@@ -858,18 +1161,25 @@ if (elements.loginBtn) {
 
 if (elements.logoutBtn) elements.logoutBtn.addEventListener('click', logout);
 if (elements.minesLogoutBtn) elements.minesLogoutBtn.addEventListener('click', logout);
+if (elements.blinkoLogoutBtn) elements.blinkoLogoutBtn.addEventListener('click', logout);
 if (elements.spinBtn) elements.spinBtn.addEventListener('click', startSpin);
 if (elements.claimBtn) elements.claimBtn.addEventListener('click', claimWin);
 
 if (elements.slotMachineBtn) elements.slotMachineBtn.addEventListener('click', startSlotMachineGame);
 if (elements.minesGameBtn) elements.minesGameBtn.addEventListener('click', startMinesGame);
+if (elements.blinkoGameBtn) elements.blinkoGameBtn.addEventListener('click', startBlinkoGame);
 if (elements.minesStartBtn) elements.minesStartBtn.addEventListener('click', startNewMinesGame);
+if (elements.blinkoStartBtn) elements.blinkoStartBtn.addEventListener('click', startNewBlinkoGame);
 if (elements.minesCashoutBtn) elements.minesCashoutBtn.addEventListener('click', cashoutMinesGame);
 if (document.getElementById('mines-game-over-close')) {
     document.getElementById('mines-game-over-close').addEventListener('click', closeMinesGameOverPopup);
 }
+if (document.getElementById('blinko-game-over-close')) {
+    document.getElementById('blinko-game-over-close').addEventListener('click', closeBlinkoGameOverPopup);
+}
 if (elements.backToMenuBtn) elements.backToMenuBtn.addEventListener('click', showGameSelectScreen);
 if (elements.minesBackToMenuBtn) elements.minesBackToMenuBtn.addEventListener('click', showGameSelectScreen);
+if (elements.blinkoBackToMenuBtn) elements.blinkoBackToMenuBtn.addEventListener('click', showGameSelectScreen);
 
 // Initialize Game
 async function initGame() {
