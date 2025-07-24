@@ -592,8 +592,9 @@ body {
 }
 
 .mines-cell.revealed {
-    background: rgba(255, 215, 0, 0.1);
-    border-color: var(--secondary);
+    background: rgba(76, 175, 80, 0.2); /* Green with 20% opacity */
+    border-color: var(--success); /* Uses your success color variable */
+    animation: pulseGreen 0.5s ease; /* Optional pulse effect */
 }
 
 .mines-cell.mine {
@@ -837,6 +838,12 @@ body {
 @keyframes pulse {
     from { transform: scale(1); }
     to { transform: scale(1.1); }
+}
+
+@keyframes pulseGreen {
+    0% { background-color: rgba(76, 175, 80, 0.2); }
+    50% { background-color: rgba(76, 175, 80, 0.5); }
+    100% { background-color: rgba(76, 175, 80, 0.2); }
 }
 
 @keyframes highlight {
