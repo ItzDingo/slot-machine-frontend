@@ -624,6 +624,13 @@ body {
     transform: scale(1.02);
 }
 
+.mines-button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+
 /* Back to Menu Button */
 #back-to-menu-btn, #mines-back-to-menu-btn {
     background: #444;
