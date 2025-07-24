@@ -891,9 +891,9 @@ function createBlinkoBoard() {
     
     // Create 13-slot multiplier arrays
     const multipliers13 = {
-        low: [18.0, 12.0, 6.0, 2.0, 0.8, 0.4, 0.2, 0.4, 0.8, 2.0, 6.0, 12.0, 18.0],
-        medium: [35.0, 20.0, 10.0, 3.0, 1.0, 0.5, 0.2, 0.5, 1.0, 3.0, 10.0, 20.0, 35.0],
-        high: [80.0, 45.0, 25.0, 12.0, 0.8, 0.3, 0.1, 0.3, 0.8, 12.0, 25.0, 45.0, 80.0]
+        low: [5, 3, 2, 1.4, 0.8, 0.6, 0.4, 0.6, 0.8, 1.1, 2, 3, 5],
+        medium: [33.0, 11.0, 4.0, 2.0, 1.1, 0.6, 0.3, 0.6, 1.1, 2.0, 4.0, 11.0, 33.0],
+        high: [50, 20, 9, 6, 3, 1, 0.2, 0.5, 3, 6, 9, 20, 50]
     };
     
     const currentMultipliers = multipliers13[gameState.blinkoGame.currentRisk];
