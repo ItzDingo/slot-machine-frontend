@@ -28,19 +28,21 @@ const CONFIG = {
         'ANY_TWO_MATCH': 20
     },
     mines: {
-        minBet: 0.1,
+        minBet: 0.1,  // Now accepts decimal bets
         maxBet: 1000,
         minMines: 1,
         maxMines: 10,
         gridSize: 5,
         getMultiplier: function(minesCount, revealedCells) {
+            // Base multipliers that increase with mine count
             const baseMultipliers = {
-                1: 1.04, 2: 1.07, 3: 1.10,
-                4: 1.14, 5: 1.18, 6: 1.23,
-                7: 1.29, 8: 1.35, 9: 1.42,
+                1: 1.04,  2: 1.07,  3: 1.10,
+                4: 1.14,  5: 1.18,  6: 1.23,
+                7: 1.29,  8: 1.35,  9: 1.42,
                 10: 2
             };
             
+            // Growth curve based on revealed cells
             const growthCurve = [
                 { cells: 1, factor: 1.00 },
                 { cells: 2, factor: 1.05 },
@@ -51,8 +53,10 @@ const CONFIG = {
                 { cells: 24, factor: 2.10 }
             ];
             
+            // Find base multiplier
             const base = baseMultipliers[minesCount] || 1.0;
             
+            // Find growth factor
             let growth = 1.0;
             for (let i = growthCurve.length - 1; i >= 0; i--) {
                 if (revealedCells >= growthCurve[i].cells) {
@@ -61,20 +65,14 @@ const CONFIG = {
                 }
             }
             
+            // Calculate final multiplier (before house edge)
             const rawMultiplier = base * growth;
+            
+            // Apply house edge and return with 4 decimal precision
             const withHouseEdge = rawMultiplier * (1 - this.houseEdge);
             return parseFloat(withHouseEdge.toFixed(4));
         },
-        houseEdge: 0.03
-    },
-    blinko: {
-        minBet: 0.1,
-        maxBet: 1000,
-        multipliers: {
-            low: [5, 3, 2, 1.4, 0.8, 0.6, 0.4, 0.6, 0.8, 1.1, 2, 3, 5],
-            medium: [33.0, 11.0, 4.0, 2.0, 1.1, 0.6, 0.3, 0.6, 1.1, 2.0, 4.0, 11.0, 33.0],
-            high: [50, 20, 9, 6, 3, 1, 0.2, 0.5, 3, 6, 9, 20, 50]
-        }
+        houseEdge: 0.03  // 3% house edge
     }
 };
 
@@ -105,15 +103,6 @@ let gameState = {
         wins: 0,
         totalWins: 0,
         totalGamesPlayed: 0
-    },
-    blinkoGame: {
-        balls: [],
-        pegs: [],
-        multiplierSlots: [],
-        animationId: null,
-        totalDropped: 0,
-        totalWon: 0,
-        currentRisk: 'medium'
     }
 };
 
@@ -125,7 +114,6 @@ const elements = {
     loginBtn: document.getElementById('login-btn'),
     logoutBtn: document.getElementById('logout-btn'),
     minesLogoutBtn: document.getElementById('mines-logout-btn'),
-    blinkoLogoutBtn: document.getElementById('blinko-logout-btn'),
     usernameDisplay: document.getElementById('username'),
     userAvatar: document.getElementById('user-avatar'),
     chipsDisplay: document.getElementById('chips'),
@@ -143,7 +131,6 @@ const elements = {
     gameSelectScreen: document.getElementById('game-select-screen'),
     slotMachineBtn: document.getElementById('slot-machine-btn'),
     minesGameBtn: document.getElementById('mines-game-btn'),
-    blinkoGameBtn: document.getElementById('blinko-game-btn'),
     minesGameScreen: document.getElementById('mines-game-screen'),
     minesBetInput: document.getElementById('mines-bet-input'),
     minesCountInput: document.getElementById('mines-count-input'),
@@ -162,30 +149,8 @@ const elements = {
     backToMenuBtn: document.getElementById('back-to-menu-btn'),
     minesBackToMenuBtn: document.getElementById('mines-back-to-menu-btn'),
     minesWinsCounter: document.getElementById('mines-wins-counter'),
-    minesWinRate: document.getElementById('mines-win-rate'),
-    blinkoGameScreen: document.getElementById('blinko-game-screen'),
-    blinkoCanvas: document.getElementById('blinko-canvas'),
-    blinkoUsername: document.getElementById('blinko-username'),
-    blinkoAvatar: document.getElementById('blinko-avatar'),
-    blinkoChips: document.getElementById('blinko-chips'),
-    blinkoDice: document.getElementById('blinko-dice'),
-    blinkoBetInput: document.getElementById('blinko-bet-input'),
-    blinkoRiskSelect: document.getElementById('blinko-risk-select'),
-    blinkoDropBtn: document.getElementById('blinko-drop-btn'),
-    blinkoBackToMenuBtn: document.getElementById('blinko-back-to-menu-btn'),
-    blinkoTotalDropped: document.getElementById('blinko-total-dropped'),
-    blinkoTotalWon: document.getElementById('blinko-total-won')
+    minesWinRate: document.getElementById('mines-win-rate')
 };
-
-// Enhanced Blinko Game Variables for triangular gameplay
-let blinkoCtx;
-const CANVAS_WIDTH = 600;
-const CANVAS_HEIGHT = 700;
-const PEG_RADIUS = 6;
-const BALL_RADIUS = 5;
-const GRAVITY = 0.08;
-const BOUNCE = 0.88;
-const FRICTION = 0.996;
 
 // Helper Functions
 function getRandomSymbol() {
@@ -211,8 +176,6 @@ function updateCurrencyDisplay() {
     if (elements.diceDisplay) elements.diceDisplay.textContent = gameState.dice;
     if (elements.minesChips) elements.minesChips.textContent = gameState.chips.toFixed(2);
     if (elements.minesDice) elements.minesDice.textContent = gameState.dice;
-    if (elements.blinkoChips) elements.blinkoChips.textContent = gameState.chips.toFixed(2);
-    if (elements.blinkoDice) elements.blinkoDice.textContent = gameState.dice;
 }
 
 function showNotification(message, isSuccess) {
@@ -223,7 +186,7 @@ function showNotification(message, isSuccess) {
     setTimeout(() => notification.remove(), 3000);
 }
 
-// Slot Machine Functions
+// Slot Machine Functions (unchanged)
 async function startSpin() {
     if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
         if (gameState.chips < CONFIG.spinCost) {
@@ -441,7 +404,44 @@ async function claimWin() {
     if (elements.winPopup) elements.winPopup.style.display = 'none';
 }
 
-// Mines Game Functions
+// Mines Game Functions (updated for float numbers)
+function showGameSelectScreen() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
+    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
+    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
+    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
+    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'block';
+    updateCurrencyDisplay();
+}
+
+function startSlotMachineGame() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
+    gameState.currentGame = 'slots';
+    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
+    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
+    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
+    if (elements.gameScreen) elements.gameScreen.style.display = 'block';
+}
+
+function startMinesGame() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
+    gameState.currentGame = 'mines';
+    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
+    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
+    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
+    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'block';
+    setupMinesGameUI();
+}
+
 async function setupMinesGameUI() {
     gameState.minesGame = {
         betAmount: 0,
@@ -628,11 +628,13 @@ function revealMineCell(index) {
     cell.classList.add('revealed');
     gameState.minesGame.revealedCells++;
     
+    // Calculate multiplier using the new system
     gameState.minesGame.multiplier = CONFIG.mines.getMultiplier(
         gameState.minesGame.minesCount,
         gameState.minesGame.revealedCells
     );
     
+    // Calculate current win with precise decimal values
     gameState.minesGame.currentWin = parseFloat(
         (gameState.minesGame.betAmount * gameState.minesGame.multiplier).toFixed(4)
     );
@@ -718,540 +720,6 @@ function closeMinesGameOverPopup() {
     setupMinesGameUI();
 }
 
-// Enhanced Triangular Blinko Game Functions
-function initBlinkoGame() {
-    if (!elements.blinkoCanvas) return;
-    
-    blinkoCtx = elements.blinkoCanvas.getContext('2d');
-    elements.blinkoCanvas.width = CANVAS_WIDTH;
-    elements.blinkoCanvas.height = CANVAS_HEIGHT;
-    
-    setupBlinkoGame();
-    startBlinkoAnimation();
-}
-
-function setupBlinkoGame() {
-    gameState.blinkoGame.balls = [];
-    gameState.blinkoGame.pegs = [];
-    gameState.blinkoGame.multiplierSlots = [];
-    
-    createTriangularBlinkoBoard();
-    updateBlinkoStats();
-}
-
-function createTriangularBlinkoBoard() {
-    // Clear existing pegs and slots
-    gameState.blinkoGame.pegs = [];
-    gameState.blinkoGame.multiplierSlots = [];
-    
-    // Triangle configuration with better spacing
-    const rows = 13;
-    const startPegs = 3;
-    const pegSpacingY = 40; // Increased vertical spacing
-    const pegSpacingX = 45; // Increased horizontal spacing
-    const startY = 100; // More space from top
-    const bucketZone = CANVAS_HEIGHT - 80;
-    const pegSafeZone = bucketZone - 40; // More space above buckets
-    
-    // Create triangular peg layout with better spacing
-    for (let row = 0; row < rows; row++) {
-        const pegsInRow = startPegs + row;
-        const y = startY + row * pegSpacingY;
-        
-        if (y >= pegSafeZone) break;
-        
-        // Better horizontal spacing calculation
-        const totalWidth = (pegsInRow - 1) * pegSpacingX;
-        const startX = (CANVAS_WIDTH - totalWidth) / 2;
-        
-        // Create pegs for this row with more margin
-        for (let peg = 0; peg < pegsInRow; peg++) {
-            const x = startX + peg * pegSpacingX;
-            
-            // Ensure pegs are well within canvas bounds
-            if (x >= 50 && x <= CANVAS_WIDTH - 50) {
-                gameState.blinkoGame.pegs.push({
-                    x: x,
-                    y: y,
-                    glowing: false,
-                    glowTime: 0
-                });
-            }
-        }
-    }
-    
-    // Create triangular border pegs instead of collision detection
-    const borderPegs = [];
-    const edgeRows = Math.min(rows, Math.floor((pegSafeZone - startY) / pegSpacingY));
-    
-    for (let row = 0; row < edgeRows; row++) {
-        const y = startY + row * pegSpacingY;
-        if (y >= pegSafeZone) break;
-        
-        // Calculate triangle boundaries for this row
-        const pegsInRow = startPegs + row;
-        const totalWidth = (pegsInRow - 1) * pegSpacingX;
-        const rowCenterX = CANVAS_WIDTH / 2;
-        const leftBoundaryX = rowCenterX - (totalWidth / 2) - 35; // More offset
-        const rightBoundaryX = rowCenterX + (totalWidth / 2) + 35; // More offset
-        
-        // Add left border peg
-        if (leftBoundaryX >= 25) {
-            borderPegs.push({
-                x: leftBoundaryX,
-                y: y,
-                glowing: false,
-                glowTime: 0,
-                isBorder: true
-            });
-        }
-        
-        // Add right border peg
-        if (rightBoundaryX <= CANVAS_WIDTH - 25) {
-            borderPegs.push({
-                x: rightBoundaryX,
-                y: y,
-                glowing: false,
-                glowTime: 0,
-                isBorder: true
-            });
-        }
-    }
-    
-    // Add border pegs to main pegs array
-    gameState.blinkoGame.pegs.push(...borderPegs);
-    
-    // Create multiplier slots at the bottom - 13 slots
-    const slotCount = 13;
-    const slotWidth = CANVAS_WIDTH / slotCount;
-    const slotHeight = 50;
-    const slotY = CANVAS_HEIGHT - slotHeight;
-    
-    const multipliers13 = {
-        low: [5, 3, 2, 1.4, 0.8, 0.6, 0.4, 0.6, 0.8, 1.1, 2, 3, 5],
-        medium: [33.0, 11.0, 4.0, 2.0, 1.1, 0.6, 0.3, 0.6, 1.1, 2.0, 4.0, 11.0, 33.0],
-        high: [50, 20, 9, 6, 3, 1, 0.2, 0.5, 3, 6, 9, 20, 50]
-    };
-    
-    const currentMultipliers = multipliers13[gameState.blinkoGame.currentRisk];
-    
-    for (let i = 0; i < slotCount; i++) {
-        gameState.blinkoGame.multiplierSlots.push({
-            x: i * slotWidth,
-            y: slotY,
-            width: slotWidth,
-            height: slotHeight,
-            multiplier: currentMultipliers[i],
-            highlight: false
-        });
-    }
-}
-
-function updateBlinkoStats() {
-    if (elements.blinkoTotalDropped) {
-        elements.blinkoTotalDropped.textContent = gameState.blinkoGame.totalDropped;
-    }
-    if (elements.blinkoTotalWon) {
-        elements.blinkoTotalWon.textContent = gameState.blinkoGame.totalWon.toFixed(2);
-    }
-}
-
-async function dropBlinkoBall() {
-    const betAmount = parseFloat(elements.blinkoBetInput?.value);
-    
-    if (isNaN(betAmount) || betAmount < CONFIG.blinko.minBet || betAmount > CONFIG.blinko.maxBet) {
-        showNotification(`Bet must be between ${CONFIG.blinko.minBet} and ${CONFIG.blinko.maxBet}`, false);
-        return;
-    }
-    
-    if (betAmount > gameState.chips) {
-        showNotification("Not enough chips!", false);
-        return;
-    }
-    
-    try {
-        // Deduct bet amount
-        const response = await fetch(`${API_BASE_URL}/api/spin`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                userId: gameState.userId,
-                cost: betAmount
-            }),
-            credentials: 'include'
-        });
-
-        if (!response.ok) throw new Error('Failed to place bet');
-
-        const data = await response.json();
-        gameState.chips = data.newBalance;
-        updateCurrencyDisplay();
-        
-        // Create new ball at the top center of triangle with slight randomness
-        const ball = {
-            x: CANVAS_WIDTH / 2 + (Math.random() - 0.5) * 8,
-            y: 30,
-            vx: (Math.random() - 0.5) * 1.2,
-            vy: 0,
-            radius: BALL_RADIUS,
-            betAmount: betAmount,
-            bouncing: false,
-            stuckTimer: 0
-        };
-        
-        gameState.blinkoGame.balls.push(ball);
-        gameState.blinkoGame.totalDropped++;
-        updateBlinkoStats();
-        
-    } catch (error) {
-        console.error('Blinko ball drop error:', error);
-        showNotification('Failed to drop ball', false);
-    }
-}
-
-function updateBlinkoBalls() {
-    for (let i = gameState.blinkoGame.balls.length - 1; i >= 0; i--) {
-        const ball = gameState.blinkoGame.balls[i];
-        
-        // Apply gravity
-        ball.vy += GRAVITY;
-        
-        // Apply friction
-        ball.vx *= FRICTION;
-        ball.vy *= FRICTION;
-        
-        // Update position
-        ball.x += ball.vx;
-        ball.y += ball.vy;
-        
-        // Improved triangular boundary collision using border pegs
-        // The border pegs will handle collisions naturally
-        
-        // Basic canvas bounds (just in case)
-        if (ball.x - ball.radius < 10) {
-            ball.x = 10 + ball.radius;
-            ball.vx = Math.abs(ball.vx) * BOUNCE;
-        }
-        if (ball.x + ball.radius > CANVAS_WIDTH - 10) {
-            ball.x = CANVAS_WIDTH - 10 - ball.radius;
-            ball.vx = -Math.abs(ball.vx) * BOUNCE;
-        }
-        
-        // Check collision with all pegs (including border pegs)
-        gameState.blinkoGame.pegs.forEach(peg => {
-            const dx = ball.x - peg.x;
-            const dy = ball.y - peg.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance < ball.radius + PEG_RADIUS) {
-                // Collision detected
-                const angle = Math.atan2(dy, dx);
-                const minDistance = PEG_RADIUS + ball.radius + 2;
-                
-                ball.x = peg.x + Math.cos(angle) * minDistance;
-                ball.y = peg.y + Math.sin(angle) * minDistance;
-                
-                // Enhanced bounce calculation
-                const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-                const minSpeed = 1.5;
-                const actualSpeed = Math.max(speed * BOUNCE, minSpeed);
-                
-                // Add controlled randomness
-                const randomFactor = (Math.random() - 0.5) * 2.2;
-                ball.vx = Math.cos(angle) * actualSpeed + randomFactor;
-                ball.vy = Math.sin(angle) * actualSpeed + Math.random() * 1.0;
-                
-                // Make peg glow (border pegs glow differently)
-                peg.glowing = true;
-                peg.glowTime = 40;
-                
-                ball.stuckTimer = 0;
-            }
-            
-            // Update glow
-            if (peg.glowing) {
-                peg.glowTime--;
-                if (peg.glowTime <= 0) {
-                    peg.glowing = false;
-                }
-            }
-        });
-        
-        // Anti-stuck mechanism
-        if (Math.abs(ball.vx) < 0.3 && Math.abs(ball.vy) < 0.3) {
-            ball.stuckTimer++;
-            if (ball.stuckTimer > 50) {
-                ball.vx += (Math.random() - 0.5) * 1.8;
-                ball.vy += Math.random() * 0.8 + 0.4;
-                ball.stuckTimer = 0;
-            }
-        } else {
-            ball.stuckTimer = 0;
-        }
-        
-        // Ensure minimum downward velocity
-        if (Math.abs(ball.vy) < 0.15) {
-            ball.vy += 0.25;
-        }
-        
-        // Check if ball reached bottom
-        if (ball.y > CANVAS_HEIGHT - 70) {
-            // Find which slot the ball landed in
-            const slotIndex = Math.floor(ball.x / (CANVAS_WIDTH / 13));
-            const clampedIndex = Math.max(0, Math.min(slotIndex, 12));
-            const slot = gameState.blinkoGame.multiplierSlots[clampedIndex];
-            
-            if (slot) {
-                const winAmount = ball.betAmount * slot.multiplier;
-                handleBlinkoWin(winAmount);
-                
-                // Highlight slot
-                slot.highlight = true;
-                setTimeout(() => slot.highlight = false, 800);
-            }
-            
-            // Remove ball
-            gameState.blinkoGame.balls.splice(i, 1);
-        }
-    }
-}
-
-async function handleBlinkoWin(amount) {
-    if (amount > 0) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/win`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: gameState.userId,
-                    amount: amount
-                }),
-                credentials: 'include'
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                gameState.chips = data.newBalance;
-                gameState.blinkoGame.totalWon += amount;
-                updateCurrencyDisplay();
-                updateBlinkoStats();
-            }
-        } catch (error) {
-            console.error('Blinko win error:', error);
-        }
-    }
-}
-
-function drawBlinkoGame() {
-    if (!blinkoCtx) return;
-    
-    // Clear canvas with dark background
-    blinkoCtx.fillStyle = '#0a0a0a';
-    blinkoCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    
-    // Draw pegs with enhanced visuals and different styles for border pegs
-    gameState.blinkoGame.pegs.forEach(peg => {
-        blinkoCtx.beginPath();
-        blinkoCtx.arc(peg.x, peg.y, PEG_RADIUS, 0, Math.PI * 2);
-        
-        if (peg.glowing) {
-            const glowIntensity = peg.glowTime / 40;
-            if (peg.isBorder) {
-                blinkoCtx.fillStyle = `rgba(255, 100, 100, ${0.6 + glowIntensity * 0.4})`;
-                blinkoCtx.shadowColor = '#FF6464';
-            } else {
-                blinkoCtx.fillStyle = `rgba(255, 215, 0, ${0.5 + glowIntensity * 0.5})`;
-                blinkoCtx.shadowColor = '#FFD700';
-            }
-            blinkoCtx.shadowBlur = 18 * glowIntensity;
-        } else {
-            if (peg.isBorder) {
-                blinkoCtx.fillStyle = '#666';
-                blinkoCtx.shadowColor = '#FF6464';
-                blinkoCtx.shadowBlur = 2;
-            } else {
-                blinkoCtx.fillStyle = '#555';
-                blinkoCtx.shadowBlur = 0;
-            }
-        }
-        
-        blinkoCtx.fill();
-        
-        // Different stroke colors for border pegs
-        if (peg.isBorder) {
-            blinkoCtx.strokeStyle = '#FF6464';
-            blinkoCtx.lineWidth = 2;
-        } else {
-            blinkoCtx.strokeStyle = '#FFD700';
-            blinkoCtx.lineWidth = 1.5;
-        }
-        blinkoCtx.stroke();
-        blinkoCtx.shadowBlur = 0;
-    });
-    
-    // Draw multiplier slots
-    gameState.blinkoGame.multiplierSlots.forEach((slot, index) => {
-        if (slot.highlight) {
-            blinkoCtx.fillStyle = 'rgba(255, 215, 0, 0.4)';
-            blinkoCtx.shadowColor = '#FFD700';
-            blinkoCtx.shadowBlur = 15;
-        } else {
-            blinkoCtx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-            blinkoCtx.shadowBlur = 0;
-        }
-        
-        blinkoCtx.fillRect(slot.x, slot.y, slot.width, slot.height);
-        
-        blinkoCtx.strokeStyle = '#FFD700';
-        blinkoCtx.lineWidth = 1;
-        blinkoCtx.strokeRect(slot.x, slot.y, slot.width, slot.height);
-        
-        // Draw multiplier text
-        blinkoCtx.fillStyle = slot.multiplier >= 1 ? '#4CAF50' : '#f44336';
-        blinkoCtx.font = 'bold 11px Arial';
-        blinkoCtx.textAlign = 'center';
-        blinkoCtx.shadowBlur = 0;
-        blinkoCtx.fillText(
-            `${slot.multiplier}x`,
-            slot.x + slot.width / 2,
-            slot.y + slot.height / 2 + 4
-        );
-    });
-    
-    // Draw balls with enhanced visuals
-    gameState.blinkoGame.balls.forEach(ball => {
-        blinkoCtx.beginPath();
-        blinkoCtx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-        
-        // Gradient effect for balls
-        const gradient = blinkoCtx.createRadialGradient(
-            ball.x - 2, ball.y - 2, 0,
-            ball.x, ball.y, ball.radius
-        );
-        gradient.addColorStop(0, '#FF7755');
-        gradient.addColorStop(1, '#FF3311');
-        
-        blinkoCtx.fillStyle = gradient;
-        blinkoCtx.fill();
-        blinkoCtx.strokeStyle = '#FFD700';
-        blinkoCtx.lineWidth = 1.5;
-        blinkoCtx.stroke();
-        
-        // Add glow to balls
-        blinkoCtx.shadowColor = '#FF5733';
-        blinkoCtx.shadowBlur = 8;
-        blinkoCtx.beginPath();
-        blinkoCtx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-        blinkoCtx.fill();
-        blinkoCtx.shadowBlur = 0;
-    });
-}
-
-function startBlinkoAnimation() {
-    function animate() {
-        updateBlinkoBalls();
-        drawBlinkoGame();
-        gameState.blinkoGame.animationId = requestAnimationFrame(animate);
-    }
-    animate();
-}
-
-function stopBlinkoAnimation() {
-    if (gameState.blinkoGame.animationId) {
-        cancelAnimationFrame(gameState.blinkoGame.animationId);
-        gameState.blinkoGame.animationId = null;
-    }
-}
-
-function updateBlinkoRisk() {
-    // Check if there are balls currently dropping
-    if (gameState.blinkoGame.balls.length > 0) {
-        showNotification("Cannot change risk level while balls are dropping!", false);
-        // Reset select to current risk
-        if (elements.blinkoRiskSelect) {
-            elements.blinkoRiskSelect.value = gameState.blinkoGame.currentRisk;
-        }
-        return;
-    }
-    
-    const risk = elements.blinkoRiskSelect?.value || 'medium';
-    gameState.blinkoGame.currentRisk = risk;
-    
-    // Update multiplier slots with 13-slot arrays
-    const multipliers13 = {
-        low: [5, 3, 2, 1.4, 0.8, 0.6, 0.4, 0.6, 0.8, 1.1, 2, 3, 5],
-        medium: [33.0, 11.0, 4.0, 2.0, 1.1, 0.6, 0.3, 0.6, 1.1, 2.0, 4.0, 11.0, 33.0],
-        high: [50, 20, 9, 6, 3, 1, 0.2, 0.5, 3, 6, 9, 20, 50]
-    };
-    
-    const currentMultipliers = multipliers13[risk];
-    gameState.blinkoGame.multiplierSlots.forEach((slot, index) => {
-        if (index < currentMultipliers.length) {
-            slot.multiplier = currentMultipliers[index];
-        }
-    });
-}
-
-// Game Navigation Functions
-function showGameSelectScreen() {
-    if (!gameState.userId) {
-        showLoginScreen();
-        return;
-    }
-    hideAllScreens();
-    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'block';
-    updateCurrencyDisplay();
-    stopBlinkoAnimation();
-}
-
-function startSlotMachineGame() {
-    if (!gameState.userId) {
-        showLoginScreen();
-        return;
-    }
-    gameState.currentGame = 'slots';
-    hideAllScreens();
-    if (elements.gameScreen) elements.gameScreen.style.display = 'block';
-    stopBlinkoAnimation();
-}
-
-function startMinesGame() {
-    if (!gameState.userId) {
-        showLoginScreen();
-        return;
-    }
-    gameState.currentGame = 'mines';
-    hideAllScreens();
-    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'block';
-    setupMinesGameUI();
-    stopBlinkoAnimation();
-}
-
-function startBlinkoGame() {
-    if (!gameState.userId) {
-        showLoginScreen();
-        return;
-    }
-    gameState.currentGame = 'blinko';
-    hideAllScreens();
-    if (elements.blinkoGameScreen) elements.blinkoGameScreen.style.display = 'block';
-    initBlinkoGame();
-}
-
-function hideAllScreens() {
-    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
-    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
-    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
-    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
-    if (elements.blinkoGameScreen) elements.blinkoGameScreen.style.display = 'none';
-}
-
 // Authentication Functions
 async function loginWithToken(token) {
     try {
@@ -1314,36 +782,34 @@ function handleSuccessfulLogin(user) {
     gameState.chips = user.chips;
     gameState.dice = user.dice;
     
-    // Update all user displays
-    const userDisplays = [
-        { username: elements.usernameDisplay, avatar: elements.userAvatar },
-        { username: elements.minesUsername, avatar: elements.minesAvatar },
-        { username: elements.blinkoUsername, avatar: elements.blinkoAvatar }
-    ];
+    if (elements.usernameDisplay) elements.usernameDisplay.textContent = user.username;
+    if (elements.userAvatar) elements.userAvatar.src = user.avatar || 'assets/default-avatar.png';
+    if (elements.minesUsername) elements.minesUsername.textContent = user.username;
+    if (elements.minesAvatar) elements.minesAvatar.src = user.avatar || 'assets/default-avatar.png';
     
-    userDisplays.forEach(display => {
-        if (display.username) display.username.textContent = user.username;
-        if (display.avatar) display.avatar.src = user.avatar || 'assets/default-avatar.png';
-    });
-    
+    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     showGameSelectScreen();
     updateCurrencyDisplay();
     
-    // Initialize slot machine reels
     elements.reels.forEach((reel, index) => {
         if (!reel) return;
         const symbol = getRandomSymbol();
         gameState.currentSymbols[index] = symbol.name;
         resetReel(reel, symbol);
     });
+    
+    if (gameState.currentGame === 'mines') {
+        setupMinesGameUI();
+    }
 }
 
 function showLoginScreen() {
-    hideAllScreens();
     if (elements.loginScreen) elements.loginScreen.style.display = 'block';
+    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
+    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
+    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
     gameState.userId = null;
     if (elements.tokenInput) elements.tokenInput.value = '';
-    stopBlinkoAnimation();
 }
 
 async function checkAuthStatus() {
@@ -1367,6 +833,17 @@ async function checkAuthStatus() {
     }
 }
 
+// Add CSS animation for landing bounce
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes landingBounce {
+        0% { transform: translateY(0%) scale(1); }
+        50% { transform: translateY(-20%) scale(1.1); }
+        100% { transform: translateY(0%) scale(1); }
+    }
+`;
+document.head.appendChild(style);
+
 // Event Listeners
 if (elements.loginBtn) {
     elements.loginBtn.addEventListener('click', async () => {
@@ -1379,104 +856,20 @@ if (elements.loginBtn) {
     });
 }
 
-// Logout buttons
 if (elements.logoutBtn) elements.logoutBtn.addEventListener('click', logout);
 if (elements.minesLogoutBtn) elements.minesLogoutBtn.addEventListener('click', logout);
-if (elements.blinkoLogoutBtn) elements.blinkoLogoutBtn.addEventListener('click', logout);
-
-// Game buttons
 if (elements.spinBtn) elements.spinBtn.addEventListener('click', startSpin);
 if (elements.claimBtn) elements.claimBtn.addEventListener('click', claimWin);
 
-// Game selection
 if (elements.slotMachineBtn) elements.slotMachineBtn.addEventListener('click', startSlotMachineGame);
 if (elements.minesGameBtn) elements.minesGameBtn.addEventListener('click', startMinesGame);
-if (elements.blinkoGameBtn) elements.blinkoGameBtn.addEventListener('click', startBlinkoGame);
-
-// Mines game
 if (elements.minesStartBtn) elements.minesStartBtn.addEventListener('click', startNewMinesGame);
 if (elements.minesCashoutBtn) elements.minesCashoutBtn.addEventListener('click', cashoutMinesGame);
 if (document.getElementById('mines-game-over-close')) {
     document.getElementById('mines-game-over-close').addEventListener('click', closeMinesGameOverPopup);
 }
-
-// Blinko game
-if (elements.blinkoDropBtn) elements.blinkoDropBtn.addEventListener('click', dropBlinkoBall);
-if (elements.blinkoRiskSelect) elements.blinkoRiskSelect.addEventListener('change', updateBlinkoRisk);
-
-// Back to menu buttons
 if (elements.backToMenuBtn) elements.backToMenuBtn.addEventListener('click', showGameSelectScreen);
 if (elements.minesBackToMenuBtn) elements.minesBackToMenuBtn.addEventListener('click', showGameSelectScreen);
-if (elements.blinkoBackToMenuBtn) elements.blinkoBackToMenuBtn.addEventListener('click', showGameSelectScreen);
-
-// Token input enter key support
-if (elements.tokenInput) {
-    elements.tokenInput.addEventListener('keypress', async (e) => {
-        if (e.key === 'Enter') {
-            const token = e.target.value.trim();
-            if (token) {
-                await loginWithToken(token);
-            } else {
-                showNotification('Please enter your token', false);
-            }
-        }
-    });
-}
-
-// CSS animations
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes landingBounce {
-        0% { transform: translateY(0%) scale(1); }
-        50% { transform: translateY(-20%) scale(1.1); }
-        100% { transform: translateY(0%) scale(1); }
-    }
-    
-    .notification {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 12px 20px;
-        border-radius: 8px;
-        color: white;
-        font-weight: bold;
-        z-index: 10000;
-        animation: slideIn 0.3s ease-out;
-    }
-    
-    .notification.success {
-        background-color: #4CAF50;
-    }
-    
-    .notification.error {
-        background-color: #f44336;
-    }
-    
-    @keyframes slideIn {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-    
-    .win-highlight {
-        animation: winGlow 1s ease-in-out infinite alternate;
-    }
-    
-    @keyframes winGlow {
-        from {
-            filter: brightness(1) drop-shadow(0 0 5px #FFD700);
-        }
-        to {
-            filter: brightness(1.3) drop-shadow(0 0 15px #FFD700);
-        }
-    }
-`;
-document.head.appendChild(style);
 
 // Initialize Game
 async function initGame() {
@@ -1487,28 +880,7 @@ async function initGame() {
         }
     } catch (error) {
         console.error('Initialization error:', error);
-        showNotification('Failed to initialize game. Please refresh the page.', false);
     }
 }
 
-// Start the game when DOM is loaded
 document.addEventListener('DOMContentLoaded', initGame);
-
-// Handle page visibility for animation optimization
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden && gameState.currentGame === 'blinko') {
-        // Pause Blinko animation when tab is not visible to save resources
-        stopBlinkoAnimation();
-    } else if (!document.hidden && gameState.currentGame === 'blinko') {
-        // Resume Blinko animation when tab becomes visible
-        startBlinkoAnimation();
-    }
-});
-
-// Handle window resize for canvas
-window.addEventListener('resize', () => {
-    if (gameState.currentGame === 'blinko' && elements.blinkoCanvas) {
-        // Redraw canvas on resize
-        drawBlinkoGame();
-    }
-});
