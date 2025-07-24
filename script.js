@@ -740,19 +740,18 @@ function setupBlinkoGame() {
 }
 
 function createBlinkoBoard() {
-    // Create triangular peg layout
-    const rows = 16;
-    const pegSpacing = 35;
+    // Create rectangular peg layout
+    const rows = 14;
+    const cols = 15;
+    const pegSpacingX = 35;
+    const pegSpacingY = 35;
     const startY = 80;
+    const startX = (CANVAS_WIDTH - (cols - 1) * pegSpacingX) / 2;
     
     for (let row = 0; row < rows; row++) {
-        const pegsInRow = row + 2;
-        const rowWidth = (pegsInRow - 1) * pegSpacing;
-        const startX = (CANVAS_WIDTH - rowWidth) / 2;
-        
-        for (let col = 0; col < pegsInRow; col++) {
-            const x = startX + col * pegSpacing;
-            const y = startY + row * pegSpacing;
+        for (let col = 0; col < cols; col++) {
+            const x = startX + col * pegSpacingX;
+            const y = startY + row * pegSpacingY;
             gameState.blinkoGame.pegs.push({
                 x: x,
                 y: y,
@@ -763,7 +762,7 @@ function createBlinkoBoard() {
     }
     
     // Create multiplier slots at the bottom
-    const slotCount = 15; // Changed from 17 to 15
+    const slotCount = 15;
     const slotWidth = CANVAS_WIDTH / slotCount;
     const multipliers = CONFIG.blinko.multipliers[gameState.blinkoGame.currentRisk];
     
@@ -858,23 +857,13 @@ function updateBlinkoBalls() {
         ball.x += ball.vx;
         ball.y += ball.vy;
         
-        // Bounce off triangle walls (left and right borders)
-        const triangleTopY = 50;
-        const triangleBottomY = CANVAS_HEIGHT - 50;
-        const triangleLeftSlope = (CANVAS_WIDTH / 2 - 50) / (triangleBottomY - triangleTopY);
-        const triangleRightSlope = (CANVAS_WIDTH / 2 - 50) / (triangleBottomY - triangleTopY);
-        
-        // Left wall of triangle
-        const leftWallX = 50 + triangleLeftSlope * (ball.y - triangleTopY);
-        if (ball.x - ball.radius < leftWallX && ball.y > triangleTopY) {
-            ball.x = leftWallX + ball.radius;
+        // Bounce off side walls
+        if (ball.x - ball.radius < 50) {
+            ball.x = 50 + ball.radius;
             ball.vx = Math.abs(ball.vx) * BOUNCE;
         }
-        
-        // Right wall of triangle
-        const rightWallX = CANVAS_WIDTH - 50 - triangleRightSlope * (ball.y - triangleTopY);
-        if (ball.x + ball.radius > rightWallX && ball.y > triangleTopY) {
-            ball.x = rightWallX - ball.radius;
+        if (ball.x + ball.radius > CANVAS_WIDTH - 50) {
+            ball.x = CANVAS_WIDTH - 50 - ball.radius;
             ball.vx = -Math.abs(ball.vx) * BOUNCE;
         }
         
@@ -885,18 +874,20 @@ function updateBlinkoBalls() {
             const distance = Math.sqrt(dx * dx + dy * dy);
             
             if (distance < ball.radius + PEG_RADIUS) {
-                // Collision detected
+                // Collision detected - prevent sticking by ensuring minimum separation
                 const angle = Math.atan2(dy, dx);
-                const targetX = peg.x + Math.cos(angle) * (PEG_RADIUS + ball.radius);
-                const targetY = peg.y + Math.sin(angle) * (PEG_RADIUS + ball.radius);
+                const minDistance = PEG_RADIUS + ball.radius + 1; // Add 1px buffer
                 
-                ball.x = targetX;
-                ball.y = targetY;
+                ball.x = peg.x + Math.cos(angle) * minDistance;
+                ball.y = peg.y + Math.sin(angle) * minDistance;
                 
-                // Bounce
+                // Calculate bounce with more randomness to prevent sticking
                 const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-                ball.vx = Math.cos(angle) * speed * BOUNCE + (Math.random() - 0.5) * 3;
-                ball.vy = Math.sin(angle) * speed * BOUNCE;
+                const minSpeed = 2; // Ensure minimum speed to prevent sticking
+                const actualSpeed = Math.max(speed * BOUNCE, minSpeed);
+                
+                ball.vx = Math.cos(angle) * actualSpeed + (Math.random() - 0.5) * 4;
+                ball.vy = Math.sin(angle) * actualSpeed + Math.random() * 2; // Add downward bias
                 
                 // Make peg glow
                 peg.glowing = true;
@@ -911,6 +902,11 @@ function updateBlinkoBalls() {
                 }
             }
         });
+        
+        // Ensure ball doesn't get stuck by adding minimum downward velocity
+        if (Math.abs(ball.vy) < 0.5) {
+            ball.vy += 0.5;
+        }
         
         // Check if ball reached bottom
         if (ball.y > CANVAS_HEIGHT - 60) {
@@ -970,15 +966,10 @@ function drawBlinkoGame() {
     blinkoCtx.fillStyle = '#1a1a1a';
     blinkoCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     
-    // Draw triangle border with walls
+    // Draw square border (no triangle background)
     blinkoCtx.strokeStyle = '#FFD700';
     blinkoCtx.lineWidth = 3;
-    blinkoCtx.beginPath();
-    blinkoCtx.moveTo(CANVAS_WIDTH / 2, 50);
-    blinkoCtx.lineTo(50, CANVAS_HEIGHT - 50);
-    blinkoCtx.lineTo(CANVAS_WIDTH - 50, CANVAS_HEIGHT - 50);
-    blinkoCtx.closePath();
-    blinkoCtx.stroke();
+    blinkoCtx.strokeRect(50, 50, CANVAS_WIDTH - 100, CANVAS_HEIGHT - 100);
     
     // Draw pegs
     gameState.blinkoGame.pegs.forEach(peg => {
