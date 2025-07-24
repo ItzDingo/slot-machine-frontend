@@ -740,24 +740,30 @@ function setupBlinkoGame() {
 }
 
 function createBlinkoBoard() {
-    // Create rectangular peg layout
-    const rows = 14;
-    const cols = 15;
-    const pegSpacingX = 35;
-    const pegSpacingY = 35;
-    const startY = 80;
+    // Create rectangular peg layout - lower and closer to buckets
+    const rows = 10; // Reduced from 14
+    const cols = 13; // Reduced from 15 for better coverage
+    const pegSpacingX = 40; // Increased spacing
+    const pegSpacingY = 45; // Increased spacing
+    const startY = 150; // Moved down from 80
     const startX = (CANVAS_WIDTH - (cols - 1) * pegSpacingX) / 2;
     
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
-            const x = startX + col * pegSpacingX;
+            // Offset every other row for better ball interaction
+            const offsetX = (row % 2) * (pegSpacingX / 2);
+            const x = startX + col * pegSpacingX + offsetX;
             const y = startY + row * pegSpacingY;
-            gameState.blinkoGame.pegs.push({
-                x: x,
-                y: y,
-                glowing: false,
-                glowTime: 0
-            });
+            
+            // Only add peg if it's within bounds
+            if (x >= 80 && x <= CANVAS_WIDTH - 80) {
+                gameState.blinkoGame.pegs.push({
+                    x: x,
+                    y: y,
+                    glowing: false,
+                    glowTime: 0
+                });
+            }
         }
     }
     
@@ -966,10 +972,7 @@ function drawBlinkoGame() {
     blinkoCtx.fillStyle = '#1a1a1a';
     blinkoCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     
-    // Draw square border (no triangle background)
-    blinkoCtx.strokeStyle = '#FFD700';
-    blinkoCtx.lineWidth = 3;
-    blinkoCtx.strokeRect(50, 50, CANVAS_WIDTH - 100, CANVAS_HEIGHT - 100);
+    // No background borders - removed square border
     
     // Draw pegs
     gameState.blinkoGame.pegs.forEach(peg => {
