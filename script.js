@@ -28,53 +28,55 @@ const CONFIG = {
         'ANY_TWO_MATCH': 20
     },
     mines: {
-        minBet: 1,
+        minBet: 0.1,  // Now accepts decimal bets
         maxBet: 1000,
         minMines: 1,
         maxMines: 10,
         gridSize: 5,
-        // New balanced multiplier system with precise float values
         getMultiplier: function(minesCount, revealedCells) {
-            // Base multiplier based on mines count
+            // Base multipliers that increase with mine count
             const baseMultipliers = {
-                1: 1.04,  2: 1.06,  3: 1.09,
-                4: 1.12,  5: 1.16,  6: 1.20,
-                7: 1.25,  8: 1.30,  9: 1.36,
-                10: 1.42
+                1: 1.04,  2: 1.07,  3: 1.10,
+                4: 1.14,  5: 1.18,  6: 1.23,
+                7: 1.29,  8: 1.35,  9: 1.42,
+                10: 1.50
             };
             
-            // Growth factor based on revealed cells (exponential but controlled)
-            const growthFactors = {
-                1: 1.00,  5: 1.15,  10: 1.35,
-                15: 1.60,  20: 1.90,  24: 2.25
-            };
+            // Growth curve based on revealed cells
+            const growthCurve = [
+                { cells: 1, factor: 1.00 },
+                { cells: 2, factor: 1.05 },
+                { cells: 5, factor: 1.15 },
+                { cells: 10, factor: 1.30 },
+                { cells: 15, factor: 1.50 },
+                { cells: 20, factor: 1.75 },
+                { cells: 24, factor: 2.10 }
+            ];
             
-            // Calculate the multiplier
-            let base = baseMultipliers[minesCount] || 1.0;
+            // Find base multiplier
+            const base = baseMultipliers[minesCount] || 1.0;
+            
+            // Find growth factor
             let growth = 1.0;
-            
-            // Find the appropriate growth factor
-            const thresholds = Object.keys(growthFactors).map(Number).sort((a,b) => a-b);
-            for (let i = 0; i < thresholds.length; i++) {
-                if (revealedCells >= thresholds[i]) {
-                    growth = growthFactors[thresholds[i]];
-                } else {
+            for (let i = growthCurve.length - 1; i >= 0; i--) {
+                if (revealedCells >= growthCurve[i].cells) {
+                    growth = growthCurve[i].factor;
                     break;
                 }
             }
             
-            // Calculate final multiplier with house edge
+            // Calculate final multiplier (before house edge)
             const rawMultiplier = base * growth;
-            const withHouseEdge = rawMultiplier * (1 - this.houseEdge);
             
-            // Return rounded to 4 decimal places
+            // Apply house edge and return with 4 decimal precision
+            const withHouseEdge = rawMultiplier * (1 - this.houseEdge);
             return parseFloat(withHouseEdge.toFixed(4));
         },
-        houseEdge: 0.03
+        houseEdge: 0.03  // 3% house edge
     }
 };
 
-// Game State (remain the same)
+// Game State
 let gameState = {
     chips: 0,
     dice: 0,
@@ -170,9 +172,9 @@ function resetReel(reel, centerSymbol) {
 }
 
 function updateCurrencyDisplay() {
-    if (elements.chipsDisplay) elements.chipsDisplay.textContent = gameState.chips;
+    if (elements.chipsDisplay) elements.chipsDisplay.textContent = gameState.chips.toFixed(2);
     if (elements.diceDisplay) elements.diceDisplay.textContent = gameState.dice;
-    if (elements.minesChips) elements.minesChips.textContent = gameState.chips;
+    if (elements.minesChips) elements.minesChips.textContent = gameState.chips.toFixed(2);
     if (elements.minesDice) elements.minesDice.textContent = gameState.dice;
 }
 
@@ -184,7 +186,7 @@ function showNotification(message, isSuccess) {
     setTimeout(() => notification.remove(), 3000);
 }
 
-// Slot Machine Functions
+// Slot Machine Functions (unchanged)
 async function startSpin() {
     if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
         if (gameState.chips < CONFIG.spinCost) {
@@ -402,7 +404,7 @@ async function claimWin() {
     if (elements.winPopup) elements.winPopup.style.display = 'none';
 }
 
-// Mines Game Functions
+// Mines Game Functions (updated for float numbers)
 function showGameSelectScreen() {
     if (!gameState.userId) {
         showLoginScreen();
@@ -452,12 +454,18 @@ async function setupMinesGameUI() {
         gameActive: false
     };
     
-    if (elements.minesCurrentWin) elements.minesCurrentWin.textContent = '0';
-    if (elements.minesMultiplier) elements.minesMultiplier.textContent = '1.00x';
+    if (elements.minesCurrentWin) elements.minesCurrentWin.textContent = '0.00';
+    if (elements.minesMultiplier) elements.minesMultiplier.textContent = '1.0000x';
     if (elements.minesGrid) elements.minesGrid.innerHTML = '';
     
-    if (elements.minesBetInput) elements.minesBetInput.disabled = false;
-    if (elements.minesCountInput) elements.minesCountInput.disabled = false;
+    if (elements.minesBetInput) {
+        elements.minesBetInput.disabled = false;
+        elements.minesBetInput.value = '';
+    }
+    if (elements.minesCountInput) {
+        elements.minesCountInput.disabled = false;
+        elements.minesCountInput.value = '';
+    }
     if (elements.minesStartBtn) elements.minesStartBtn.disabled = false;
     if (elements.minesCashoutBtn) elements.minesCashoutBtn.disabled = true;
     
@@ -494,10 +502,10 @@ async function startNewMinesGame() {
         return;
     }
 
-    const betAmount = parseInt(elements.minesBetInput?.value);
+    const betAmount = parseFloat(elements.minesBetInput?.value);
     const minesCount = parseInt(elements.minesCountInput?.value);
     
-    if (isNaN(betAmount)) {
+    if (isNaN(betAmount) || betAmount <= 0) {
         showNotification("Please enter a valid bet amount", false);
         return;
     }
@@ -620,18 +628,19 @@ function revealMineCell(index) {
     cell.classList.add('revealed');
     gameState.minesGame.revealedCells++;
     
-    // Use the new multiplier calculation
+    // Calculate multiplier using the new system
     gameState.minesGame.multiplier = CONFIG.mines.getMultiplier(
         gameState.minesGame.minesCount,
         gameState.minesGame.revealedCells
     );
     
-    gameState.minesGame.currentWin = Math.floor(
-        gameState.minesGame.betAmount * gameState.minesGame.multiplier
+    // Calculate current win with precise decimal values
+    gameState.minesGame.currentWin = parseFloat(
+        (gameState.minesGame.betAmount * gameState.minesGame.multiplier).toFixed(4)
     );
     
     if (elements.minesCurrentWin) {
-        elements.minesCurrentWin.textContent = gameState.minesGame.currentWin.toFixed(2);
+        elements.minesCurrentWin.textContent = gameState.minesGame.currentWin.toFixed(4);
     }
     if (elements.minesMultiplier) {
         elements.minesMultiplier.textContent = `${gameState.minesGame.multiplier.toFixed(4)}x`;
@@ -642,7 +651,6 @@ function revealMineCell(index) {
         endMinesGame(true);
     }
 }
-
 
 function cashoutMinesGame() {
     if (!gameState.minesGame.gameActive || gameState.minesGame.revealedCells === 0) {
@@ -690,7 +698,9 @@ async function endMinesGame(isWin) {
             updateCurrencyDisplay();
             
             if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "You Won!";
-            if (elements.minesGameOverAmount) elements.minesGameOverAmount.textContent = `+${gameState.minesGame.currentWin}`;
+            if (elements.minesGameOverAmount) {
+                elements.minesGameOverAmount.textContent = `+${gameState.minesGame.currentWin.toFixed(4)}`;
+            }
             if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'flex';
         } catch (error) {
             console.error('Win claim error:', error);
@@ -698,7 +708,9 @@ async function endMinesGame(isWin) {
         }
     } else {
         if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "Game Over!";
-        if (elements.minesGameOverAmount) elements.minesGameOverAmount.textContent = `-${gameState.minesGame.betAmount}`;
+        if (elements.minesGameOverAmount) {
+            elements.minesGameOverAmount.textContent = `-${gameState.minesGame.betAmount.toFixed(4)}`;
+        }
         if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'flex';
     }
 }
