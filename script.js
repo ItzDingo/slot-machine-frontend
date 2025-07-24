@@ -33,23 +33,48 @@ const CONFIG = {
         minMines: 1,
         maxMines: 10,
         gridSize: 5,
-        multipliers: {
-            1: { 1: 1.0436, 5: 1.2345, 10: 1.5432, 15: 2.0123, 20: 2.7456, 24: 3.7890 },
-            2: { 1: 1.0567, 5: 1.3456, 10: 1.7890, 15: 2.4567, 20: 3.4567, 23: 4.5678 },
-            3: { 1: 1.0678, 5: 1.4567, 10: 2.0123, 15: 2.8901, 20: 4.1234, 22: 5.4321 },
-            4: { 1: 1.0789, 5: 1.5678, 10: 2.2345, 15: 3.3456, 20: 4.8901, 21: 6.5432 },
-            5: { 1: 1.0890, 5: 1.6789, 10: 2.4567, 15: 3.7890, 20: 5.6789 },
-            6: { 1: 1.1012, 5: 1.7890, 10: 2.6789, 15: 4.2345, 19: 6.7890 },
-            7: { 1: 1.1123, 5: 1.9012, 10: 2.9012, 15: 4.6789, 18: 7.8901 },
-            8: { 1: 1.1234, 5: 2.0123, 10: 3.1234, 15: 5.1234, 17: 8.9012 },
-            9: { 1: 1.1345, 5: 2.1234, 10: 3.3456, 15: 5.5678, 16: 9.0123 },
-            10: { 1: 1.1456, 5: 2.2345, 10: 3.5678, 15: 6.0123 }
+        // New balanced multiplier system with precise float values
+        getMultiplier: function(minesCount, revealedCells) {
+            // Base multiplier based on mines count
+            const baseMultipliers = {
+                1: 1.04,  2: 1.06,  3: 1.09,
+                4: 1.12,  5: 1.16,  6: 1.20,
+                7: 1.25,  8: 1.30,  9: 1.36,
+                10: 1.42
+            };
+            
+            // Growth factor based on revealed cells (exponential but controlled)
+            const growthFactors = {
+                1: 1.00,  5: 1.15,  10: 1.35,
+                15: 1.60,  20: 1.90,  24: 2.25
+            };
+            
+            // Calculate the multiplier
+            let base = baseMultipliers[minesCount] || 1.0;
+            let growth = 1.0;
+            
+            // Find the appropriate growth factor
+            const thresholds = Object.keys(growthFactors).map(Number).sort((a,b) => a-b);
+            for (let i = 0; i < thresholds.length; i++) {
+                if (revealedCells >= thresholds[i]) {
+                    growth = growthFactors[thresholds[i]];
+                } else {
+                    break;
+                }
+            }
+            
+            // Calculate final multiplier with house edge
+            const rawMultiplier = base * growth;
+            const withHouseEdge = rawMultiplier * (1 - this.houseEdge);
+            
+            // Return rounded to 4 decimal places
+            return parseFloat(withHouseEdge.toFixed(4));
         },
         houseEdge: 0.03
     }
 };
 
-// Game State
+// Game State (remain the same)
 let gameState = {
     chips: 0,
     dice: 0,
@@ -595,30 +620,29 @@ function revealMineCell(index) {
     cell.classList.add('revealed');
     gameState.minesGame.revealedCells++;
     
-    const minesCount = gameState.minesGame.minesCount;
-    const revealed = gameState.minesGame.revealedCells;
-    const multiplierData = CONFIG.mines.multipliers[minesCount];
+    // Use the new multiplier calculation
+    gameState.minesGame.multiplier = CONFIG.mines.getMultiplier(
+        gameState.minesGame.minesCount,
+        gameState.minesGame.revealedCells
+    );
     
-    let currentMultiplier = 1.0;
-    for (const [cells, mult] of Object.entries(multiplierData)) {
-        if (revealed >= parseInt(cells)) {
-            currentMultiplier = mult;
-        } else {
-            break;
-        }
+    gameState.minesGame.currentWin = Math.floor(
+        gameState.minesGame.betAmount * gameState.minesGame.multiplier
+    );
+    
+    if (elements.minesCurrentWin) {
+        elements.minesCurrentWin.textContent = gameState.minesGame.currentWin.toFixed(2);
     }
-    
-    gameState.minesGame.multiplier = currentMultiplier;
-    gameState.minesGame.currentWin = Math.floor(gameState.minesGame.betAmount * currentMultiplier);
-    
-    if (elements.minesCurrentWin) elements.minesCurrentWin.textContent = gameState.minesGame.currentWin;
-    if (elements.minesMultiplier) elements.minesMultiplier.textContent = `${currentMultiplier.toFixed(2)}x`;
+    if (elements.minesMultiplier) {
+        elements.minesMultiplier.textContent = `${gameState.minesGame.multiplier.toFixed(4)}x`;
+    }
     
     const safeCells = 25 - gameState.minesGame.minesCount;
     if (gameState.minesGame.revealedCells === safeCells) {
         endMinesGame(true);
     }
 }
+
 
 function cashoutMinesGame() {
     if (!gameState.minesGame.gameActive || gameState.minesGame.revealedCells === 0) {
