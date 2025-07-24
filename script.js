@@ -124,7 +124,10 @@ let gameState = {
         currentWin: 0,
         gameActive: false,
         ballPosition: 0,
-        buckets: []
+        buckets: [],
+        betCount: 0,
+        totalBets: 20,
+        rows: 10
     },
     blinkoStats: {
         totalGames: 0,
@@ -196,7 +199,13 @@ const elements = {
     minesBackToMenuBtn: document.getElementById('mines-back-to-menu-btn'),
     blinkoBackToMenuBtn: document.getElementById('blinko-back-to-menu-btn'),
     minesWinsCounter: document.getElementById('mines-wins-counter'),
-    minesWinRate: document.getElementById('mines-win-rate')
+    minesWinRate: document.getElementById('mines-win-rate'),
+    // New Blinko elements
+    blinkoBetAmount: document.getElementById('blinko-bet-amount'),
+    blinkoBetCount: document.getElementById('blinko-bet-count'),
+    blinkoRowsInput: document.getElementById('blinko-rows-input'),
+    blinkoBetsInput: document.getElementById('blinko-bets-input'),
+    percentButtons: document.querySelectorAll('.percent-btn')
 };
 
 // Helper Functions
@@ -793,7 +802,10 @@ function setupBlinkoGameUI() {
         currentWin: 0,
         gameActive: false,
         ballPosition: 0,
-        buckets: []
+        buckets: [],
+        betCount: 0,
+        totalBets: parseInt(elements.blinkoBetsInput.value) || 20,
+        rows: parseInt(elements.blinkoRowsInput.value) || 10
     };
     
     if (elements.blinkoCurrentWin) elements.blinkoCurrentWin.textContent = '0.00';
@@ -812,17 +824,23 @@ function setupBlinkoGameUI() {
     }
     if (elements.blinkoStartBtn) elements.blinkoStartBtn.disabled = false;
     
+    updateBlinkoBetDisplay();
     createBlinkoBoard();
 }
 
-// Update the createBlinkoBoard function
+function updateBlinkoBetDisplay() {
+    const betAmount = parseFloat(elements.blinkoBetInput.value) || 0;
+    if (elements.blinkoBetAmount) elements.blinkoBetAmount.textContent = `${betAmount.toFixed(2)} chips`;
+    if (elements.blinkoBetCount) elements.blinkoBetCount.textContent = gameState.blinkoGame.betCount;
+}
+
 function createBlinkoBoard() {
     if (!elements.blinkoBoard || !elements.blinkoBuckets) return;
     
     elements.blinkoBoard.innerHTML = '';
     elements.blinkoBuckets.innerHTML = '';
     
-    const rows = CONFIG.blinko.rows;
+    const rows = gameState.blinkoGame.rows || CONFIG.blinko.rows;
     const boardWidth = elements.blinkoBoard.offsetWidth;
     const pegSpacing = boardWidth / (rows + 1);
     
@@ -864,7 +882,6 @@ function createBlinkoBoard() {
     gameState.blinkoGame.buckets = Array.from(elements.blinkoBuckets.children);
 }
 
-// Update the startNewBlinkoGame function
 async function startNewBlinkoGame() {
     if (!gameState.userId) {
         showLoginScreen();
@@ -873,6 +890,8 @@ async function startNewBlinkoGame() {
 
     const betAmount = parseFloat(elements.blinkoBetInput?.value);
     const riskLevel = elements.blinkoRiskInput?.value || 'medium';
+    const rows = parseInt(elements.blinkoRowsInput?.value) || CONFIG.blinko.rows;
+    const totalBets = parseInt(elements.blinkoBetsInput?.value) || 20;
     
     if (isNaN(betAmount) || betAmount <= 0) {
         showNotification("Please enter a valid bet amount", false);
@@ -889,6 +908,13 @@ async function startNewBlinkoGame() {
         return;
     }
     
+    // Update game state
+    gameState.blinkoGame.betAmount = betAmount;
+    gameState.blinkoGame.riskLevel = riskLevel;
+    gameState.blinkoGame.rows = rows;
+    gameState.blinkoGame.totalBets = totalBets;
+    gameState.blinkoGame.betCount = 0;
+    
     // Deduct chips immediately
     gameState.chips -= betAmount;
     updateCurrencyDisplay();
@@ -896,8 +922,6 @@ async function startNewBlinkoGame() {
     // Start the game if not already active
     if (!gameState.blinkoGame.gameActive) {
         gameState.blinkoGame.gameActive = true;
-        gameState.blinkoGame.betAmount = betAmount;
-        gameState.blinkoGame.riskLevel = riskLevel;
         gameState.blinkoStats.totalGames++;
         createBlinkoBoard();
     }
@@ -925,7 +949,7 @@ async function startNewBlinkoGame() {
 }
 
 function dropBlinkoBall() {
-    if (!elements.blinkoBall || !gameState.blinkoGame.gameActive) return;
+    if (!elements.blinkoBoard || !gameState.blinkoGame.gameActive) return;
     
     const ball = document.createElement('div');
     ball.className = 'blinko-ball';
@@ -934,7 +958,7 @@ function dropBlinkoBall() {
     const boardWidth = elements.blinkoBoard.offsetWidth;
     const startX = boardWidth / 2;
     const startY = 0;
-    const pegSpacing = boardWidth / (CONFIG.blinko.rows + 1);
+    const pegSpacing = boardWidth / (gameState.blinkoGame.rows + 1);
     
     ball.style.left = `${startX}px`;
     ball.style.top = `${startY}px`;
@@ -1280,6 +1304,38 @@ if (document.getElementById('blinko-game-over-close')) {
 if (elements.backToMenuBtn) elements.backToMenuBtn.addEventListener('click', showGameSelectScreen);
 if (elements.minesBackToMenuBtn) elements.minesBackToMenuBtn.addEventListener('click', showGameSelectScreen);
 if (elements.blinkoBackToMenuBtn) elements.blinkoBackToMenuBtn.addEventListener('click', showGameSelectScreen);
+
+// Add percent button event listeners
+if (elements.percentButtons) {
+    elements.percentButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const percent = parseFloat(this.dataset.percent);
+            const maxBet = gameState.chips * (percent / 100);
+            elements.blinkoBetInput.value = maxBet.toFixed(2);
+            updateBlinkoBetDisplay();
+        });
+    });
+}
+
+// Add input change listeners
+if (elements.blinkoBetInput) {
+    elements.blinkoBetInput.addEventListener('input', updateBlinkoBetDisplay);
+}
+
+if (elements.blinkoBetsInput) {
+    elements.blinkoBetsInput.addEventListener('change', function() {
+        gameState.blinkoGame.totalBets = parseInt(this.value) || 20;
+    });
+}
+
+if (elements.blinkoRowsInput) {
+    elements.blinkoRowsInput.addEventListener('change', function() {
+        gameState.blinkoGame.rows = parseInt(this.value) || 10;
+        if (gameState.blinkoGame.gameActive) {
+            createBlinkoBoard();
+        }
+    });
+}
 
 // Initialize Game
 async function initGame() {
