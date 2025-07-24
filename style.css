@@ -801,21 +801,17 @@ body {
 
 /* Spin Wheel Game */
 #wheel-game-screen {
-    display: none;
-    width: 100%;
-    max-width: 600px;
-    background: rgba(20, 20, 20, 0.9);
-    border-radius: 15px;
-    padding: 2rem;
-    border: 3px solid var(--primary);
-    box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+    display: grid;
+    grid-template-columns: 1fr auto; /* Wheel on left, controls on right */
+    gap: 20px;
 }
 
 .wheel-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 20px;
+    width: 250px;
+    padding: 15px;
+    background: rgba(20, 20, 20, 0.8);
+    border-radius: 10px;
+    border: 2px solid var(--primary);
 }
 
 .wheel-input-group {
@@ -839,15 +835,15 @@ body {
 }
 
 .wheel-bet-options {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 10px;
     margin: 15px 0;
 }
 
 .wheel-option {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
     padding: 10px;
     background: rgba(0, 0, 0, 0.3);
@@ -857,16 +853,17 @@ body {
 
 .wheel-option span {
     font-weight: bold;
-    color: var(--primary);
+    margin-bottom: 5px;
 }
 
 .wheel-number-bet {
-    width: 100px;
+    width: 100%;
     padding: 8px;
     border-radius: 5px;
     border: 1px solid var(--primary);
     background: rgba(255, 255, 255, 0.1);
     color: white;
+    text-align: center;
 }
 
 .wheel-info {
@@ -903,6 +900,8 @@ body {
     border-radius: 5px;
     font-size: 1rem;
     cursor: pointer;
+    width: 100%;
+    margin: 10px 0;
     transition: all 0.3s;
 }
 
@@ -920,8 +919,8 @@ body {
     font-size: 1rem;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s;
     width: 100%;
+    transition: all 0.3s;
 }
 
 .wheel-spin-btn:hover {
@@ -937,11 +936,25 @@ body {
 }
 
 .wheel-container {
-    position: relative;
     width: 100%;
-    max-width: 400px;
+    max-width: 500px;
     margin: 0 auto;
     aspect-ratio: 1/1;
+}
+
+/* Wheel segments colors */
+.wheel-segment[data-value="1"] { background-color: #FFD700 !important; } /* Yellow */
+.wheel-segment[data-value="3"] { background-color: #33FF57 !important; } /* Green */
+.wheel-segment[data-value="5"] { background-color: #3357FF !important; } /* Blue */
+.wheel-segment[data-value="10"] { background-color: #FF33F0 !important; } /* Pink */
+.wheel-segment[data-value="20"] { background-color: #FF5733 !important; } /* Orange */
+
+/* Wheel User Panel */
+#wheel-user-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-bottom: 20px;
 }
 
 .wheel {
@@ -999,23 +1012,17 @@ body {
 }
 
 /* Responsive adjustments */
-@media (max-width: 600px) {
-    .wheel-container {
-        max-width: 300px;
+@media (max-width: 768px) {
+    #wheel-game-screen {
+        grid-template-columns: 1fr;
     }
     
-    .wheel-segment {
-        font-size: 1rem;
-    }
-}
-
-@media (max-width: 400px) {
-    .wheel-container {
-        max-width: 250px;
+    .wheel-controls {
+        width: 100%;
     }
     
-    .wheel-number-bet {
-        width: 80px;
+    .wheel-container {
+        max-width: 350px;
     }
 }
 
