@@ -73,34 +73,34 @@ const CONFIG = {
         houseEdge: 0.03
     },
     wheel: {
-        minBet: 1,
-        maxBet: 1000,
-        segments: [
-            { value: 1, multiplier: 1, color: '#FFD700' },
-            { value: 3, multiplier: 3, color: '#33FF57' },
-            { value: 1, multiplier: 1, color: '#FFD700' },
-            { value: 10, multiplier: 10, color: '#FF33F0' },
-            { value: 1, multiplier: 1, color: '#FFD700' },
-            { value: 3, multiplier: 3, color: '#33FF57' },
-            { value: 1, multiplier: 1, color: '#FFD700' },
-            { value: 5, multiplier: 5, color: '#3357FF' },
-            { value: 1, multiplier: 1, color: '#FFD700' },
-            { value: 3, multiplier: 3, color: '#33FF57' },
-            { value: 1, multiplier: 1, color: '#FFD700' },
-            { value: 20, multiplier: 20, color: '#FF5733' },
-            { value: 1, multiplier: 1, color: '#FFD700' },
-            { value: 3, multiplier: 3, color: '#33FF57' },
-            { value: 1, multiplier: 1, color: '#FFD700' },
-            { value: 5, multiplier: 5, color: '#3357FF' },
-            { value: 1, multiplier: 1, color: '#FFD700' },
-            { value: 3, multiplier: 3, color: '#33FF57' },
-            { value: 1, multiplier: 1, color: '#FFD700' },
-            { value: 10, multiplier: 10, color: '#FF33F0' },
-            { value: 1, multiplier: 1, color: '#FFD700' },
-            { value: 3, multiplier: 3, color: '#33FF57' },
-            { value: 5, multiplier: 5, color: '#3357FF' },
-            { value: 1, multiplier: 1, color: '#FFD700' },
-            { value: 5, multiplier: 5, color: '#3357FF' }
+    minBet: 1,
+    maxBet: 1000,
+    segments: [
+        { value: 1, multiplier: 1, color: '#CCB800' }, // Darker Yellow
+        { value: 3, multiplier: 3, color: '#009933' }, // Darker Green
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 10, multiplier: 10, color: '#CC0099' }, // Darker Pink
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 3, multiplier: 3, color: '#009933' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 5, multiplier: 5, color: '#0033CC' }, // Darker Blue
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 3, multiplier: 3, color: '#009933' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 20, multiplier: 20, color: '#CC3300' }, // Darker Orange
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 3, multiplier: 3, color: '#009933' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 5, multiplier: 5, color: '#0033CC' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 3, multiplier: 3, color: '#009933' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 10, multiplier: 10, color: '#CC0099' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 3, multiplier: 3, color: '#009933' },
+        { value: 5, multiplier: 5, color: '#0033CC' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 5, multiplier: 5, color: '#0033CC' }
         ],
         houseEdge: 0.05
     }
@@ -852,10 +852,14 @@ function setupWheelGameUI() {
     }
 }
 
+// Update the createWheelSegments function
 function createWheelSegments() {
     if (!elements.wheelContainer) return;
+    elements.wheelContainer.innerHTML = '';
     
     const segmentAngle = 360 / CONFIG.wheel.segments.length;
+    const radius = elements.wheelContainer.offsetWidth / 2;
+    const fontSize = Math.max(14, radius / 8);
     
     CONFIG.wheel.segments.forEach((segment, index) => {
         const segmentElement = document.createElement('div');
@@ -866,10 +870,12 @@ function createWheelSegments() {
         segmentElement.dataset.multiplier = segment.multiplier;
         
         const label = document.createElement('div');
+        label.className = 'wheel-segment-label';
         label.textContent = segment.value;
-        label.style.transform = `rotate(${segmentAngle / 2}deg) translate(30%) rotate(-${(index * segmentAngle) + (segmentAngle / 2)}deg)`;
-        segmentElement.appendChild(label);
+        label.style.fontSize = `${fontSize}px`;
+        label.style.transform = `rotate(${segmentAngle / 2}deg) translate(${radius * 0.7}px) rotate(-${(index * segmentAngle) + (segmentAngle / 2)}deg)`;
         
+        segmentElement.appendChild(label);
         elements.wheelContainer.appendChild(segmentElement);
     });
 }
@@ -1005,13 +1011,27 @@ async function spinWheel() {
     }
 }
 
+// Update the showWheelResult function
 async function showWheelResult(winningSegment, winAmount) {
     if (!elements.wheelGameOverPopup || !elements.wheelGameOverResult || !elements.wheelGameOverAmount) return;
     
+    // Clear previous state
+    elements.wheelGameOverMessage.textContent = '';
+    elements.wheelGameOverResult.textContent = '';
+    elements.wheelGameOverAmount.textContent = '';
+    
     if (winAmount > 0) {
         elements.wheelGameOverMessage.textContent = "YOU WON!";
-        elements.wheelGameOverResult.textContent = `Landed on ${winningSegment.value} (${winningSegment.multiplier}x)`;
-        elements.wheelGameOverAmount.textContent = `+${winAmount.toFixed(2)}`;
+        elements.wheelGameOverMessage.style.color = "#4CAF50";
+        elements.wheelGameOverResult.innerHTML = `
+            <span>Landed on: </span>
+            <span class="winning-number" style="color: ${winningSegment.color}">${winningSegment.value}</span>
+            <span> (${winningSegment.multiplier}x)</span>
+        `;
+        elements.wheelGameOverAmount.innerHTML = `
+            <span>+${winAmount.toFixed(2)} chips</span>
+        `;
+        elements.wheelGameOverAmount.style.color = "#4CAF50";
         
         try {
             const response = await fetch(`${API_BASE_URL}/api/win`, {
@@ -1039,8 +1059,15 @@ async function showWheelResult(winningSegment, winAmount) {
         }
     } else {
         elements.wheelGameOverMessage.textContent = "GAME OVER";
-        elements.wheelGameOverResult.textContent = `Landed on ${winningSegment.value}`;
-        elements.wheelGameOverAmount.textContent = `-${gameState.wheelGame.totalBet.toFixed(2)}`;
+        elements.wheelGameOverMessage.style.color = "#f44336";
+        elements.wheelGameOverResult.innerHTML = `
+            <span>Landed on: </span>
+            <span class="losing-number" style="color: ${winningSegment.color}">${winningSegment.value}</span>
+        `;
+        elements.wheelGameOverAmount.innerHTML = `
+            <span>-${gameState.wheelGame.totalBet.toFixed(2)} chips</span>
+        `;
+        elements.wheelGameOverAmount.style.color = "#f44336";
     }
     
     elements.wheelGameOverPopup.style.display = 'flex';
