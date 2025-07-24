@@ -815,6 +815,7 @@ function setupBlinkoGameUI() {
     createBlinkoBoard();
 }
 
+// Update the createBlinkoBoard function
 function createBlinkoBoard() {
     if (!elements.blinkoBoard || !elements.blinkoBuckets) return;
     
@@ -822,7 +823,8 @@ function createBlinkoBoard() {
     elements.blinkoBuckets.innerHTML = '';
     
     const rows = CONFIG.blinko.rows;
-    const pegSpacing = 20;
+    const boardWidth = elements.blinkoBoard.offsetWidth;
+    const pegSpacing = boardWidth / (rows + 1);
     
     // Create pegs in triangle pattern
     for (let row = 0; row < rows; row++) {
@@ -830,10 +832,13 @@ function createBlinkoBoard() {
         rowElement.className = 'blinko-row';
         rowElement.style.top = `${row * 30}px`;
         
-        for (let col = 0; col <= row; col++) {
+        const pegsInRow = row + 1;
+        const startX = (boardWidth - (pegsInRow * pegSpacing)) / 2;
+        
+        for (let col = 0; col < pegsInRow; col++) {
             const peg = document.createElement('div');
             peg.className = 'blinko-peg';
-            peg.style.left = `calc(50% - ${row * pegSpacing / 2}px + ${col * pegSpacing}px)`;
+            peg.style.left = `${startX + col * pegSpacing}px`;
             rowElement.appendChild(peg);
         }
         
@@ -843,12 +848,15 @@ function createBlinkoBoard() {
     // Create buckets at the bottom
     const riskLevel = gameState.blinkoGame.riskLevel || 'medium';
     const multipliers = CONFIG.blinko.riskLevels[riskLevel].multipliers;
+    const bucketWidth = boardWidth / multipliers.length;
     
     for (let i = 0; i < multipliers.length; i++) {
         const bucket = document.createElement('div');
         bucket.className = 'blinko-bucket';
         bucket.dataset.multiplier = multipliers[i];
         bucket.dataset.index = i;
+        bucket.style.width = `${bucketWidth}px`;
+        bucket.style.left = `${i * bucketWidth}px`;
         bucket.textContent = `${multipliers[i]}x`;
         elements.blinkoBuckets.appendChild(bucket);
     }
@@ -856,6 +864,7 @@ function createBlinkoBoard() {
     gameState.blinkoGame.buckets = Array.from(elements.blinkoBuckets.children);
 }
 
+// Update the startNewBlinkoGame function
 async function startNewBlinkoGame() {
     if (!gameState.userId) {
         showLoginScreen();
@@ -880,14 +889,25 @@ async function startNewBlinkoGame() {
         return;
     }
     
-    if (elements.blinkoBetInput) elements.blinkoBetInput.disabled = true;
-    if (elements.blinkoRiskInput) elements.blinkoRiskInput.disabled = true;
-    if (elements.blinkoStartBtn) elements.blinkoStartBtn.disabled = true;
+    // Deduct chips immediately
+    gameState.chips -= betAmount;
+    updateCurrencyDisplay();
     
-    gameState.blinkoStats.totalGames++;
+    // Start the game if not already active
+    if (!gameState.blinkoGame.gameActive) {
+        gameState.blinkoGame.gameActive = true;
+        gameState.blinkoGame.betAmount = betAmount;
+        gameState.blinkoGame.riskLevel = riskLevel;
+        gameState.blinkoStats.totalGames++;
+        createBlinkoBoard();
+    }
     
+    // Drop a new ball
+    dropBlinkoBall();
+    
+    // Save the bet to the server
     try {
-        const response = await fetch(`${API_BASE_URL}/api/spin`, {
+        await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -899,67 +919,147 @@ async function startNewBlinkoGame() {
             }),
             credentials: 'include'
         });
-
-        const data = await response.json();
-        gameState.chips = data.newBalance;
-        updateCurrencyDisplay();
-        
-        gameState.blinkoGame.betAmount = betAmount;
-        gameState.blinkoGame.riskLevel = riskLevel;
-        gameState.blinkoGame.gameActive = true;
-        
-        createBlinkoBoard();
-        dropBlinkoBall();
     } catch (error) {
-        console.error('Blinko game start error:', error);
-        showNotification('Failed to start Blinko game', false);
-        setupBlinkoGameUI();
+        console.error('Blinko bet error:', error);
     }
 }
 
 function dropBlinkoBall() {
     if (!elements.blinkoBall || !gameState.blinkoGame.gameActive) return;
     
-    const ball = elements.blinkoBall;
-    ball.style.display = 'block';
-    ball.style.top = '0';
-    ball.style.left = '50%';
+    const ball = document.createElement('div');
+    ball.className = 'blinko-ball';
+    elements.blinkoBoard.appendChild(ball);
     
-    const rows = CONFIG.blinko.rows;
-    const pegSpacing = 20;
-    let position = 0;
-    let x = 0;
+    const boardWidth = elements.blinkoBoard.offsetWidth;
+    const startX = boardWidth / 2;
+    const startY = 0;
+    const pegSpacing = boardWidth / (CONFIG.blinko.rows + 1);
     
-    // Calculate final position (simulating physics)
-    const riskLevel = gameState.blinkoGame.riskLevel;
-    const multipliers = CONFIG.blinko.riskLevels[riskLevel].multipliers;
-    const distribution = CONFIG.blinko.riskLevels[riskLevel].distribution;
+    ball.style.left = `${startX}px`;
+    ball.style.top = `${startY}px`;
     
-    // Randomly select a bucket based on distribution
-    let random = Math.random();
-    let bucketIndex = 0;
-    let cumulativeProb = 0;
+    // Physics simulation
+    let x = startX;
+    let y = startY;
+    let velocityX = (Math.random() - 0.5) * 2;
+    let velocityY = 1;
+    const gravity = 0.2;
+    const friction = 0.98;
+    const bounce = 0.8;
     
-    for (let i = 0; i < distribution.length; i++) {
-        cumulativeProb += distribution[i];
-        if (random <= cumulativeProb) {
-            bucketIndex = i;
-            break;
+    const animateBall = () => {
+        // Apply gravity
+        velocityY += gravity;
+        
+        // Update position
+        x += velocityX;
+        y += velocityY;
+        
+        // Check for peg collisions
+        const pegs = document.querySelectorAll('.blinko-peg');
+        pegs.forEach(peg => {
+            const pegRect = peg.getBoundingClientRect();
+            const ballRect = ball.getBoundingClientRect();
+            
+            // Simple collision detection
+            if (
+                ballRect.right > pegRect.left &&
+                ballRect.left < pegRect.right &&
+                ballRect.bottom > pegRect.top &&
+                ballRect.top < pegRect.bottom
+            ) {
+                // Bounce off peg
+                const pegCenterX = pegRect.left + pegRect.width / 2;
+                const pegCenterY = pegRect.top + pegRect.height / 2;
+                
+                // Calculate bounce direction
+                const dx = (ballRect.left + ballRect.width / 2) - pegCenterX;
+                const dy = (ballRect.top + ballRect.height / 2) - pegCenterY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < pegRect.width / 2 + ballRect.width / 2) {
+                    // Normalize and scale bounce
+                    const nx = dx / distance;
+                    const ny = dy / distance;
+                    const speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY) * bounce;
+                    
+                    velocityX = nx * speed;
+                    velocityY = ny * speed;
+                    
+                    // Move ball out of collision
+                    const overlap = (pegRect.width / 2 + ballRect.width / 2) - distance;
+                    x += nx * overlap * 0.5;
+                    y += ny * overlap * 0.5;
+                }
+            }
+        });
+        
+        // Check for bucket collision
+        const buckets = document.querySelectorAll('.blinko-bucket');
+        buckets.forEach(bucket => {
+            const bucketRect = bucket.getBoundingClientRect();
+            const ballRect = ball.getBoundingClientRect();
+            
+            if (
+                ballRect.bottom >= bucketRect.top &&
+                ballRect.top <= bucketRect.bottom &&
+                ballRect.right > bucketRect.left &&
+                ballRect.left < bucketRect.right
+            ) {
+                // Ball landed in bucket
+                const multiplier = parseFloat(bucket.dataset.multiplier);
+                endBlinkoBall(ball, multiplier);
+                return;
+            }
+        });
+        
+        // Check if ball is out of bounds
+        if (y > elements.blinkoBoard.offsetHeight) {
+            // Ball missed all buckets
+            endBlinkoBall(ball, 0);
+            return;
         }
+        
+        // Update ball position
+        ball.style.left = `${x}px`;
+        ball.style.top = `${y}px`;
+        
+        // Apply friction
+        velocityX *= friction;
+        
+        requestAnimationFrame(animateBall);
+    };
+    
+    requestAnimationFrame(animateBall);
+}
+
+function endBlinkoBall(ball, multiplier) {
+    ball.remove();
+    
+    const winAmount = gameState.blinkoGame.betAmount * multiplier * (1 - CONFIG.blinko.houseEdge);
+    
+    if (multiplier >= 1) {
+        gameState.blinkoStats.wins++;
+        gameState.blinkoStats.totalWins += winAmount;
+        
+        fetch(`${API_BASE_URL}/api/win`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                amount: winAmount
+            }),
+            credentials: 'include'
+        }).then(response => response.json())
+          .then(data => {
+              gameState.chips = data.newBalance;
+              updateCurrencyDisplay();
+          });
     }
-    
-    const finalMultiplier = multipliers[bucketIndex];
-    const finalX = (bucketIndex - (multipliers.length - 1) / 2) * pegSpacing * 2;
-    const finalY = rows * 30 + 15; // Ball reaches the bucket
-    
-    // Animate the ball
-    ball.style.setProperty('--final-x', `${finalX}px`);
-    ball.style.setProperty('--final-y', `${finalY}px`);
-    ball.style.animation = 'blinkoFall 2s ease-in forwards';
-    
-    setTimeout(() => {
-        endBlinkoGame(finalMultiplier);
-    }, 2000);
 }
 
 async function endBlinkoGame(multiplier) {
