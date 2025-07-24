@@ -625,12 +625,23 @@ body {
     transform: scale(1.02);
 }
 
-.mines-button.disabled {
+#mines-cashout-btn.disabled {
     opacity: 0.6;
     cursor: not-allowed;
     background-color: #cccccc !important;
+    color: #666 !important;
+    pointer-events: none;
+    box-shadow: none !important;
+    transform: none !important;
 }
 
+#mines-cashout-btn[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #cccccc !important;
+    color: #666 !important;
+    pointer-events: none;
+}
 
 
 /* Back to Menu Button */
