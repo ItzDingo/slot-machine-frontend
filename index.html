@@ -143,22 +143,53 @@
         </div>
 
         <div class="blinko-controls">
-            <div class="blinko-input-group">
-                <label for="blinko-bet-input">Bet Amount (1-1000 chips)</label>
-                <input type="number" id="blinko-bet-input" min="1" max="1000" placeholder="Enter bet amount">
+            <div class="blinko-control-row">
+                <div class="blinko-input-group">
+                    <label>Bet Amount</label>
+                    <div class="blinko-amount-display">
+                        <span id="blinko-bet-amount">0.00 chips</span>
+                    </div>
+                    <div class="blinko-percent-buttons">
+                        <button class="percent-btn" data-percent="1">1%</button>
+                        <button class="percent-btn" data-percent="2">2%</button>
+                        <button class="percent-btn" data-percent="5">5%</button>
+                        <button class="percent-btn" data-percent="10">10%</button>
+                        <button class="percent-btn" data-percent="25">25%</button>
+                        <button class="percent-btn" data-percent="50">50%</button>
+                    </div>
+                    <input type="number" id="blinko-bet-input" min="0.1" max="1000" placeholder="Enter bet amount" style="display: none;">
+                </div>
             </div>
             
-            <div class="blinko-input-group">
-                <label for="blinko-risk-input">Risk Level</label>
-                <select id="blinko-risk-input">
-                    <option value="low">Low (1x-5x)</option>
-                    <option value="medium">Medium (0.5x-10x)</option>
-                    <option value="high">High (0.2x-20x)</option>
-                </select>
+            <div class="blinko-control-row">
+                <div class="blinko-input-group">
+                    <label>Risk</label>
+                    <select id="blinko-risk-input">
+                        <option value="low">Low (1x-5x)</option>
+                        <option value="medium" selected>Medium (0.5x-10x)</option>
+                        <option value="high">High (0.2x-20x)</option>
+                    </select>
+                </div>
+                
+                <div class="blinko-input-group">
+                    <label>Rows</label>
+                    <input type="number" id="blinko-rows-input" value="10" min="5" max="20">
+                </div>
             </div>
             
-            <button id="blinko-start-btn" class="blinko-start-btn">Drop Ball</button>
-            <button id="blinko-back-to-menu-btn" class="blinko-start-btn" style="margin-top: 10px;">Back to Menu</button>
+            <div class="blinko-control-row">
+                <div class="blinko-input-group">
+                    <label>Number of Bets</label>
+                    <div class="blinko-bet-controls">
+                        <span id="blinko-bet-count">0</span>
+                        <input type="number" id="blinko-bets-input" value="20" min="1" max="100">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="blinko-control-row">
+                <button id="blinko-start-btn" class="blinko-start-btn">Start Autobet</button>
+            </div>
         </div>
         
         <div class="blinko-info">
