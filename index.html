@@ -28,7 +28,6 @@
         <h1>Select Game</h1>
         <button id="slot-machine-btn" class="game-select-btn">Slot Machine</button>
         <button id="mines-game-btn" class="game-select-btn">Mines Game</button>
-        <button id="blinko-game-btn" class="game-select-btn">Blinko Game</button>
     </div>
 
     <!-- Slot Machine Game Screen -->
@@ -118,69 +117,6 @@
         <div id="mines-grid"></div>
         
         <button id="mines-cashout-btn" class="mines-cashout-btn">Cash Out</button>
-    </div>
-
-    <!-- Blinko Game Screen -->
-    <div id="blinko-game-screen" class="blinko-container">
-        <div class="blinko-content">
-            <!-- Blinko Game Area -->
-            <div class="blinko-game-area">
-                <canvas id="blinko-canvas" width="600" height="700"></canvas>
-            </div>
-
-            <!-- Blinko Controls -->
-            <div class="blinko-controls">
-                <div class="blinko-user-panel">
-                    <div class="user-info">
-                        <img id="blinko-avatar" src="assets/default-avatar.png" alt="User Avatar">
-                        <div class="user-details">
-                            <span id="blinko-username">Guest</span>
-                            <button id="blinko-logout-btn">Logout</button>
-                        </div>
-                    </div>
-                    <div class="currency-display">
-                        <div class="currency">
-                            <img src="assets/chip.png" alt="Chips">
-                            <span id="blinko-chips">0</span>
-                        </div>
-                        <div class="currency">
-                            <img src="assets/dice.png" alt="Dice">
-                            <span id="blinko-dice">0</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="blinko-settings">
-                    <div class="blinko-input-group">
-                        <label for="blinko-bet-input">Bet Amount</label>
-                        <input type="number" id="blinko-bet-input" min="0.1" max="1000" step="0.1" placeholder="Enter bet">
-                    </div>
-
-                    <div class="blinko-input-group">
-                        <label>Risk Level</label>
-                        <select id="blinko-risk-select">
-                            <option value="low">Low</option>
-                            <option value="medium" selected>Medium</option>
-                            <option value="high">High</option>
-                        </select>
-                    </div>
-
-                    <button id="blinko-drop-btn" class="blinko-drop-btn">DROP BALL</button>
-                    <button id="blinko-back-to-menu-btn" class="blinko-back-btn">Back to Menu</button>
-                </div>
-
-                <div class="blinko-stats">
-                    <div class="stat-item">
-                        <span>Total Dropped</span>
-                        <span id="blinko-total-dropped">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span>Total Won</span>
-                        <span id="blinko-total-won">0.00</span>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Slot Machine Win Popup -->
