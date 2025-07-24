@@ -68,25 +68,24 @@ const CONFIG = {
         houseEdge: 0.03
     },
     blinko: {
-        minBet: 0.1,
-        maxBet: 1000,
-        rows: 15,
-        pegSpacing: 30,
-        ballRadius: 8,
-        pegRadius: 6,
-        bucketWidth: 40,
-        multipliers: {
-            low: [1.2, 1.5, 2, 3, 5, 8, 12, 20, 30, 50],
-            medium: [1.5, 2, 3, 5, 8, 12, 20, 30, 50, 100],
-            high: [2, 3, 5, 8, 12, 20, 30, 50, 100, 200]
-        },
-        physics: {
-            gravity: 0.2,
-            bounce: 0.6,
-            friction: 0.99,
-            pegBounce: 0.8
-        }
+    minBet: 0.1,
+    maxBet: 1000,
+    rows: 14, // Reduced from 15 to account for starting with 2 pegs
+    pegSpacing: 30,
+    ballRadius: 8,
+    pegRadius: 6,
+    multipliers: {
+        low: [0.2, 0.5, 1, 1.5, 2, 3, 5, 8, 12, 20],
+        medium: [0.1, 0.3, 0.7, 1.2, 2, 3.5, 6, 10, 18, 30],
+        high: [0.05, 0.2, 0.5, 1, 2, 4, 8, 15, 25, 50]
+    },
+    physics: {
+        gravity: 0.2,
+        bounce: 0.6,
+        friction: 0.99,
+        pegBounce: 0.8
     }
+}
 };
 
 // Game State
@@ -709,12 +708,13 @@ function createBlinkoBoard() {
     if (!elements.blinkoBoard) return;
     
     const boardWidth = elements.blinkoBoard.clientWidth;
-    const pegSpacing = CONFIG.blinko.pegSpacing;
+    const boardHeight = elements.blinkoBoard.clientHeight;
+    const pegSpacing = Math.min(30, boardWidth / (CONFIG.blinko.rows + 1));
     const pegRadius = CONFIG.blinko.pegRadius;
     
-    // Create pegs in triangular pattern
+    // Create pegs in triangular pattern starting with 2 pegs
     for (let row = 0; row < CONFIG.blinko.rows; row++) {
-        const pegsInRow = row + 1;
+        const pegsInRow = row + 2; // Start with 2 pegs in first row
         const startX = (boardWidth - (pegsInRow * pegSpacing)) / 2;
         
         for (let col = 0; col < pegsInRow; col++) {
@@ -737,17 +737,23 @@ function createBlinkoBoard() {
 function createBlinkoBuckets() {
     if (!elements.blinkoBuckets) return;
     
-    const bucketCount = CONFIG.blinko.rows + 1;
-    const bucketWidth = CONFIG.blinko.bucketWidth;
+    elements.blinkoBuckets.innerHTML = '';
+    const bucketCount = CONFIG.blinko.rows + 2; // +2 because we start with 2 pegs
+    const bucketWidth = elements.blinkoBuckets.clientWidth / bucketCount;
     const multipliers = CONFIG.blinko.multipliers[gameState.blinkoGame.riskLevel];
     
     for (let i = 0; i < bucketCount; i++) {
         const bucket = document.createElement('div');
         bucket.className = 'blinko-bucket';
         bucket.dataset.index = i;
-        bucket.dataset.multiplier = multipliers[Math.min(i, multipliers.length - 1)];
-        bucket.textContent = String.fromCharCode(65 + i);
-        bucket.setAttribute('data-multiplier', multipliers[Math.min(i, multipliers.length - 1)]);
+        
+        // Use multiplier value instead of letters
+        const multiplierIndex = Math.min(i, multipliers.length - 1);
+        const multiplier = multipliers[multiplierIndex];
+        bucket.textContent = `${multiplier}x`;
+        bucket.dataset.multiplier = multiplier;
+        
+        bucket.style.width = `${bucketWidth}px`;
         elements.blinkoBuckets.appendChild(bucket);
         
         gameState.blinkoGame.buckets.push({
@@ -755,7 +761,7 @@ function createBlinkoBuckets() {
             x: i * bucketWidth + bucketWidth / 2,
             y: elements.blinkoBuckets.clientHeight / 2,
             width: bucketWidth,
-            multiplier: multipliers[Math.min(i, multipliers.length - 1)]
+            multiplier: multiplier
         });
     }
 }
