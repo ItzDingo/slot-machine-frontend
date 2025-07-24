@@ -480,12 +480,11 @@ async function setupMinesGameUI() {
             gameState.minesStats.wins = data.wins || 0;
             gameState.minesStats.totalWins = data.totalWins || 0;
             gameState.minesStats.totalGamesPlayed = data.totalGamesPlayed || 0;
+            updateMinesStats();
         }
     } catch (error) {
         console.error('Failed to load mines stats:', error);
     }
-    
-    updateMinesStats();
 }
 
 function updateMinesStats() {
@@ -675,25 +674,38 @@ async function endMinesGame(isWin) {
         });
     }
     
-    if (isWin) {
-        gameState.minesStats.wins++;
-        gameState.minesStats.totalWins += gameState.minesGame.currentWin;
+    try {
+        // Send game result to backend
+        const response = await fetch(`${API_BASE_URL}/api/mines/result`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                betAmount: gameState.minesGame.betAmount,
+                minesCount: gameState.minesGame.minesCount,
+                isWin: isWin,
+                winAmount: isWin ? gameState.minesGame.currentWin : 0,
+                revealedCells: gameState.minesGame.revealedCells
+            }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) throw new Error('Failed to save game result');
         
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/win`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: gameState.userId,
-                    amount: gameState.minesGame.currentWin
-                }),
-                credentials: 'include'
-            });
-            
-            const data = await response.json();
+        const data = await response.json();
+        
+        // Update local stats with data from server
+        gameState.minesStats.totalGames = data.totalGames;
+        gameState.minesStats.wins = data.wins;
+        gameState.minesStats.totalWins = data.totalWins;
+        gameState.minesStats.totalGamesPlayed = data.totalGamesPlayed;
+        
+        updateMinesStats();
+        
+        if (isWin) {
             gameState.chips = data.newBalance;
             updateCurrencyDisplay();
             
@@ -701,17 +713,17 @@ async function endMinesGame(isWin) {
             if (elements.minesGameOverAmount) {
                 elements.minesGameOverAmount.textContent = `+${gameState.minesGame.currentWin.toFixed(4)}`;
             }
-            if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'flex';
-        } catch (error) {
-            console.error('Win claim error:', error);
-            showNotification('Failed to claim win', false);
+        } else {
+            if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "Game Over!";
+            if (elements.minesGameOverAmount) {
+                elements.minesGameOverAmount.textContent = `-${gameState.minesGame.betAmount.toFixed(4)}`;
+            }
         }
-    } else {
-        if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "Game Over!";
-        if (elements.minesGameOverAmount) {
-            elements.minesGameOverAmount.textContent = `-${gameState.minesGame.betAmount.toFixed(4)}`;
-        }
+        
         if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'flex';
+    } catch (error) {
+        console.error('Game result error:', error);
+        showNotification('Failed to save game result', false);
     }
 }
 
