@@ -177,15 +177,15 @@ const elements = {
     blinkoTotalWon: document.getElementById('blinko-total-won')
 };
 
-// Blinko Game Variables
+// Enhanced Blinko Game Variables for nerve-wracking gameplay
 let blinkoCtx;
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 700;
-const PEG_RADIUS = 8;
-const BALL_RADIUS = 6;
-const GRAVITY = 0.3;
-const BOUNCE = 0.7;
-const FRICTION = 0.99;
+const PEG_RADIUS = 6; // Slightly smaller pegs for more density
+const BALL_RADIUS = 5; // Slightly smaller balls
+const GRAVITY = 0.12; // Much slower falling (reduced from 0.3)
+const BOUNCE = 0.88; // More bouncy (increased from 0.7)
+const FRICTION = 0.996; // Less friction for more energy retention (increased from 0.99)
 
 // Helper Functions
 function getRandomSymbol() {
@@ -718,7 +718,7 @@ function closeMinesGameOverPopup() {
     setupMinesGameUI();
 }
 
-// Blinko Game Functions
+// Enhanced Blinko Game Functions for Nerve-Wracking Experience
 function initBlinkoGame() {
     if (!elements.blinkoCanvas) return;
     
@@ -740,23 +740,24 @@ function setupBlinkoGame() {
 }
 
 function createBlinkoBoard() {
-    // Create rectangular peg layout - lower and closer to buckets
-    const rows = 10; // Reduced from 14
-    const cols = 13; // Reduced from 15 for better coverage
-    const pegSpacingX = 40; // Increased spacing
-    const pegSpacingY = 45; // Increased spacing
-    const startY = 150; // Moved down from 80
+    // Create a much denser peg layout that fills most of the space
+    const rows = 20; // Increased from 10 for more density
+    const cols = 19; // Increased from 13 for more coverage
+    const pegSpacingX = 28; // Reduced spacing for density
+    const pegSpacingY = 26; // Reduced spacing for density
+    const startY = 80; // Start higher for more space
     const startX = (CANVAS_WIDTH - (cols - 1) * pegSpacingX) / 2;
+    const bucketZone = CANVAS_HEIGHT - 70; // Leave space for buckets
     
     for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
-            // Offset every other row for better ball interaction
+            // Offset every other row for zigzag pattern - creates more bouncing
             const offsetX = (row % 2) * (pegSpacingX / 2);
             const x = startX + col * pegSpacingX + offsetX;
             const y = startY + row * pegSpacingY;
             
-            // Only add peg if it's within bounds
-            if (x >= 80 && x <= CANVAS_WIDTH - 80) {
+            // Only add peg if it's within bounds and not in bucket zone
+            if (x >= 50 && x <= CANVAS_WIDTH - 50 && y < bucketZone) {
                 gameState.blinkoGame.pegs.push({
                     x: x,
                     y: y,
@@ -764,6 +765,31 @@ function createBlinkoBoard() {
                     glowTime: 0
                 });
             }
+        }
+    }
+    
+    // Add some random pegs for extra chaos and unpredictability
+    for (let i = 0; i < 25; i++) {
+        const x = 60 + Math.random() * (CANVAS_WIDTH - 120);
+        const y = startY + Math.random() * (bucketZone - startY - 100);
+        
+        // Make sure random peg doesn't overlap with existing pegs
+        let tooClose = false;
+        for (let peg of gameState.blinkoGame.pegs) {
+            const distance = Math.sqrt((x - peg.x) ** 2 + (y - peg.y) ** 2);
+            if (distance < PEG_RADIUS * 3) {
+                tooClose = true;
+                break;
+            }
+        }
+        
+        if (!tooClose) {
+            gameState.blinkoGame.pegs.push({
+                x: x,
+                y: y,
+                glowing: false,
+                glowTime: 0
+            });
         }
     }
     
@@ -827,15 +853,16 @@ async function dropBlinkoBall() {
         gameState.chips = data.newBalance;
         updateCurrencyDisplay();
         
-        // Create new ball
+        // Create new ball with slight random starting position for variety
         const ball = {
-            x: CANVAS_WIDTH / 2,
+            x: CANVAS_WIDTH / 2 + (Math.random() - 0.5) * 10,
             y: 30,
-            vx: (Math.random() - 0.5) * 2,
+            vx: (Math.random() - 0.5) * 1.5, // Reduced initial velocity
             vy: 0,
             radius: BALL_RADIUS,
             betAmount: betAmount,
-            bouncing: false
+            bouncing: false,
+            stuckTimer: 0 // Prevent getting stuck
         };
         
         gameState.blinkoGame.balls.push(ball);
@@ -852,10 +879,10 @@ function updateBlinkoBalls() {
     for (let i = gameState.blinkoGame.balls.length - 1; i >= 0; i--) {
         const ball = gameState.blinkoGame.balls[i];
         
-        // Apply gravity
+        // Apply gravity (much slower now)
         ball.vy += GRAVITY;
         
-        // Apply friction
+        // Apply friction (less friction for more bouncing)
         ball.vx *= FRICTION;
         ball.vy *= FRICTION;
         
@@ -863,17 +890,17 @@ function updateBlinkoBalls() {
         ball.x += ball.vx;
         ball.y += ball.vy;
         
-        // Bounce off side walls
-        if (ball.x - ball.radius < 50) {
-            ball.x = 50 + ball.radius;
-            ball.vx = Math.abs(ball.vx) * BOUNCE;
+        // Enhanced side wall bouncing with more energy retention
+        if (ball.x - ball.radius < 40) {
+            ball.x = 40 + ball.radius;
+            ball.vx = Math.abs(ball.vx) * BOUNCE + Math.random() * 0.5;
         }
-        if (ball.x + ball.radius > CANVAS_WIDTH - 50) {
-            ball.x = CANVAS_WIDTH - 50 - ball.radius;
-            ball.vx = -Math.abs(ball.vx) * BOUNCE;
+        if (ball.x + ball.radius > CANVAS_WIDTH - 40) {
+            ball.x = CANVAS_WIDTH - 40 - ball.radius;
+            ball.vx = -Math.abs(ball.vx) * BOUNCE - Math.random() * 0.5;
         }
         
-        // Check collision with pegs
+        // Check collision with pegs (enhanced for more bouncing)
         gameState.blinkoGame.pegs.forEach(peg => {
             const dx = ball.x - peg.x;
             const dy = ball.y - peg.y;
@@ -882,22 +909,27 @@ function updateBlinkoBalls() {
             if (distance < ball.radius + PEG_RADIUS) {
                 // Collision detected - prevent sticking by ensuring minimum separation
                 const angle = Math.atan2(dy, dx);
-                const minDistance = PEG_RADIUS + ball.radius + 1; // Add 1px buffer
+                const minDistance = PEG_RADIUS + ball.radius + 2; // Increased buffer
                 
                 ball.x = peg.x + Math.cos(angle) * minDistance;
                 ball.y = peg.y + Math.sin(angle) * minDistance;
                 
-                // Calculate bounce with more randomness to prevent sticking
+                // Enhanced bounce calculation with more randomness and energy
                 const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
-                const minSpeed = 2; // Ensure minimum speed to prevent sticking
+                const minSpeed = 1.5; // Ensure minimum speed to prevent sticking
                 const actualSpeed = Math.max(speed * BOUNCE, minSpeed);
                 
-                ball.vx = Math.cos(angle) * actualSpeed + (Math.random() - 0.5) * 4;
-                ball.vy = Math.sin(angle) * actualSpeed + Math.random() * 2; // Add downward bias
+                // Add more randomness and energy to bounces
+                const randomFactor = (Math.random() - 0.5) * 3;
+                ball.vx = Math.cos(angle) * actualSpeed + randomFactor;
+                ball.vy = Math.sin(angle) * actualSpeed + Math.random() * 1.5; // Add downward bias
                 
-                // Make peg glow
+                // Make peg glow longer for visual feedback
                 peg.glowing = true;
-                peg.glowTime = 30;
+                peg.glowTime = 45; // Increased from 30
+                
+                // Reset stuck timer on successful bounce
+                ball.stuckTimer = 0;
             }
             
             // Update glow
@@ -909,9 +941,21 @@ function updateBlinkoBalls() {
             }
         });
         
-        // Ensure ball doesn't get stuck by adding minimum downward velocity
-        if (Math.abs(ball.vy) < 0.5) {
-            ball.vy += 0.5;
+        // Anti-stuck mechanism - ensure ball keeps moving
+        if (Math.abs(ball.vx) < 0.3 && Math.abs(ball.vy) < 0.3) {
+            ball.stuckTimer++;
+            if (ball.stuckTimer > 60) { // If stuck for too long
+                ball.vx += (Math.random() - 0.5) * 2;
+                ball.vy += Math.random() * 1 + 0.5;
+                ball.stuckTimer = 0;
+            }
+        } else {
+            ball.stuckTimer = 0;
+        }
+        
+        // Ensure minimum downward velocity to prevent floating
+        if (Math.abs(ball.vy) < 0.2) {
+            ball.vy += 0.3;
         }
         
         // Check if ball reached bottom
@@ -925,9 +969,9 @@ function updateBlinkoBalls() {
                 const winAmount = ball.betAmount * slot.multiplier;
                 handleBlinkoWin(winAmount);
                 
-                // Highlight slot briefly
+                // Highlight slot briefly with enhanced effect
                 slot.highlight = true;
-                setTimeout(() => slot.highlight = false, 500);
+                setTimeout(() => slot.highlight = false, 800); // Longer highlight
             }
             
             // Remove ball
@@ -968,46 +1012,54 @@ async function handleBlinkoWin(amount) {
 function drawBlinkoGame() {
     if (!blinkoCtx) return;
     
-    // Clear canvas
-    blinkoCtx.fillStyle = '#1a1a1a';
+    // Clear canvas with darker background for better contrast
+    blinkoCtx.fillStyle = '#0a0a0a';
     blinkoCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     
-    // No background borders - removed square border
-    
-    // Draw pegs
+    // Draw pegs with enhanced visuals
     gameState.blinkoGame.pegs.forEach(peg => {
         blinkoCtx.beginPath();
         blinkoCtx.arc(peg.x, peg.y, PEG_RADIUS, 0, Math.PI * 2);
         
         if (peg.glowing) {
-            const glowIntensity = peg.glowTime / 30;
-            blinkoCtx.fillStyle = `rgba(255, 215, 0, ${0.3 + glowIntensity * 0.7})`;
+            const glowIntensity = peg.glowTime / 45;
+            blinkoCtx.fillStyle = `rgba(255, 215, 0, ${0.4 + glowIntensity * 0.6})`;
             blinkoCtx.shadowColor = '#FFD700';
-            blinkoCtx.shadowBlur = 15 * glowIntensity;
+            blinkoCtx.shadowBlur = 20 * glowIntensity;
         } else {
-            blinkoCtx.fillStyle = '#666';
+            blinkoCtx.fillStyle = '#555';
             blinkoCtx.shadowBlur = 0;
         }
         
         blinkoCtx.fill();
         blinkoCtx.strokeStyle = '#FFD700';
-        blinkoCtx.lineWidth = 2;
+        blinkoCtx.lineWidth = 1.5;
         blinkoCtx.stroke();
     });
     
-    // Draw multiplier slots
+    // Draw multiplier slots with enhanced visuals
     gameState.blinkoGame.multiplierSlots.forEach((slot, index) => {
-        blinkoCtx.fillStyle = slot.highlight ? 'rgba(255, 215, 0, 0.3)' : 'rgba(255, 255, 255, 0.1)';
+        if (slot.highlight) {
+            blinkoCtx.fillStyle = 'rgba(255, 215, 0, 0.4)';
+            // Add glow effect for highlighted slots
+            blinkoCtx.shadowColor = '#FFD700';
+            blinkoCtx.shadowBlur = 15;
+        } else {
+            blinkoCtx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+            blinkoCtx.shadowBlur = 0;
+        }
+        
         blinkoCtx.fillRect(slot.x, slot.y, slot.width, slot.height);
         
         blinkoCtx.strokeStyle = '#FFD700';
         blinkoCtx.lineWidth = 1;
         blinkoCtx.strokeRect(slot.x, slot.y, slot.width, slot.height);
         
-        // Draw multiplier text
+        // Draw multiplier text with better contrast
         blinkoCtx.fillStyle = slot.multiplier >= 1 ? '#4CAF50' : '#f44336';
-        blinkoCtx.font = 'bold 12px Arial';
+        blinkoCtx.font = 'bold 11px Arial';
         blinkoCtx.textAlign = 'center';
+        blinkoCtx.shadowBlur = 0;
         blinkoCtx.fillText(
             `${slot.multiplier}x`,
             slot.x + slot.width / 2,
@@ -1015,15 +1067,32 @@ function drawBlinkoGame() {
         );
     });
     
-    // Draw balls
+    // Draw balls with enhanced visuals
     gameState.blinkoGame.balls.forEach(ball => {
         blinkoCtx.beginPath();
         blinkoCtx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
-        blinkoCtx.fillStyle = '#FF5733';
+        
+        // Add gradient effect to balls
+        const gradient = blinkoCtx.createRadialGradient(
+            ball.x - 2, ball.y - 2, 0,
+            ball.x, ball.y, ball.radius
+        );
+        gradient.addColorStop(0, '#FF7755');
+        gradient.addColorStop(1, '#FF3311');
+        
+        blinkoCtx.fillStyle = gradient;
         blinkoCtx.fill();
         blinkoCtx.strokeStyle = '#FFD700';
-        blinkoCtx.lineWidth = 2;
+        blinkoCtx.lineWidth = 1.5;
         blinkoCtx.stroke();
+        
+        // Add subtle glow to balls
+        blinkoCtx.shadowColor = '#FF5733';
+        blinkoCtx.shadowBlur = 8;
+        blinkoCtx.beginPath();
+        blinkoCtx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+        blinkoCtx.fill();
+        blinkoCtx.shadowBlur = 0;
     });
 }
 
