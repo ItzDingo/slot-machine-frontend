@@ -71,9 +71,9 @@ const CONFIG = {
         minBet: 0.1,
         maxBet: 1000,
         multipliers: {
-            low: [1.5, 1.2, 1.1, 1.0, 0.5, 0.3, 0.5, 1.0, 1.1, 1.2, 1.5, 2.0, 3.0, 5.0, 11.0, 41.0, 130.0],
-            medium: [2.0, 1.5, 1.2, 1.0, 0.5, 0.2, 0.2, 0.5, 1.0, 1.2, 1.5, 2.0, 5.0, 11.0, 24.0, 56.0, 420.0],
-            high: [2.4, 1.8, 1.4, 1.1, 1.0, 0.5, 0.2, 0.1, 0.2, 0.5, 1.0, 1.1, 1.4, 1.8, 7.0, 15.0, 1000.0]
+            low: [8.0, 3.0, 1.5, 1.2, 1.0, 0.5, 0.3, 0.5, 1.0, 1.2, 1.5, 3.0, 8.0, 15.0, 25.0],
+            medium: [15.0, 6.0, 2.5, 1.8, 1.2, 0.7, 0.3, 0.2, 0.3, 0.7, 1.2, 1.8, 2.5, 6.0, 15.0],
+            high: [25.0, 12.0, 4.0, 2.0, 1.0, 0.5, 0.2, 0.1, 0.2, 0.5, 1.0, 2.0, 4.0, 12.0, 25.0]
         }
     }
 };
@@ -763,7 +763,7 @@ function createBlinkoBoard() {
     }
     
     // Create multiplier slots at the bottom
-    const slotCount = 17;
+    const slotCount = 15; // Changed from 17 to 15
     const slotWidth = CANVAS_WIDTH / slotCount;
     const multipliers = CONFIG.blinko.multipliers[gameState.blinkoGame.currentRisk];
     
@@ -858,13 +858,23 @@ function updateBlinkoBalls() {
         ball.x += ball.vx;
         ball.y += ball.vy;
         
-        // Bounce off walls
-        if (ball.x - ball.radius < 0) {
-            ball.x = ball.radius;
+        // Bounce off triangle walls (left and right borders)
+        const triangleTopY = 50;
+        const triangleBottomY = CANVAS_HEIGHT - 50;
+        const triangleLeftSlope = (CANVAS_WIDTH / 2 - 50) / (triangleBottomY - triangleTopY);
+        const triangleRightSlope = (CANVAS_WIDTH / 2 - 50) / (triangleBottomY - triangleTopY);
+        
+        // Left wall of triangle
+        const leftWallX = 50 + triangleLeftSlope * (ball.y - triangleTopY);
+        if (ball.x - ball.radius < leftWallX && ball.y > triangleTopY) {
+            ball.x = leftWallX + ball.radius;
             ball.vx = Math.abs(ball.vx) * BOUNCE;
         }
-        if (ball.x + ball.radius > CANVAS_WIDTH) {
-            ball.x = CANVAS_WIDTH - ball.radius;
+        
+        // Right wall of triangle
+        const rightWallX = CANVAS_WIDTH - 50 - triangleRightSlope * (ball.y - triangleTopY);
+        if (ball.x + ball.radius > rightWallX && ball.y > triangleTopY) {
+            ball.x = rightWallX - ball.radius;
             ball.vx = -Math.abs(ball.vx) * BOUNCE;
         }
         
@@ -960,7 +970,7 @@ function drawBlinkoGame() {
     blinkoCtx.fillStyle = '#1a1a1a';
     blinkoCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     
-    // Draw triangle border
+    // Draw triangle border with walls
     blinkoCtx.strokeStyle = '#FFD700';
     blinkoCtx.lineWidth = 3;
     blinkoCtx.beginPath();
