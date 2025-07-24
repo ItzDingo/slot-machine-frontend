@@ -37,10 +37,10 @@ const CONFIG = {
         getMultiplier: function(minesCount, revealedCells) {
             // Base multiplier based on mines count
             const baseMultipliers = {
-                1: 1.04,  2: 1.06,  3: 1.10,
-                4: 1.15,  5: 1.26,  6: 1.33,
-                7: 1.42,  8: 1.54,  9: 1.74,
-                10: 2
+                1: 1.04,  2: 1.07,  3: 1.10,
+                4: 1.14,  5: 1.18,  6: 1.23,
+                7: 1.29,  8: 1.35,  9: 1.42,
+                10: 1.50
             };
             
             // Growth factor based on revealed cells (exponential but controlled)
