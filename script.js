@@ -655,10 +655,14 @@ function revealMineCell(index) {
     }
     
     // Enable cashout button after minimum 2 reveals
-    if (gameState.minesGame.revealedCells >= 2 && elements.minesCashoutBtn) {
-        elements.minesCashoutBtn.disabled = false;
-        elements.minesCashoutBtn.classList.remove('disabled');
-    }
+    // Enable cashout button after 2 reveals
+if (gameState.minesGame.revealedCells >= 2 && elements.minesCashoutBtn) {
+    elements.minesCashoutBtn.disabled = false;
+    elements.minesCashoutBtn.classList.remove('disabled');
+} else {
+    elements.minesCashoutBtn.disabled = true;
+    elements.minesCashoutBtn.classList.add('disabled');
+}
     
     // Add visual feedback for multiplier increase
     cell.querySelector('.safe-cell').textContent = `+${(CONFIG.mines.growthFactors[gameState.minesGame.minesCount] * 100).toFixed(0)}%`;
