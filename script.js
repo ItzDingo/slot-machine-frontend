@@ -3,892 +3,659 @@ const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com';
 
 // Game Configuration
 const CONFIG = {
-    spinCost: 10,
-    symbols: [
-        { name: '7', img: 'assets/7.png' },
-        { name: 'dollar', img: 'assets/dollar.png' },
-        { name: 'bell', img: 'assets/bell.png' },
-        { name: 'diamond', img: 'assets/diamond.png' },
-        { name: 'cherry', img: 'assets/cherry.png' },
-        { name: 'coin', img: 'assets/coin.png' },
-        { name: '1', img: 'assets/1.png' },
-        { name: '0', img: 'assets/0.png' },
-        { name: 'lemon', img: 'assets/lemon.png' },
-        { name: 'card', img: 'assets/card.png' },
-        { name: 'star', img: 'assets/star.png' },
-        { name: 'clover', img: 'assets/clover.png' }
-    ],
-    payouts: {
-        '7-7-7': 500,
-        'diamond-diamond-diamond': 300,
-        'bell-bell-bell': 200,
-        'cherry-cherry-cherry': 100,
-        'card-card-card': 400,
-        'clover-clover-clover': 50,
-        'ANY_TWO_MATCH': 20
+  spinCost: 10,
+  symbols: [
+    { name: '7', img: 'assets/7.png' },
+    { name: 'dollar', img: 'assets/dollar.png' },
+    { name: 'bell', img: 'assets/bell.png' },
+    { name: 'diamond', img: 'assets/diamond.png' },
+    { name: 'cherry', img: 'assets/cherry.png' },
+    { name: 'coin', img: 'assets/coin.png' },
+    { name: '1', img: 'assets/1.png' },
+    { name: '0', img: 'assets/0.png' },
+    { name: 'lemon', img: 'assets/lemon.png' },
+    { name: 'card', img: 'assets/card.png' },
+    { name: 'star', img: 'assets/star.png' },
+    { name: 'clover', img: 'assets/clover.png' }
+  ],
+  payouts: {
+    '7-7-7': 500,
+    'diamond-diamond-diamond': 300,
+    'bell-bell-bell': 200,
+    'cherry-cherry-cherry': 100,
+    'card-card-card': 400,
+    'clover-clover-clover': 50,
+    'ANY_TWO_MATCH': 20
+  },
+  mines: {
+    minBet: 1,
+    maxBet: 1000,
+    minMines: 1,
+    maxMines: 10,
+    gridSize: 5,
+    baseMultipliers: {
+      1: 1.05,
+      2: 1.10,
+      3: 1.15,
+      4: 1.20,
+      5: 1.30,
+      6: 1.40,
+      7: 1.55,
+      8: 1.75,
+      9: 2.00,
+      10: 2.30
     },
-    mines: {
-        minBet: 1,
-        maxBet: 1000,
-        minMines: 1,
-        maxMines: 10,
-        gridSize: 5,
-        // New balanced multiplier system with precise float values
-        getMultiplier: function(minesCount, revealedCells) {
-            // Base multiplier based on mines count
-            const baseMultipliers = {
-                1: 1.04,  2: 1.07,  3: 1.10,
-                4: 1.14,  5: 1.18,  6: 1.23,
-                7: 1.29,  8: 1.35,  9: 1.42,
-                10: 1.50
-            };
-            
-            // Growth factor based on revealed cells (exponential but controlled)
-            const growthFactors = {
-                1: 1.00,  5: 1.15,  10: 1.35,
-                15: 1.60,  20: 1.90,  24: 2.25
-            };
-            
-            // Calculate the multiplier
-            let base = baseMultipliers[minesCount] || 1.0;
-            let growth = 1.0;
-            
-            // Find the appropriate growth factor
-            const thresholds = Object.keys(growthFactors).map(Number).sort((a,b) => a-b);
-            for (let i = 0; i < thresholds.length; i++) {
-                if (revealedCells >= thresholds[i]) {
-                    growth = growthFactors[thresholds[i]];
-                } else {
-                    break;
-                }
-            }
-            
-            // Calculate final multiplier with house edge
-            const rawMultiplier = base * growth;
-            const withHouseEdge = rawMultiplier * (1 - this.houseEdge);
-            
-            // Return rounded to 4 decimal places
-            return parseFloat(withHouseEdge.toFixed(4));
-        },
-        houseEdge: 0.03
-    }
+    incrementFactors: {
+      1: 0.0085,
+      2: 0.0095,
+      3: 0.0105,
+      4: 0.0115,
+      5: 0.0130,
+      6: 0.0150,
+      7: 0.0175,
+      8: 0.0200,
+      9: 0.0230,
+      10: 0.0265
+    },
+    houseEdge: 0.03
+  }
 };
 
-// Game State (remain the same)
+// Game State
 let gameState = {
-    chips: 0,
-    dice: 0,
-    isSpinning: false,
-    spinningReels: 0,
-    currentSymbols: [],
-    winAmount: 0,
-    winCombo: null,
-    userId: null,
-    authChecked: false,
-    currentGame: null,
-    minesGame: {
-        betAmount: 0,
-        minesCount: 0,
-        multiplier: 1.0,
-        revealedCells: 0,
-        totalCells: 25,
-        minePositions: [],
-        currentWin: 0,
-        gameActive: false
-    },
-    minesStats: {
-        totalGames: 0,
-        wins: 0,
-        totalWins: 0,
-        totalGamesPlayed: 0
-    }
+  chips: 1000,
+  dice: 50,
+  isSpinning: false,
+  spinningReels: 0,
+  currentSymbols: [],
+  winAmount: 0,
+  winCombo: null,
+  userId: null,
+  authChecked: false,
+  currentGame: null,
+  minesGame: {
+    betAmount: 0,
+    minesCount: 0,
+    baseMultiplier: 1.0,
+    currentMultiplier: 1.0,
+    revealedCells: 0,
+    totalCells: 25,
+    minePositions: [],
+    currentWin: 0,
+    gameActive: false,
+    multiplierIncrement: 0
+  },
+  minesStats: {
+    totalGames: 0,
+    wins: 0,
+    totalWins: 0,
+    totalGamesPlayed: 0
+  }
 };
 
 // DOM Elements
 const elements = {
-    loginScreen: document.getElementById('login-screen'),
-    gameScreen: document.getElementById('game-screen'),
-    tokenInput: document.getElementById('token-input'),
-    loginBtn: document.getElementById('login-btn'),
-    logoutBtn: document.getElementById('logout-btn'),
-    minesLogoutBtn: document.getElementById('mines-logout-btn'),
-    usernameDisplay: document.getElementById('username'),
-    userAvatar: document.getElementById('user-avatar'),
-    chipsDisplay: document.getElementById('chips'),
-    diceDisplay: document.getElementById('dice'),
-    spinBtn: document.getElementById('spin-btn'),
-    reels: [
-        document.getElementById('reel1'),
-        document.getElementById('reel2'),
-        document.getElementById('reel3')
-    ],
-    winPopup: document.getElementById('win-popup'),
-    winComboDisplay: document.getElementById('win-combo'),
-    winAmountDisplay: document.getElementById('win-amount'),
-    claimBtn: document.getElementById('claim-btn'),
-    gameSelectScreen: document.getElementById('game-select-screen'),
-    slotMachineBtn: document.getElementById('slot-machine-btn'),
-    minesGameBtn: document.getElementById('mines-game-btn'),
-    minesGameScreen: document.getElementById('mines-game-screen'),
-    minesBetInput: document.getElementById('mines-bet-input'),
-    minesCountInput: document.getElementById('mines-count-input'),
-    minesStartBtn: document.getElementById('mines-start-btn'),
-    minesGrid: document.getElementById('mines-grid'),
-    minesCurrentWin: document.getElementById('mines-current-win'),
-    minesMultiplier: document.getElementById('mines-multiplier'),
-    minesCashoutBtn: document.getElementById('mines-cashout-btn'),
-    minesGameOverPopup: document.getElementById('mines-game-over-popup'),
-    minesGameOverMessage: document.getElementById('mines-game-over-message'),
-    minesGameOverAmount: document.getElementById('mines-game-over-amount'),
-    minesUsername: document.getElementById('mines-username'),
-    minesAvatar: document.getElementById('mines-avatar'),
-    minesChips: document.getElementById('mines-chips'),
-    minesDice: document.getElementById('mines-dice'),
-    backToMenuBtn: document.getElementById('back-to-menu-btn'),
-    minesBackToMenuBtn: document.getElementById('mines-back-to-menu-btn'),
-    minesWinsCounter: document.getElementById('mines-wins-counter'),
-    minesWinRate: document.getElementById('mines-win-rate')
+  loginScreen: document.getElementById('login-screen'),
+  gameScreen: document.getElementById('game-screen'),
+  tokenInput: document.getElementById('token-input'),
+  loginBtn: document.getElementById('login-btn'),
+  logoutBtn: document.getElementById('logout-btn'),
+  minesLogoutBtn: document.getElementById('mines-logout-btn'),
+  usernameDisplay: document.getElementById('username'),
+  userAvatar: document.getElementById('user-avatar'),
+  chipsDisplay: document.getElementById('chips'),
+  diceDisplay: document.getElementById('dice'),
+  spinBtn: document.getElementById('spin-btn'),
+  reels: [
+    document.getElementById('reel1'),
+    document.getElementById('reel2'),
+    document.getElementById('reel3')
+  ],
+  winPopup: document.getElementById('win-popup'),
+  winComboDisplay: document.getElementById('win-combo'),
+  winAmountDisplay: document.getElementById('win-amount'),
+  claimBtn: document.getElementById('claim-btn'),
+  gameSelectScreen: document.getElementById('game-select-screen'),
+  slotMachineBtn: document.getElementById('slot-machine-btn'),
+  minesGameBtn: document.getElementById('mines-game-btn'),
+  minesGameScreen: document.getElementById('mines-game-screen'),
+  minesBetInput: document.getElementById('mines-bet-input'),
+  minesCountInput: document.getElementById('mines-count-input'),
+  minesStartBtn: document.getElementById('mines-start-btn'),
+  minesGrid: document.getElementById('mines-grid'),
+  minesCurrentWin: document.getElementById('mines-current-win'),
+  minesMultiplier: document.getElementById('mines-multiplier'),
+  minesCashoutBtn: document.getElementById('mines-cashout-btn'),
+  minesGameOverPopup: document.getElementById('mines-game-over-popup'),
+  minesGameOverMessage: document.getElementById('mines-game-over-message'),
+  minesGameOverAmount: document.getElementById('mines-game-over-amount'),
+  minesUsername: document.getElementById('mines-username'),
+  minesAvatar: document.getElementById('mines-avatar'),
+  minesChips: document.getElementById('mines-chips'),
+  minesDice: document.getElementById('mines-dice'),
+  backToMenuBtn: document.getElementById('back-to-menu-btn'),
+  minesBackToMenuBtn: document.getElementById('mines-back-to-menu-btn'),
+  minesWinsCounter: document.getElementById('mines-wins-counter'),
+  minesWinRate: document.getElementById('mines-win-rate'),
+  loadingIndicator: document.querySelector('.spinner-container'),
+  minesMultiplierDisplay: document.getElementById('mines-multiplier-display')
 };
 
 // Helper Functions
 function getRandomSymbol() {
-    return CONFIG.symbols[Math.floor(Math.random() * CONFIG.symbols.length)];
-}
-
-function resetReel(reel, centerSymbol) {
-    if (!reel) return;
-    
-    reel.innerHTML = '';
-    for (let i = -1; i <= 1; i++) {
-        const symbol = i === 0 ? centerSymbol : getRandomSymbol();
-        const symbolElement = document.createElement('div');
-        symbolElement.className = 'symbol';
-        symbolElement.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
-        symbolElement.style.transform = `translateY(${i * 100}%)`;
-        reel.appendChild(symbolElement);
-    }
+  return CONFIG.symbols[Math.floor(Math.random() * CONFIG.symbols.length)];
 }
 
 function updateCurrencyDisplay() {
-    if (elements.chipsDisplay) elements.chipsDisplay.textContent = gameState.chips;
-    if (elements.diceDisplay) elements.diceDisplay.textContent = gameState.dice;
-    if (elements.minesChips) elements.minesChips.textContent = gameState.chips;
-    if (elements.minesDice) elements.minesDice.textContent = gameState.dice;
+  elements.chipsDisplay.textContent = gameState.chips;
+  elements.diceDisplay.textContent = gameState.dice;
+  elements.minesChips.textContent = gameState.chips;
+  elements.minesDice.textContent = gameState.dice;
 }
 
 function showNotification(message, isSuccess) {
-    const notification = document.createElement('div');
-    notification.className = `notification ${isSuccess ? 'success' : 'error'}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
-    setTimeout(() => notification.remove(), 3000);
+  const notification = document.createElement('div');
+  notification.className = `notification ${isSuccess ? 'success' : 'error'}`;
+  notification.textContent = message;
+  document.body.appendChild(notification);
+  setTimeout(() => notification.remove(), 3000);
+}
+
+// Mines Game Functions
+function createMinesGrid() {
+  if (!elements.minesGrid) return;
+  
+  elements.minesGrid.innerHTML = '';
+  
+  for (let i = 0; i < 25; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'mines-cell';
+    cell.dataset.index = i;
+    cell.dataset.probability = '0%';
+    cell.addEventListener('click', () => revealMineCell(i));
+    elements.minesGrid.appendChild(cell);
+  }
+}
+
+function placeMines(minesCount) {
+  gameState.minesGame.minePositions = [];
+  const positions = Array.from({length: 25}, (_, i) => i);
+  
+  // Fisher-Yates shuffle
+  for (let i = positions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [positions[i], positions[j]] = [positions[j], positions[i]];
+  }
+  
+  gameState.minesGame.minePositions = positions.slice(0, minesCount);
+}
+
+function revealMineCell(index) {
+  if (!gameState.minesGame.gameActive) return;
+
+  const cell = elements.minesGrid.children[index];
+  if (cell.classList.contains('revealed')) return;
+
+  // Mine hit
+  if (gameState.minesGame.minePositions.includes(index)) {
+    cell.innerHTML = '<img src="assets/mine.png" alt="Mine">';
+    cell.classList.add('mine');
+    endMinesGame(false);
+    return;
+  }
+
+  // Safe cell
+  cell.classList.add('revealed');
+  gameState.minesGame.revealedCells++;
+  
+  // Calculate new multiplier
+  gameState.minesGame.currentMultiplier = parseFloat(
+    (gameState.minesGame.baseMultiplier + 
+     (gameState.minesGame.multiplierIncrement * gameState.minesGame.revealedCells))
+    .toFixed(6)
+  );
+  
+  gameState.minesGame.currentWin = Math.floor(
+    gameState.minesGame.betAmount * gameState.minesGame.currentMultiplier
+  );
+
+  // Update UI
+  updateMinesGameUI();
+  
+  // Check win condition
+  if (gameState.minesGame.revealedCells === (25 - gameState.minesGame.minesCount)) {
+    endMinesGame(true);
+  }
+}
+
+function updateMinesGameUI() {
+  elements.minesCurrentWin.textContent = gameState.minesGame.currentWin;
+  elements.minesMultiplier.textContent = `${gameState.minesGame.currentMultiplier.toFixed(4)}x`;
+  
+  // Update cell probabilities
+  Array.from(elements.minesGrid.children).forEach((cell, i) => {
+    if (!cell.classList.contains('revealed') && !cell.classList.contains('mine')) {
+      const remainingCells = 25 - gameState.minesGame.revealedCells;
+      const remainingMines = gameState.minesGame.minesCount - 
+        gameState.minesGame.minePositions.filter(pos => 
+          elements.minesGrid.children[pos].classList.contains('revealed')
+        ).length;
+      const prob = (remainingMines / remainingCells) * 100;
+      cell.dataset.probability = `${Math.round(prob)}%`;
+    }
+  });
+}
+
+async function startNewMinesGame() {
+  const betAmount = parseInt(elements.minesBetInput.value);
+  const minesCount = parseInt(elements.minesCountInput.value);
+
+  // Validate inputs
+  if (isNaN(betAmount) || betAmount < CONFIG.mines.minBet || betAmount > CONFIG.mines.maxBet) {
+    showNotification(`Bet must be between ${CONFIG.mines.minBet} and ${CONFIG.mines.maxBet}`, false);
+    return;
+  }
+
+  if (isNaN(minesCount) || minesCount < CONFIG.mines.minMines || minesCount > CONFIG.mines.maxMines) {
+    showNotification(`Mines must be between ${CONFIG.mines.minMines} and ${CONFIG.mines.maxMines}`, false);
+    return;
+  }
+
+  if (betAmount > gameState.chips) {
+    showNotification("Not enough chips", false);
+    return;
+  }
+
+  // Deduct bet
+  gameState.chips -= betAmount;
+  updateCurrencyDisplay();
+
+  // Initialize game
+  gameState.minesGame = {
+    betAmount,
+    minesCount,
+    baseMultiplier: CONFIG.mines.baseMultipliers[minesCount],
+    currentMultiplier: CONFIG.mines.baseMultipliers[minesCount],
+    multiplierIncrement: CONFIG.mines.incrementFactors[minesCount],
+    revealedCells: 0,
+    totalCells: 25,
+    minePositions: [],
+    currentWin: betAmount,
+    gameActive: true
+  };
+
+  // Create grid and place mines
+  createMinesGrid();
+  placeMines(minesCount);
+
+  // Update UI
+  elements.minesCurrentWin.textContent = gameState.minesGame.currentWin;
+  elements.minesMultiplier.textContent = `${gameState.minesGame.currentMultiplier.toFixed(4)}x`;
+  elements.minesBetInput.disabled = true;
+  elements.minesCountInput.disabled = true;
+  elements.minesStartBtn.disabled = true;
+  elements.minesCashoutBtn.disabled = false;
+}
+
+function cashoutMinesGame() {
+  if (!gameState.minesGame.gameActive || gameState.minesGame.revealedCells === 0) {
+    showNotification("Reveal at least one cell first", false);
+    return;
+  }
+  
+  endMinesGame(true);
+}
+
+async function endMinesGame(isWin) {
+  gameState.minesGame.gameActive = false;
+  
+  // Reveal all mines
+  gameState.minesGame.minePositions.forEach(pos => {
+    const cell = elements.minesGrid.children[pos];
+    if (!cell.classList.contains('revealed')) {
+      cell.innerHTML = '<img src="assets/mine.png" alt="Mine">';
+      cell.classList.add('mine');
+    }
+  });
+
+  if (isWin) {
+    // Add winnings
+    gameState.chips += gameState.minesGame.currentWin;
+    gameState.minesStats.wins++;
+    gameState.minesStats.totalWins += gameState.minesGame.currentWin;
+    
+    // Show win message
+    elements.minesGameOverMessage.textContent = "You Won!";
+    elements.minesGameOverAmount.textContent = `+${gameState.minesGame.currentWin}`;
+  } else {
+    // Show loss message
+    elements.minesGameOverMessage.textContent = "Game Over!";
+    elements.minesGameOverAmount.textContent = `-${gameState.minesGame.betAmount}`;
+  }
+
+  // Update stats
+  gameState.minesStats.totalGames++;
+  updateCurrencyDisplay();
+  
+  // Show game over popup
+  elements.minesGameOverPopup.style.display = 'flex';
 }
 
 // Slot Machine Functions
 async function startSpin() {
-    if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
-        if (gameState.chips < CONFIG.spinCost) {
-            showNotification("Not enough chips!", false);
-        }
-        return;
+  if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
+    if (gameState.chips < CONFIG.spinCost) {
+      showNotification("Not enough chips", false);
     }
+    return;
+  }
 
-    initSpinState();
-    const targetSymbols = elements.reels.map(() => getRandomSymbol());
-    startEnhancedSpinAnimation(targetSymbols);
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/spin`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                userId: gameState.userId,
-                cost: CONFIG.spinCost
-            }),
-            credentials: 'include'
-        });
+  // Show loading
+  elements.loadingIndicator.style.display = 'flex';
+  gameState.isSpinning = true;
+  elements.spinBtn.disabled = true;
 
-        if (!response.ok) throw new Error('Spin failed');
+  // Deduct cost
+  gameState.chips -= CONFIG.spinCost;
+  updateCurrencyDisplay();
 
-        const data = await response.json();
-        gameState.chips = data.newBalance;
-        updateCurrencyDisplay();
-    } catch (error) {
-        console.error('Spin error:', error);
-        showNotification('Failed to process spin. Please try again.', false);
-        resetSpinState();
-        elements.reels.forEach((reel, index) => {
-            const symbol = getRandomSymbol();
-            resetReel(reel, symbol);
-            gameState.currentSymbols[index] = symbol.name;
-        });
-    }
-}
-
-function initSpinState() {
-    gameState.isSpinning = true;
-    gameState.spinningReels = elements.reels.length;
-    gameState.winAmount = 0;
-    gameState.winCombo = null;
-    if (elements.spinBtn) elements.spinBtn.disabled = true;
-    if (elements.winPopup) elements.winPopup.style.display = 'none';
-    
-    // Show loading spinner
-    const loading = document.getElementById('slot-loading');
-    if (loading) loading.classList.add('active');
-}
-
-function startEnhancedSpinAnimation(targetSymbols) {
-    gameState.currentSymbols = targetSymbols.map(s => s.name);
-    const baseDuration = 2000;
-    const spinCycles = 4;
-    
-    elements.reels.forEach((reel, index) => {
-        if (!reel) return;
-        const duration = baseDuration + (index * 400);
-        enhancedSpinReel(reel, targetSymbols[index], duration, spinCycles);
+  // Start visual spin
+  const targetSymbols = elements.reels.map(() => getRandomSymbol());
+  gameState.currentSymbols = targetSymbols.map(s => s.name);
+  
+  // Animate each reel
+  elements.reels.forEach((reel, index) => {
+    const duration = 3000 + (index * 500);
+    animateReelSpin(reel, targetSymbols[index], duration, () => {
+      gameState.spinningReels--;
+      if (gameState.spinningReels === 0) {
+        completeSpin();
+      }
     });
+  });
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/spin`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: gameState.userId,
+        cost: CONFIG.spinCost
+      }),
+      credentials: 'include'
+    });
+
+    const data = await response.json();
+    gameState.chips = data.newBalance;
+  } catch (error) {
+    console.error('Spin error:', error);
+    showNotification('Spin failed', false);
+  } finally {
+    elements.loadingIndicator.style.display = 'none';
+  }
 }
 
-function enhancedSpinReel(reel, targetSymbol, duration, cycles) {
-    const symbols = CONFIG.symbols;
-    let startTime = null;
-    const symbolHeight = 100;
-    const totalSymbols = 5;
+function animateReelSpin(reel, targetSymbol, duration, callback) {
+  const startTime = performance.now();
+  const symbols = CONFIG.symbols;
+  const spinCycles = 10;
 
-    const symbolElements = [];
-    for (let i = 0; i < totalSymbols; i++) {
+  function animate(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    
+    if (progress < 1) {
+      // Calculate position
+      const easedProgress = Math.pow(progress, 2); // Easing function
+      const virtualPosition = easedProgress * spinCycles * symbols.length;
+      
+      // Update reel display
+      reel.innerHTML = '';
+      for (let i = 0; i < 3; i++) {
+        const symbolIndex = Math.floor(virtualPosition) + i;
+        const symbol = symbols[symbolIndex % symbols.length];
         const symbolElement = document.createElement('div');
         symbolElement.className = 'symbol';
+        symbolElement.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
+        symbolElement.style.transform = `translateY(${(i - 1) * 100}%)`;
         reel.appendChild(symbolElement);
-        symbolElements.push(symbolElement);
+      }
+      
+      requestAnimationFrame(animate);
+    } else {
+      // Spin complete
+      reel.innerHTML = '';
+      resetReel(reel, targetSymbol);
+      callback();
     }
+  }
 
-    function animateSpin(timestamp) {
-        if (!startTime) startTime = timestamp;
-        const progress = timestamp - startTime;
-        const spinProgress = Math.min(progress / duration, 1);
-        
-        const easedProgress = spinProgress;
+  requestAnimationFrame(animate);
+}
 
-        if (spinProgress < 1) {
-            const basePosition = -easedProgress * (symbolHeight * cycles * symbols.length);
-            
-            symbolElements.forEach((element, i) => {
-                const position = basePosition + (i * symbolHeight);
-                const symbolIndex = Math.floor(-basePosition / symbolHeight) + i;
-                const symbol = symbols[symbolIndex % symbols.length];
-                
-                element.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
-                element.style.transform = `translateY(${position}%)`;
-            });
-            
-            requestAnimationFrame(animateSpin);
-        } else {
-            reel.innerHTML = '';
-            resetReel(reel, targetSymbol);
-            
-            const centerSymbol = reel.querySelector('.symbol:nth-child(2)');
-            if (centerSymbol) centerSymbol.style.animation = 'landingBounce 0.5s ease-out';
-            
-            gameState.spinningReels--;
-            
-            if (gameState.spinningReels === 0) {
-                completeSpin();
-            }
-        }
-    }
-
-    requestAnimationFrame(animateSpin);
+function resetReel(reel, centerSymbol) {
+  reel.innerHTML = '';
+  for (let i = -1; i <= 1; i++) {
+    const symbol = i === 0 ? centerSymbol : getRandomSymbol();
+    const symbolElement = document.createElement('div');
+    symbolElement.className = 'symbol';
+    symbolElement.innerHTML = `<img src="${symbol.img}" alt="${symbol.name}">`;
+    symbolElement.style.transform = `translateY(${i * 100}%)`;
+    reel.appendChild(symbolElement);
+  }
 }
 
 function completeSpin() {
-    resetSpinState();
-    checkWin();
-    highlightWinningSymbols();
-    
-    // Hide loading spinner
-    const loading = document.getElementById('slot-loading');
-    if (loading) loading.classList.remove('active');
+  gameState.isSpinning = false;
+  elements.spinBtn.disabled = false;
+  checkWin();
 }
 
-function completeSpin() {
-    resetSpinState();
-    checkWin();
-    highlightWinningSymbols();
-    
-    // Hide loading spinner after a slight delay
-    setTimeout(() => {
-        const loading = document.getElementById('slot-loading');
-        if (loading) loading.classList.remove('active');
-    }, 500); // 0.5 second delay
-}
+function checkWin() {
+  const combo = gameState.currentSymbols.join('-');
+  let winAmount = 0;
+  let winCombo = null;
+  
+  if (CONFIG.payouts[combo]) {
+    winAmount = CONFIG.payouts[combo];
+    winCombo = combo;
+  } else if (hasTwoMatchingSymbols()) {
+    winAmount = CONFIG.payouts['ANY_TWO_MATCH'];
+    winCombo = 'ANY_TWO_MATCH';
+  }
 
-function resetSpinState() {
-    gameState.isSpinning = false;
-    if (elements.spinBtn) elements.spinBtn.disabled = false;
-}
-
-function highlightWinningSymbols() {
-    if (!gameState.winCombo) return;
-    
-    elements.reels.forEach((reel, index) => {
-        if (!reel) return;
-        const symbols = reel.querySelectorAll('.symbol');
-        if (symbols[1] && (gameState.winCombo === 'ANY_TWO_MATCH' || 
-            gameState.currentSymbols.filter(s => s === gameState.currentSymbols[index]).length >= 2)) {
-            symbols[1].classList.add('win-highlight');
-        }
-    });
-}
-
-async function checkWin() {
-    const combo = gameState.currentSymbols.join('-');
-    let winAmount = 0;
-    let winCombo = null;
-    
-    if (CONFIG.payouts[combo]) {
-        winAmount = CONFIG.payouts[combo];
-        winCombo = combo;
-    } else if (hasTwoMatchingSymbols()) {
-        winAmount = CONFIG.payouts['ANY_TWO_MATCH'];
-        winCombo = 'ANY_TWO_MATCH';
-    }
-
-    if (winAmount > 0) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/win`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: gameState.userId,
-                    amount: winAmount
-                }),
-                credentials: 'include'
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                updateGameStateAfterWin(data, winAmount, winCombo);
-                showWinPopup(winCombo, winAmount);
-            }
-        } catch (error) {
-            console.error('Win claim error:', error);
-        }
-    }
+  if (winAmount > 0) {
+    gameState.chips += winAmount;
+    gameState.winAmount = winAmount;
+    gameState.winCombo = winCombo;
+    updateCurrencyDisplay();
+    showWinPopup(winCombo, winAmount);
+  }
 }
 
 function hasTwoMatchingSymbols() {
-    const [a, b, c] = gameState.currentSymbols;
-    return a === b || b === c || a === c;
-}
-
-function updateGameStateAfterWin(data, amount, combo) {
-    gameState.chips = data.newBalance;
-    gameState.winAmount = amount;
-    gameState.winCombo = combo;
-    updateCurrencyDisplay();
+  const [a, b, c] = gameState.currentSymbols;
+  return a === b || b === c || a === c;
 }
 
 function showWinPopup(combo, amount) {
-    if (!elements.winComboDisplay || !elements.winAmountDisplay || !elements.winPopup) return;
-    
-    const comboDisplay = combo === 'ANY_TWO_MATCH' 
-        ? 'Two Matching Symbols' 
-        : createComboSymbolsDisplay(combo);
-    
-    elements.winComboDisplay.innerHTML = comboDisplay;
-    elements.winAmountDisplay.textContent = `+${amount}`;
-    elements.winPopup.style.display = 'flex';
+  elements.winComboDisplay.innerHTML = combo === 'ANY_TWO_MATCH' 
+    ? 'Two Matching Symbols' 
+    : createComboSymbolsDisplay(combo);
+  elements.winAmountDisplay.textContent = `+${amount}`;
+  elements.winPopup.style.display = 'flex';
 }
 
 function createComboSymbolsDisplay(combo) {
-    const symbols = combo.split('-').map(name => {
-        const symbol = CONFIG.symbols.find(s => s.name === name);
-        return symbol ? `<img src="${symbol.img}" alt="${symbol.name}" class="combo-symbol">` : '';
-    });
-    return `<div class="combo-symbols">${symbols.join('')}</div>`;
+  const symbols = combo.split('-').map(name => {
+    const symbol = CONFIG.symbols.find(s => s.name === name);
+    return symbol ? `<img src="${symbol.img}" alt="${symbol.name}" class="combo-symbol">` : '';
+  });
+  return `<div class="combo-symbols">${symbols.join('')}</div>`;
 }
 
-async function claimWin() {
-    gameState.winAmount = 0;
-    gameState.winCombo = null;
-    if (elements.winPopup) elements.winPopup.style.display = 'none';
-}
-
-// Mines Game Functions
-function showGameSelectScreen() {
-    if (!gameState.userId) {
-        showLoginScreen();
-        return;
-    }
-    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
-    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
-    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
-    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'block';
-    updateCurrencyDisplay();
-}
-
-function startSlotMachineGame() {
-    if (!gameState.userId) {
-        showLoginScreen();
-        return;
-    }
-    gameState.currentGame = 'slots';
-    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
-    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
-    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
-    if (elements.gameScreen) elements.gameScreen.style.display = 'block';
-}
-
-function startMinesGame() {
-    if (!gameState.userId) {
-        showLoginScreen();
-        return;
-    }
-    gameState.currentGame = 'mines';
-    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
-    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
-    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
-    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'block';
-    setupMinesGameUI();
-}
-
-async function setupMinesGameUI() {
-    gameState.minesGame = {
-        betAmount: 0,
-        minesCount: 0,
-        multiplier: 1.0,
-        revealedCells: 0,
-        totalCells: 25,
-        minePositions: [],
-        currentWin: 0,
-        gameActive: false
-    };
-    
-    if (elements.minesCurrentWin) elements.minesCurrentWin.textContent = '0';
-    if (elements.minesMultiplier) elements.minesMultiplier.textContent = '1.00x';
-    if (elements.minesGrid) elements.minesGrid.innerHTML = '';
-    
-    if (elements.minesBetInput) elements.minesBetInput.disabled = false;
-    if (elements.minesCountInput) elements.minesCountInput.disabled = false;
-    if (elements.minesStartBtn) elements.minesStartBtn.disabled = false;
-    if (elements.minesCashoutBtn) elements.minesCashoutBtn.disabled = true;
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/mines/stats?userId=${gameState.userId}`, {
-            credentials: 'include'
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            gameState.minesStats.totalGames = data.totalGames || 0;
-            gameState.minesStats.wins = data.wins || 0;
-            gameState.minesStats.totalWins = data.totalWins || 0;
-            gameState.minesStats.totalGamesPlayed = data.totalGamesPlayed || 0;
-        }
-    } catch (error) {
-        console.error('Failed to load mines stats:', error);
-    }
-    
-    updateMinesStats();
-}
-
-function updateMinesStats() {
-    if (elements.minesWinsCounter) elements.minesWinsCounter.textContent = gameState.minesStats.wins;
-    const winRate = gameState.minesStats.totalGames > 0 
-        ? Math.round((gameState.minesStats.wins / gameState.minesStats.totalGames) * 100)
-        : 0;
-    if (elements.minesWinRate) elements.minesWinRate.textContent = `${winRate}%`;
-}
-
-async function startNewMinesGame() {
-    if (!gameState.userId) {
-        showLoginScreen();
-        return;
-    }
-
-    const betAmount = parseInt(elements.minesBetInput?.value);
-    const minesCount = parseInt(elements.minesCountInput?.value);
-    
-    if (isNaN(betAmount)) {
-        showNotification("Please enter a valid bet amount", false);
-        return;
-    }
-    
-    if (betAmount < CONFIG.mines.minBet || betAmount > CONFIG.mines.maxBet) {
-        showNotification(`Bet amount must be between ${CONFIG.mines.minBet} and ${CONFIG.mines.maxBet}`, false);
-        return;
-    }
-    
-    if (isNaN(minesCount)) {
-        showNotification("Please select number of mines", false);
-        return;
-    }
-    
-    if (minesCount < CONFIG.mines.minMines || minesCount > CONFIG.mines.maxMines) {
-        showNotification(`Number of mines must be between ${CONFIG.mines.minMines} and ${CONFIG.mines.maxMines}`, false);
-        return;
-    }
-    
-    if (betAmount > gameState.chips) {
-        showNotification("Not enough chips for this bet", false);
-        return;
-    }
-    
-    if (elements.minesBetInput) elements.minesBetInput.disabled = true;
-    if (elements.minesCountInput) elements.minesCountInput.disabled = true;
-    if (elements.minesStartBtn) elements.minesStartBtn.disabled = true;
-    if (elements.minesCashoutBtn) elements.minesCashoutBtn.disabled = false;
-    
-    gameState.minesStats.totalGames++;
-    updateMinesStats();
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/spin`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                userId: gameState.userId,
-                cost: betAmount
-            }),
-            credentials: 'include'
-        });
-
-        const data = await response.json();
-        gameState.chips = data.newBalance;
-        updateCurrencyDisplay();
-        
-        gameState.minesGame.betAmount = betAmount;
-        gameState.minesGame.minesCount = minesCount;
-        gameState.minesGame.multiplier = 1.0;
-        gameState.minesGame.currentWin = betAmount;
-        gameState.minesGame.gameActive = true;
-        
-        createMinesGrid();
-        placeMines(minesCount);
-
-        await fetch(`${API_BASE_URL}/api/mines/start`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                userId: gameState.userId,
-                betAmount,
-                minesCount
-            }),
-            credentials: 'include'
-        });
-    } catch (error) {
-        console.error('Mines game start error:', error);
-        showNotification('Failed to start mines game', false);
-        setupMinesGameUI();
-    }
-}
-
-function createMinesGrid() {
-    if (!elements.minesGrid) return;
-    
-    elements.minesGrid.innerHTML = '';
-    elements.minesGrid.style.gridTemplateColumns = 'repeat(5, 1fr)';
-    
-    for (let i = 0; i < 25; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'mines-cell';
-        cell.dataset.index = i;
-        cell.addEventListener('click', () => revealMineCell(i));
-        elements.minesGrid.appendChild(cell);
-    }
-}
-
-function placeMines(minesCount) {
-    gameState.minesGame.minePositions = [];
-    const positions = Array.from({length: 25}, (_, i) => i);
-    
-    for (let i = positions.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [positions[i], positions[j]] = [positions[j], positions[i]];
-    }
-    
-    gameState.minesGame.minePositions = positions.slice(0, minesCount);
-}
-
-function revealMineCell(index) {
-    if (!gameState.minesGame.gameActive || !elements.minesGrid) return;
-    
-    const cell = elements.minesGrid.children[index];
-    if (!cell || cell.classList.contains('revealed')) return;
-    
-    if (gameState.minesGame.minePositions.includes(index)) {
-        cell.innerHTML = '<img src="assets/mine.png" alt="Mine">';
-        cell.classList.add('mine');
-        endMinesGame(false);
-        return;
-    }
-    
-    cell.classList.add('revealed');
-    gameState.minesGame.revealedCells++;
-    
-    // Use the new multiplier calculation
-    gameState.minesGame.multiplier = CONFIG.mines.getMultiplier(
-        gameState.minesGame.minesCount,
-        gameState.minesGame.revealedCells
-    );
-    
-    gameState.minesGame.currentWin = Math.floor(
-        gameState.minesGame.betAmount * gameState.minesGame.multiplier
-    );
-    
-    if (elements.minesCurrentWin) {
-        elements.minesCurrentWin.textContent = gameState.minesGame.currentWin.toFixed(2);
-    }
-    if (elements.minesMultiplier) {
-        elements.minesMultiplier.textContent = `${gameState.minesGame.multiplier.toFixed(4)}x`;
-    }
-    
-    const safeCells = 25 - gameState.minesGame.minesCount;
-    if (gameState.minesGame.revealedCells === safeCells) {
-        endMinesGame(true);
-    }
-}
-
-
-function cashoutMinesGame() {
-    if (!gameState.minesGame.gameActive || gameState.minesGame.revealedCells === 0) {
-        showNotification("You need to reveal at least one cell to cashout", false);
-        return;
-    }
-    
-    endMinesGame(true);
-}
-
-async function endMinesGame(isWin) {
-    gameState.minesGame.gameActive = false;
-    if (elements.minesCashoutBtn) elements.minesCashoutBtn.disabled = true;
-    
-    if (elements.minesGrid) {
-        gameState.minesGame.minePositions.forEach(pos => {
-            const cell = elements.minesGrid.children[pos];
-            if (cell && !cell.classList.contains('revealed')) {
-                cell.innerHTML = '<img src="assets/mine.png" alt="Mine">';
-                cell.classList.add('mine');
-            }
-        });
-    }
-    
-    if (isWin) {
-        gameState.minesStats.wins++;
-        gameState.minesStats.totalWins += gameState.minesGame.currentWin;
-        
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/win`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: gameState.userId,
-                    amount: gameState.minesGame.currentWin
-                }),
-                credentials: 'include'
-            });
-            
-            const data = await response.json();
-            gameState.chips = data.newBalance;
-            updateCurrencyDisplay();
-            
-            if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "You Won!";
-            if (elements.minesGameOverAmount) elements.minesGameOverAmount.textContent = `+${gameState.minesGame.currentWin}`;
-            if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'flex';
-        } catch (error) {
-            console.error('Win claim error:', error);
-            showNotification('Failed to claim win', false);
-        }
-    } else {
-        if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "Game Over!";
-        if (elements.minesGameOverAmount) elements.minesGameOverAmount.textContent = `-${gameState.minesGame.betAmount}`;
-        if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'flex';
-    }
-}
-
-function closeMinesGameOverPopup() {
-    if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'none';
-    setupMinesGameUI();
+function claimWin() {
+  gameState.winAmount = 0;
+  gameState.winCombo = null;
+  elements.winPopup.style.display = 'none';
 }
 
 // Authentication Functions
 async function loginWithToken(token) {
-    try {
-        if (elements.loginBtn) elements.loginBtn.disabled = true;
-        const response = await fetch(`${API_BASE_URL}/auth/token`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ token }),
-            credentials: 'include'
-        });
+  try {
+    elements.loginBtn.disabled = true;
+    const response = await fetch(`${API_BASE_URL}/auth/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+      credentials: 'include'
+    });
 
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            const text = await response.text();
-            throw new Error(`Invalid response: ${text.substring(0, 100)}`);
-        }
-
-        const data = await response.json();
-        
-        if (response.ok) {
-            handleSuccessfulLogin(data);
-            showNotification('Login successful!', true);
-            return true;
-        } else {
-            throw new Error(data.error || 'Login failed');
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        showNotification(`Login failed: ${error.message}`, false);
-        return false;
-    } finally {
-        if (elements.loginBtn) elements.loginBtn.disabled = false;
+    const data = await response.json();
+    if (response.ok) {
+      handleSuccessfulLogin(data);
+      showNotification('Login successful', true);
+    } else {
+      throw new Error(data.error || 'Login failed');
     }
+  } catch (error) {
+    console.error('Login error:', error);
+    showNotification(`Login failed: ${error.message}`, false);
+  } finally {
+    elements.loginBtn.disabled = false;
+  }
 }
 
 async function logout() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-            method: 'POST',
-            credentials: 'include'
-        });
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include'
+    });
 
-        if (response.ok) {
-            showLoginScreen();
-            showNotification('Logged out successfully', true);
-        } else {
-            throw new Error('Logout failed');
-        }
-    } catch (error) {
-        console.error('Logout error:', error);
-        showNotification('Failed to logout. Please try again.', false);
+    if (response.ok) {
+      showLoginScreen();
+      showNotification('Logged out', true);
+    } else {
+      throw new Error('Logout failed');
     }
+  } catch (error) {
+    console.error('Logout error:', error);
+    showNotification('Logout failed', false);
+  }
 }
 
 function handleSuccessfulLogin(user) {
-    gameState.userId = user.id;
-    gameState.chips = user.chips;
-    gameState.dice = user.dice;
-    
-    if (elements.usernameDisplay) elements.usernameDisplay.textContent = user.username;
-    if (elements.userAvatar) elements.userAvatar.src = user.avatar || 'assets/default-avatar.png';
-    if (elements.minesUsername) elements.minesUsername.textContent = user.username;
-    if (elements.minesAvatar) elements.minesAvatar.src = user.avatar || 'assets/default-avatar.png';
-    
-    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
-    showGameSelectScreen();
-    updateCurrencyDisplay();
-    
-    elements.reels.forEach((reel, index) => {
-        if (!reel) return;
-        const symbol = getRandomSymbol();
-        gameState.currentSymbols[index] = symbol.name;
-        resetReel(reel, symbol);
-    });
-    
-    if (gameState.currentGame === 'mines') {
-        setupMinesGameUI();
-    }
+  gameState.userId = user.id;
+  gameState.chips = user.chips;
+  gameState.dice = user.dice;
+  
+  elements.usernameDisplay.textContent = user.username;
+  elements.userAvatar.src = user.avatar || 'assets/default-avatar.png';
+  elements.minesUsername.textContent = user.username;
+  elements.minesAvatar.src = user.avatar || 'assets/default-avatar.png';
+  
+  showGameSelectScreen();
+  updateCurrencyDisplay();
 }
 
 function showLoginScreen() {
-    if (elements.loginScreen) elements.loginScreen.style.display = 'block';
-    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
-    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
-    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
-    gameState.userId = null;
-    if (elements.tokenInput) elements.tokenInput.value = '';
+  elements.loginScreen.style.display = 'block';
+  elements.gameScreen.style.display = 'none';
+  elements.gameSelectScreen.style.display = 'none';
+  elements.minesGameScreen.style.display = 'none';
+  gameState.userId = null;
+  elements.tokenInput.value = '';
 }
 
-async function checkAuthStatus() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/auth/user`, {
-            credentials: 'include'
-        });
-        
-        if (response.ok) {
-            const user = await response.json();
-            handleSuccessfulLogin(user);
-            return true;
-        } else {
-            showLoginScreen();
-            return false;
-        }
-    } catch (error) {
-        console.error('Auth check error:', error);
-        showLoginScreen();
-        return false;
-    }
+function showGameSelectScreen() {
+  elements.loginScreen.style.display = 'none';
+  elements.gameScreen.style.display = 'none';
+  elements.minesGameScreen.style.display = 'none';
+  elements.gameSelectScreen.style.display = 'block';
 }
 
-// Add CSS animation for landing bounce
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes landingBounce {
-        0% { transform: translateY(0%) scale(1); }
-        50% { transform: translateY(-20%) scale(1.1); }
-        100% { transform: translateY(0%) scale(1); }
-    }
-`;
-document.head.appendChild(style);
-
-// Event Listeners
-if (elements.loginBtn) {
-    elements.loginBtn.addEventListener('click', async () => {
-        const token = elements.tokenInput?.value.trim();
-        if (token) {
-            await loginWithToken(token);
-        } else {
-            showNotification('Please enter your token', false);
-        }
-    });
+function startSlotMachineGame() {
+  elements.loginScreen.style.display = 'none';
+  elements.gameSelectScreen.style.display = 'none';
+  elements.minesGameScreen.style.display = 'none';
+  elements.gameScreen.style.display = 'block';
+  gameState.currentGame = 'slots';
 }
 
-if (elements.logoutBtn) elements.logoutBtn.addEventListener('click', logout);
-if (elements.minesLogoutBtn) elements.minesLogoutBtn.addEventListener('click', logout);
-if (elements.spinBtn) elements.spinBtn.addEventListener('click', startSpin);
-if (elements.claimBtn) elements.claimBtn.addEventListener('click', claimWin);
-
-if (elements.slotMachineBtn) elements.slotMachineBtn.addEventListener('click', startSlotMachineGame);
-if (elements.minesGameBtn) elements.minesGameBtn.addEventListener('click', startMinesGame);
-if (elements.minesStartBtn) elements.minesStartBtn.addEventListener('click', startNewMinesGame);
-if (elements.minesCashoutBtn) elements.minesCashoutBtn.addEventListener('click', cashoutMinesGame);
-if (document.getElementById('mines-game-over-close')) {
-    document.getElementById('mines-game-over-close').addEventListener('click', closeMinesGameOverPopup);
+function startMinesGame() {
+  elements.loginScreen.style.display = 'none';
+  elements.gameSelectScreen.style.display = 'none';
+  elements.gameScreen.style.display = 'none';
+  elements.minesGameScreen.style.display = 'block';
+  gameState.currentGame = 'mines';
+  setupMinesGameUI();
 }
-if (elements.backToMenuBtn) elements.backToMenuBtn.addEventListener('click', showGameSelectScreen);
-if (elements.minesBackToMenuBtn) elements.minesBackToMenuBtn.addEventListener('click', showGameSelectScreen);
+
+function setupMinesGameUI() {
+  gameState.minesGame = {
+    betAmount: 0,
+    minesCount: 0,
+    baseMultiplier: 1.0,
+    currentMultiplier: 1.0,
+    revealedCells: 0,
+    totalCells: 25,
+    minePositions: [],
+    currentWin: 0,
+    gameActive: false,
+    multiplierIncrement: 0
+  };
+  
+  elements.minesCurrentWin.textContent = '0';
+  elements.minesMultiplier.textContent = '1.0000x';
+  elements.minesGrid.innerHTML = '';
+  elements.minesBetInput.disabled = false;
+  elements.minesCountInput.disabled = false;
+  elements.minesStartBtn.disabled = false;
+  elements.minesCashoutBtn.disabled = true;
+}
+
+function closeMinesGameOverPopup() {
+  elements.minesGameOverPopup.style.display = 'none';
+  setupMinesGameUI();
+}
 
 // Initialize Game
-async function initGame() {
-    try {
-        const authCheck = await checkAuthStatus();
-        if (authCheck && !gameState.authChecked) {
-            gameState.authChecked = true;
-        }
-    } catch (error) {
-        console.error('Initialization error:', error);
-    }
+function initGame() {
+  setupEventListeners();
+  showLoginScreen();
 }
 
+// Event Listeners
+function setupEventListeners() {
+  // Login
+  elements.loginBtn.addEventListener('click', () => {
+    const token = elements.tokenInput.value.trim();
+    if (token) loginWithToken(token);
+    else showNotification('Enter your token', false);
+  });
+
+  // Logout
+  elements.logoutBtn.addEventListener('click', logout);
+  elements.minesLogoutBtn.addEventListener('click', logout);
+
+  // Game selection
+  elements.slotMachineBtn.addEventListener('click', startSlotMachineGame);
+  elements.minesGameBtn.addEventListener('click', startMinesGame);
+
+  // Slot machine
+  elements.spinBtn.addEventListener('click', startSpin);
+  elements.claimBtn.addEventListener('click', claimWin);
+
+  // Mines game
+  elements.minesStartBtn.addEventListener('click', startNewMinesGame);
+  elements.minesCashoutBtn.addEventListener('click', cashoutMinesGame);
+  document.getElementById('mines-game-over-close').addEventListener('click', closeMinesGameOverPopup);
+
+  // Navigation
+  elements.backToMenuBtn.addEventListener('click', showGameSelectScreen);
+  elements.minesBackToMenuBtn.addEventListener('click', showGameSelectScreen);
+}
+
+// Start the game
 document.addEventListener('DOMContentLoaded', initGame);
