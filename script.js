@@ -76,11 +76,31 @@ const CONFIG = {
         minBet: 1,
         maxBet: 1000,
         segments: [
-            { value: 1, multiplier: 1, count: 7, color: '#FF5733' },
-            { value: 3, multiplier: 3, count: 6, color: '#33FF57' },
-            { value: 5, multiplier: 5, count: 4, color: '#3357FF' },
-            { value: 10, multiplier: 10, count: 2, color: '#F033FF' },
-            { value: 20, multiplier: 20, count: 1, color: '#FF33F0' }
+            { value: 1, multiplier: 1, color: '#FFD700' },
+            { value: 3, multiplier: 3, color: '#33FF57' },
+            { value: 1, multiplier: 1, color: '#FFD700' },
+            { value: 10, multiplier: 10, color: '#FF33F0' },
+            { value: 1, multiplier: 1, color: '#FFD700' },
+            { value: 3, multiplier: 3, color: '#33FF57' },
+            { value: 1, multiplier: 1, color: '#FFD700' },
+            { value: 5, multiplier: 5, color: '#3357FF' },
+            { value: 1, multiplier: 1, color: '#FFD700' },
+            { value: 3, multiplier: 3, color: '#33FF57' },
+            { value: 1, multiplier: 1, color: '#FFD700' },
+            { value: 20, multiplier: 20, color: '#FF5733' },
+            { value: 1, multiplier: 1, color: '#FFD700' },
+            { value: 3, multiplier: 3, color: '#33FF57' },
+            { value: 1, multiplier: 1, color: '#FFD700' },
+            { value: 5, multiplier: 5, color: '#3357FF' },
+            { value: 1, multiplier: 1, color: '#FFD700' },
+            { value: 3, multiplier: 3, color: '#33FF57' },
+            { value: 1, multiplier: 1, color: '#FFD700' },
+            { value: 10, multiplier: 10, color: '#FF33F0' },
+            { value: 1, multiplier: 1, color: '#FFD700' },
+            { value: 3, multiplier: 3, color: '#33FF57' },
+            { value: 5, multiplier: 5, color: '#3357FF' },
+            { value: 1, multiplier: 1, color: '#FFD700' },
+            { value: 5, multiplier: 5, color: '#3357FF' }
         ],
         houseEdge: 0.05
     }
@@ -170,7 +190,6 @@ const elements = {
     wheelAvatar: document.getElementById('wheel-avatar'),
     wheelChips: document.getElementById('wheel-chips'),
     wheelDice: document.getElementById('wheel-dice'),
-    wheelBetInput: document.getElementById('wheel-bet-input'),
     wheelTotalBet: document.getElementById('wheel-total-bet'),
     wheelPotentialWin: document.getElementById('wheel-potential-win'),
     wheelLockBtn: document.getElementById('wheel-lock-btn'),
@@ -815,11 +834,6 @@ function setupWheelGameUI() {
     if (elements.wheelContainer) elements.wheelContainer.innerHTML = '';
     createWheelSegments();
     
-    if (elements.wheelBetInput) {
-        elements.wheelBetInput.value = '';
-        elements.wheelBetInput.disabled = false;
-    }
-    
     document.querySelectorAll('.wheel-number-bet').forEach(input => {
         input.value = '';
         input.disabled = false;
@@ -841,29 +855,22 @@ function setupWheelGameUI() {
 function createWheelSegments() {
     if (!elements.wheelContainer) return;
     
-    const totalSegments = CONFIG.wheel.segments.reduce((total, segment) => total + segment.count, 0);
-    let currentAngle = 0;
+    const segmentAngle = 360 / CONFIG.wheel.segments.length;
     
-    CONFIG.wheel.segments.forEach(segment => {
-        const segmentAngle = (360 / totalSegments) * segment.count;
+    CONFIG.wheel.segments.forEach((segment, index) => {
+        const segmentElement = document.createElement('div');
+        segmentElement.className = 'wheel-segment';
+        segmentElement.style.backgroundColor = segment.color;
+        segmentElement.style.transform = `rotate(${index * segmentAngle}deg)`;
+        segmentElement.dataset.value = segment.value;
+        segmentElement.dataset.multiplier = segment.multiplier;
         
-        for (let i = 0; i < segment.count; i++) {
-            const segmentElement = document.createElement('div');
-            segmentElement.className = 'wheel-segment';
-            segmentElement.style.backgroundColor = segment.color;
-            segmentElement.style.transform = `rotate(${currentAngle}deg)`;
-            segmentElement.style.clipPath = `polygon(0% 0%, 100% 0%, 100% 100%)`;
-            segmentElement.dataset.value = segment.value;
-            segmentElement.dataset.multiplier = segment.multiplier;
-            
-            const label = document.createElement('div');
-            label.textContent = segment.value;
-            label.style.transform = `rotate(${segmentAngle / 2}deg) translate(30%) rotate(-${currentAngle + (segmentAngle / 2)}deg)`;
-            segmentElement.appendChild(label);
-            
-            elements.wheelContainer.appendChild(segmentElement);
-            currentAngle += (360 / totalSegments);
-        }
+        const label = document.createElement('div');
+        label.textContent = segment.value;
+        label.style.transform = `rotate(${segmentAngle / 2}deg) translate(30%) rotate(-${(index * segmentAngle) + (segmentAngle / 2)}deg)`;
+        segmentElement.appendChild(label);
+        
+        elements.wheelContainer.appendChild(segmentElement);
     });
 }
 
@@ -918,7 +925,6 @@ function lockWheelBets() {
     
     gameState.wheelGame.locked = true;
     
-    if (elements.wheelBetInput) elements.wheelBetInput.disabled = true;
     document.querySelectorAll('.wheel-number-bet').forEach(input => {
         input.disabled = true;
     });
@@ -960,17 +966,10 @@ async function spinWheel() {
         
         const spinDuration = 5000;
         const spinRotations = 5;
-        const segmentAngle = 360 / 20;
+        const segmentAngle = 360 / CONFIG.wheel.segments.length;
         
-        const segments = [];
-        CONFIG.wheel.segments.forEach(segment => {
-            for (let i = 0; i < segment.count; i++) {
-                segments.push(segment);
-            }
-        });
-        
-        const winningSegment = segments[Math.floor(Math.random() * segments.length)];
-        const winningSegmentIndex = segments.indexOf(winningSegment);
+        const winningSegmentIndex = Math.floor(Math.random() * CONFIG.wheel.segments.length);
+        const winningSegment = CONFIG.wheel.segments[winningSegmentIndex];
         const targetAngle = 360 - (winningSegmentIndex * segmentAngle + segmentAngle / 2);
         const totalRotation = spinRotations * 360 + targetAngle;
         
@@ -1127,8 +1126,8 @@ function handleSuccessfulLogin(user) {
     elements.reels.forEach((reel, index) => {
         if (!reel) return;
         const symbol = getRandomSymbol();
-        gameState.currentSymbols[index] = symbol.name;
         resetReel(reel, symbol);
+        gameState.currentSymbols[index] = symbol.name;
     });
     
     if (gameState.currentGame === 'mines') {
