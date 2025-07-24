@@ -757,6 +757,280 @@ body {
     margin-top: 1rem;
 }
 
+/* BLINKO GAME STYLES */
+#blinko-game-screen {
+    display: none;
+    width: 100%;
+    max-width: 800px; /* Wider container for Blinko */
+    background: rgba(20, 20, 20, 0.9);
+    border-radius: 15px;
+    padding: 2rem;
+    border: 3px solid var(--primary);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+}
+
+.blinko-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.blinko-game-area {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    background: rgba(30, 30, 30, 0.7);
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    margin: 0 auto;
+    overflow: hidden;
+}
+
+#blinko-board {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.blinko-peg {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: var(--primary);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+    z-index: 10;
+}
+
+.blinko-ball {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: var(--secondary);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    transition: transform 0.1s linear;
+    box-shadow: 0 0 8px rgba(255, 87, 51, 0.7);
+}
+
+#blinko-buckets {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    z-index: 5;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.blinko-bucket {
+    flex: 1;
+    max-width: 50px;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    color: var(--primary);
+    font-size: 0.9rem;
+    border-top: 2px solid var(--primary);
+    position: relative;
+}
+
+.blinko-bucket::after {
+    content: attr(data-multiplier);
+    position: absolute;
+    bottom: -25px;
+    color: var(--primary);
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.blinko-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.blinko-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.blinko-input-group label {
+    color: var(--primary);
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.blinko-input-group input,
+.blinko-input-group select {
+    padding: 10px;
+    border-radius: 5px;
+    border: 2px solid var(--primary);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1rem;
+}
+
+.blinko-drop-btn {
+    background: linear-gradient(to bottom, var(--secondary), #C70039);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.blinko-drop-btn:hover {
+    background: #E04B2D;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(224, 75, 45, 0.4);
+}
+
+.blinko-drop-btn:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.blinko-back-btn {
+    background: #444;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.blinko-back-btn:hover {
+    background: #555;
+    transform: translateY(-2px);
+}
+
+.blinko-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.blinko-stats div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.blinko-stats span:first-child {
+    color: var(--primary);
+    font-size: 0.8rem;
+    margin-bottom: 3px;
+}
+
+.blinko-stats span:last-child {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+/* Blinko Win Popup */
+#blinko-win-popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+}
+
+.blinko-win-content {
+    background: var(--dark);
+    border: 3px solid var(--primary);
+    border-radius: 10px;
+    padding: 2rem;
+    text-align: center;
+    width: 90%;
+    max-width: 300px;
+    position: relative;
+}
+
+.blinko-win-content h3 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+}
+
+#blinko-win-position {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: var(--primary);
+}
+
+#blinko-win-value {
+    font-size: 1.5rem;
+    color: white;
+    font-weight: bold;
+    margin: 1rem 0;
+}
+
+/* Animations */
+@keyframes pegGlow {
+    0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.7); }
+    50% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.9); }
+    100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.7); }
+}
+
+@keyframes ballDrop {
+    0% { transform: translateY(-20px) scale(0.9); opacity: 0; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .blinko-game-area {
+        height: 400px;
+    }
+    
+    .blinko-bucket::after {
+        bottom: -20px;
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .blinko-game-area {
+        height: 350px;
+    }
+    
+    .blinko-peg {
+        width: 12px;
+        height: 12px;
+    }
+    
+    .blinko-ball {
+        width: 14px;
+        height: 14px;
+    }
+}
+
 /* Loading Indicator - UPDATED DURATION */
 .spin-loading {
     position: fixed;
