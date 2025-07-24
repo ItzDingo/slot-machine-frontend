@@ -871,9 +871,11 @@ function createWheelSegments() {
         
         const label = document.createElement('div');
         label.className = 'wheel-segment-label';
-        label.textContent = segment.value;
+        label.textContent = segment.value; // Show the number
         label.style.fontSize = `${fontSize}px`;
         label.style.transform = `rotate(${segmentAngle / 2}deg) translate(${radius * 0.7}px) rotate(-${(index * segmentAngle) + (segmentAngle / 2)}deg)`;
+        label.style.color = '#000'; // Black text for better visibility
+        label.style.fontWeight = 'bold';
         
         segmentElement.appendChild(label);
         elements.wheelContainer.appendChild(segmentElement);
