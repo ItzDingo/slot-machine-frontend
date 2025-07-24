@@ -214,12 +214,12 @@ function initSpinState() {
 
 function startEnhancedSpinAnimation(targetSymbols) {
     gameState.currentSymbols = targetSymbols.map(s => s.name);
-    const baseDuration = 3500;
-    const spinCycles = 50;
+    const baseDuration = 2000;
+    const spinCycles = 4;
     
     elements.reels.forEach((reel, index) => {
         if (!reel) return;
-        const duration = baseDuration + (index * 100);
+        const duration = baseDuration + (index * 400);
         enhancedSpinReel(reel, targetSymbols[index], duration, spinCycles);
     });
 }
