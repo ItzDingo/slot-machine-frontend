@@ -667,7 +667,7 @@ body {
 
 
 /* Back to Menu Button */
-#back-to-menu-btn, #mines-back-to-menu-btn {
+#back-to-menu-btn, #mines-back-to-menu-btn #wheel-back-to-menu-btn{
     background: #444;
     color: white;
     border: none;
@@ -680,7 +680,7 @@ body {
     margin-top: 10px;
 }
 
-#back-to-menu-btn:hover, #mines-back-to-menu-btn:hover {
+#back-to-menu-btn:hover, #mines-back-to-menu-btn:hover #wheel-back-to-menu-btn:hover{
     background: #555;
     transform: translateY(-2px);
 }
@@ -720,7 +720,7 @@ body {
 }
 
 /* Update the mines user panel to match slots layout */
-#mines-user-panel .user-info {
+#mines-user-panel #wheel-user-panel .user-info {
     display: flex;
     align-items: center;
     gap: 15px;
@@ -802,13 +802,16 @@ body {
 
 /* Wheel Game Layout */
 #wheel-game-screen {
-    display: grid;
-    grid-template-columns: 300px 1fr;
+    display: flex;
+    flex-direction: row-reverse; /* This will flip the order */
     gap: 20px;
     padding: 20px;
+    width: 100%;
+    max-width: 1000px; /* Adjust as needed */
 }
 
 .wheel-controls-panel {
+    width: 300px; /* Fixed width for controls */
     background: rgba(20, 20, 20, 0.9);
     border-radius: 15px;
     padding: 20px;
@@ -817,6 +820,7 @@ body {
 }
 
 .wheel-center-panel {
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -827,6 +831,32 @@ body {
     height: 400px;
     position: relative;
 }
+
+.wheel-segment:nth-child(1) { background-color: #CCB800; } /* 1 */
+.wheel-segment:nth-child(2) { background-color: #009933; } /* 3 */
+.wheel-segment:nth-child(3) { background-color: #CCB800; } /* 1 */
+.wheel-segment:nth-child(4) { background-color: #CC0099; } /* 10 */
+.wheel-segment:nth-child(5) { background-color: #CCB800; } /* 1 */
+.wheel-segment:nth-child(6) { background-color: #009933; } /* 3 */
+.wheel-segment:nth-child(7) { background-color: #CCB800; } /* 1 */
+.wheel-segment:nth-child(8) { background-color: #0033CC; } /* 10 */
+.wheel-segment:nth-child(9) { background-color: #CCB800; } /* 1 */
+.wheel-segment:nth-child(10) { background-color: #009933; } /* 3 */
+.wheel-segment:nth-child(11) { background-color: #CCB800; } /* 1 */
+.wheel-segment:nth-child(12) { background-color: #CC3300; } /* 10 */
+.wheel-segment:nth-child(13) { background-color: #CCB800; } /* 1 */
+.wheel-segment:nth-child(14) { background-color: #009933; } /* 3 */
+.wheel-segment:nth-child(15) { background-color: #CCB800; } /* 1 */
+.wheel-segment:nth-child(16) { background-color: #0033CC; } /* 10 */
+.wheel-segment:nth-child(17) { background-color: #CCB800; } /* 10 */
+.wheel-segment:nth-child(18) { background-color: #009933; } /* 1 */
+.wheel-segment:nth-child(19) { background-color: #CCB800; } /* 3 */
+.wheel-segment:nth-child(20) { background-color: #CC0099; } /* 1 */
+.wheel-segment:nth-child(21) { background-color: #CCB800; } /* 10 */
+.wheel-segment:nth-child(22) { background-color: #009933; } /* 1 */
+.wheel-segment:nth-child(23) { background-color: #0033CC; } /* 3 */
+.wheel-segment:nth-child(24) { background-color: #CCB800; } /* 1 */
+.wheel-segment:nth-child(25) { background-color: #0033CC; } /* 10 */
 
 .wheel {
     width: 100%;
@@ -1028,6 +1058,31 @@ body {
 #wheel-game-over-close:hover {
     background: #E04B2D;
     transform: translateY(-2px);
+}
+
+#wheel-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid var(--secondary);
+    object-fit: cover;
+}
+
+#wheel-logout-btn {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 0.8rem;
+    margin-top: 5px;
+}
+
+#wheel-logout-btn:hover {
+    background: #555;
+    transform: translateY(-1px);
 }
 
 /* Responsive */
