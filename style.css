@@ -571,6 +571,8 @@ body {
     display: grid;
     gap: 5px;
     margin: 20px 0;
+    width: 100%;
+    max-width: 500px; /* Adjust based on your design */
 }
 
 .mines-cell {
@@ -587,14 +589,32 @@ body {
     font-size: 1.2rem;
 }
 
+
+#mines-grid[style*="repeat(5"] .mines-cell {
+    /* 5x5 grid cells */
+    min-width: 50px;
+    min-height: 50px;
+}
+
+#mines-grid[style*="repeat(6"] .mines-cell {
+    /* 6x6 grid cells */
+    min-width: 40px;
+    min-height: 40px;
+}
+
+#mines-grid[style*="repeat(7"] .mines-cell {
+    /* 7x7 grid cells */
+    min-width: 35px;
+    min-height: 35px;
+}
+
 .mines-cell:hover {
     transform: scale(0.95);
 }
 
 .mines-cell.revealed {
-    background: rgba(76, 175, 80, 0.2); /* Green with 20% opacity */
-    border-color: var(--success); /* Uses your success color variable */
-    animation: pulseGreen 0.5s ease; /* Optional pulse effect */
+    background: rgba(255, 215, 0, 0.1);
+    border-color: var(--secondary);
 }
 
 .mines-cell.mine {
@@ -625,23 +645,11 @@ body {
     transform: scale(1.02);
 }
 
-#mines-cashout-btn.disabled {
-    opacity: 0.6;
+.mines-button.disabled {
+    opacity: 0.5;
     cursor: not-allowed;
-    background-color: #cccccc !important;
-    color: #666 !important;
-    pointer-events: none;
-    box-shadow: none !important;
-    transform: none !important;
 }
 
-#mines-cashout-btn[disabled] {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background-color: #cccccc !important;
-    color: #666 !important;
-    pointer-events: none;
-}
 
 
 /* Back to Menu Button */
@@ -849,12 +857,6 @@ body {
 @keyframes pulse {
     from { transform: scale(1); }
     to { transform: scale(1.1); }
-}
-
-@keyframes pulseGreen {
-    0% { background-color: rgba(76, 175, 80, 0.2); }
-    50% { background-color: rgba(76, 175, 80, 0.5); }
-    100% { background-color: rgba(76, 175, 80, 0.2); }
 }
 
 @keyframes highlight {
