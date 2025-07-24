@@ -117,13 +117,10 @@
     </div>
 
     <!-- Wheel Game Screen -->
+
     <div id="wheel-game-screen" class="game-container">
-        <div class="wheel-container">
-            <div class="wheel" id="wheel"></div>
-            <div class="wheel-pointer"></div>
-        </div>
-        
-        <div class="wheel-controls">
+        <!-- Left Panel - Controls -->
+        <div class="wheel-controls-panel">
             <div id="wheel-user-panel" class="user-panel">
                 <div class="user-info">
                     <img id="wheel-avatar" src="assets/default-avatar.png" alt="User Avatar">
@@ -169,18 +166,26 @@
             
             <div class="wheel-info">
                 <div>
-                    <span>Total Bet</span>
+                    <span>Total Bet:</span>
                     <span id="wheel-total-bet">0</span>
                 </div>
                 <div>
-                    <span>Potential Win</span>
+                    <span>Potential Win:</span>
                     <span id="wheel-potential-win">0</span>
                 </div>
             </div>
             
             <button id="wheel-lock-btn" class="wheel-lock-btn">Lock Bets</button>
             <button id="wheel-spin-btn" class="wheel-spin-btn" disabled>Spin Wheel</button>
-            <button id="wheel-back-to-menu-btn" class="mines-start-btn">Back to Menu</button>
+            <button id="wheel-back-to-menu-btn" class="back-to-menu-btn">Back to Menu</button>
+        </div>
+
+        <!-- Center Panel - Wheel -->
+        <div class="wheel-center-panel">
+            <div class="wheel-container">
+                <div class="wheel" id="wheel"></div>
+                <div class="wheel-pointer"></div>
+            </div>
         </div>
     </div>
 
@@ -206,9 +211,11 @@
     <!-- Wheel Game Over Popup -->
     <div id="wheel-game-over-popup" class="win-popup">
         <div class="wheel-game-over-content">
-            <h3 id="wheel-game-over-message">Game Over!</h3>
-            <div id="wheel-game-over-result"></div>
-            <div id="wheel-game-over-amount">+0</div>
+            <h3 id="wheel-game-over-message"></h3>
+            <div class="wheel-result-details">
+                <div id="wheel-game-over-result"></div>
+                <div id="wheel-game-over-amount"></div>
+            </div>
             <button id="wheel-game-over-close">Continue</button>
         </div>
     </div>
