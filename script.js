@@ -32,7 +32,11 @@ const CONFIG = {
         maxBet: 1000,
         minMines: 1,
         maxMines: 10,
-        gridSize: 5,
+        getGridSize: function(minesCount) {
+            if (minesCount <= 6) return 5;    // 5x5 grid (25 cells)
+            if (minesCount <= 9) return 6;    // 6x6 grid (36 cells)
+            return 7;                         // 7x7 grid (49 cells)
+        },
         getMultiplier: function(minesCount, revealedCells) {
     // Base risk multipliers - higher mines = higher base multiplier
     const baseMultipliers = {
@@ -592,10 +596,17 @@ async function startNewMinesGame() {
 function createMinesGrid() {
     if (!elements.minesGrid) return;
     
-    elements.minesGrid.innerHTML = '';
-    elements.minesGrid.style.gridTemplateColumns = 'repeat(5, 1fr)';
+    const gridSize = CONFIG.mines.getGridSize(gameState.minesGame.minesCount);
+    gameState.minesGame.totalCells = gridSize * gridSize;
     
-    for (let i = 0; i < 25; i++) {
+    // Clear existing grid
+    elements.minesGrid.innerHTML = '';
+    
+    // Set up the grid template
+    elements.minesGrid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+    
+    // Create cells
+    for (let i = 0; i < gameState.minesGame.totalCells; i++) {
         const cell = document.createElement('div');
         cell.className = 'mines-cell';
         cell.dataset.index = i;
@@ -604,10 +615,15 @@ function createMinesGrid() {
     }
 }
 
+
 function placeMines(minesCount) {
-    gameState.minesGame.minePositions = [];
-    const positions = Array.from({length: 25}, (_, i) => i);
+    const gridSize = CONFIG.mines.getGridSize(minesCount);
+    const totalCells = gridSize * gridSize;
     
+    gameState.minesGame.minePositions = [];
+    const positions = Array.from({length: totalCells}, (_, i) => i);
+    
+    // Fisher-Yates shuffle
     for (let i = positions.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [positions[i], positions[j]] = [positions[j], positions[i]];
@@ -673,9 +689,10 @@ if (gameState.minesGame.revealedCells >= 2 && elements.minesCashoutBtn) {
     }, 1000);
     
     // Check for automatic win if all safe cells are revealed
-    const safeCells = CONFIG.mines.gridSize * CONFIG.mines.gridSize - gameState.minesGame.minesCount;
+    const safeCells = gameState.minesGame.totalCells - gameState.minesGame.minesCount;
     if (gameState.minesGame.revealedCells === safeCells) {
         endMinesGame(true);
+
     }
 }
 
