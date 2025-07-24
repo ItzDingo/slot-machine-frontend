@@ -59,10 +59,6 @@
             <div class="reel" id="reel3"></div>
         </div>
 
-        <div class="slot-loading" id="slot-loading">
-            <div class="slot-spinner"></div>
-        </div>
-
         <button id="spin-btn" class="spin-button">SPIN</button>
         <button id="back-to-menu-btn" class="mines-start-btn" style="margin-top: 10px;">Back to Menu</button>
     </div>
@@ -91,8 +87,8 @@
 
         <div class="mines-controls">
             <div class="mines-input-group">
-                <label for="mines-bet-input">Bet Amount (1-1000 chips)</label>
-                <input type="number" id="mines-bet-input" min="1" max="1000" placeholder="Enter bet amount">
+                <label for="mines-bet-input">Bet Amount (0.1-1000 chips)</label>
+                <input type="number" id="mines-bet-input" min="0.1" max="1000" step="0.1" placeholder="Enter bet amount">
             </div>
             
             <div class="mines-input-group">
@@ -142,71 +138,41 @@
             </div>
         </div>
 
-        <div class="blinko-controls">
-            <div class="blinko-control-row">
+        <div class="blinko-container">
+            <div class="blinko-controls">
                 <div class="blinko-input-group">
-                    <label>Bet Amount</label>
-                    <div class="blinko-amount-display">
-                        <span id="blinko-bet-amount">0.00 chips</span>
-                    </div>
-                    <div class="blinko-percent-buttons">
-                        <button class="percent-btn" data-percent="1">1%</button>
-                        <button class="percent-btn" data-percent="2">2%</button>
-                        <button class="percent-btn" data-percent="5">5%</button>
-                        <button class="percent-btn" data-percent="10">10%</button>
-                        <button class="percent-btn" data-percent="25">25%</button>
-                        <button class="percent-btn" data-percent="50">50%</button>
-                    </div>
-                    <input type="number" id="blinko-bet-input" min="0.1" max="1000" placeholder="Enter bet amount" style="display: none;">
-                </div>
-            </div>
-            
-            <div class="blinko-control-row">
-                <div class="blinko-input-group">
-                    <label>Risk</label>
-                    <select id="blinko-risk-input">
-                        <option value="low">Low (1x-5x)</option>
-                        <option value="medium" selected>Medium (0.5x-10x)</option>
-                        <option value="high">High (0.2x-20x)</option>
-                    </select>
+                    <label for="blinko-bet-input">Bet Amount (0.1-1000 chips)</label>
+                    <input type="number" id="blinko-bet-input" min="0.1" max="1000" step="0.1" placeholder="Enter bet amount">
                 </div>
                 
                 <div class="blinko-input-group">
-                    <label>Rows</label>
-                    <input type="number" id="blinko-rows-input" value="10" min="5" max="20">
+                    <label for="blinko-risk-select">Risk Level</label>
+                    <select id="blinko-risk-select">
+                        <option value="low">Low Risk</option>
+                        <option value="medium" selected>Medium Risk</option>
+                        <option value="high">High Risk</option>
+                    </select>
                 </div>
-            </div>
-            
-            <div class="blinko-control-row">
-                <div class="blinko-input-group">
-                    <label>Number of Bets</label>
-                    <div class="blinko-bet-controls">
-                        <span id="blinko-bet-count">0</span>
-                        <input type="number" id="blinko-bets-input" value="20" min="1" max="100">
+                
+                <button id="blinko-drop-btn" class="blinko-drop-btn">DROP BALL</button>
+                <button id="blinko-back-to-menu-btn" class="blinko-back-btn">Back to Menu</button>
+                
+                <div class="blinko-stats">
+                    <div>
+                        <span>Multiplier</span>
+                        <span id="blinko-multiplier">1.00x</span>
+                    </div>
+                    <div>
+                        <span>Total Win</span>
+                        <span id="blinko-win-amount">0</span>
                     </div>
                 </div>
             </div>
-            
-            <div class="blinko-control-row">
-                <button id="blinko-start-btn" class="blinko-start-btn">Start Autobet</button>
+
+            <div class="blinko-game-area">
+                <div id="blinko-board"></div>
+                <div id="blinko-buckets"></div>
             </div>
-        </div>
-        
-        <div class="blinko-info">
-            <div>
-                <span>Current Win</span>
-                <span id="blinko-current-win">0</span>
-            </div>
-            <div>
-                <span>Multiplier</span>
-                <span id="blinko-multiplier">1.00x</span>
-            </div>
-        </div>
-        
-        <div id="blinko-board-container">
-            <div id="blinko-board"></div>
-            <div id="blinko-ball"></div>
-            <div id="blinko-buckets"></div>
         </div>
     </div>
 
@@ -229,12 +195,15 @@
         </div>
     </div>
 
-    <!-- Blinko Game Over Popup -->
-    <div id="blinko-game-over-popup" class="win-popup">
-        <div class="blinko-game-over-content">
-            <h3 id="blinko-game-over-message">Game Over!</h3>
-            <div id="blinko-game-over-amount">+0</div>
-            <button id="blinko-game-over-close">Continue</button>
+    <!-- Blinko Win Popup -->
+    <div id="blinko-win-popup" class="win-popup">
+        <div class="win-content">
+            <h3>BLINKO WIN!</h3>
+            <div class="win-combo">
+                <div id="blinko-win-position"></div>
+            </div>
+            <div class="win-amount">+<span id="blinko-win-value">0</span> chips</div>
+            <button id="blinko-claim-btn" class="claim-btn">CLAIM</button>
         </div>
     </div>
 
