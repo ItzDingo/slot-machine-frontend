@@ -799,6 +799,226 @@ body {
     margin-top: 1rem;
 }
 
+/* Spin Wheel Game */
+#wheel-game-screen {
+    display: none;
+    width: 100%;
+    max-width: 600px;
+    background: rgba(20, 20, 20, 0.9);
+    border-radius: 15px;
+    padding: 2rem;
+    border: 3px solid var(--primary);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+}
+
+.wheel-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.wheel-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.wheel-input-group label {
+    color: var(--primary);
+    font-weight: bold;
+}
+
+.wheel-input-group input {
+    padding: 10px;
+    border-radius: 5px;
+    border: 2px solid var(--primary);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1rem;
+}
+
+.wheel-bet-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.wheel-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    border: 1px solid var(--primary);
+}
+
+.wheel-option span {
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.wheel-number-bet {
+    width: 100px;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid var(--primary);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.wheel-info {
+    display: flex;
+    justify-content: space-between;
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.wheel-info div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.wheel-info span:first-child {
+    color: var(--primary);
+    font-size: 0.8rem;
+    margin-bottom: 3px;
+}
+
+.wheel-info span:last-child {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.wheel-lock-btn {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.wheel-lock-btn:hover {
+    background: #E04B2D;
+    transform: translateY(-2px);
+}
+
+.wheel-spin-btn {
+    background: linear-gradient(to bottom, var(--primary), #D4AF37);
+    color: #000;
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+.wheel-spin-btn:hover {
+    transform: scale(1.02);
+}
+
+.wheel-spin-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #cccccc !important;
+    color: #666 !important;
+    pointer-events: none;
+}
+
+.wheel-container {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    aspect-ratio: 1/1;
+}
+
+.wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    border: 5px solid var(--primary);
+    transition: transform 5s cubic-bezier(0.17, 0.67, 0.21, 0.99);
+    transform: rotate(0deg);
+}
+
+.wheel-segment {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    transform-origin: bottom right;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.wheel-pointer {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 20px;
+    background: var(--secondary);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    z-index: 10;
+}
+
+/* Wheel Game Over Popup */
+.wheel-game-over-content {
+    background: var(--dark);
+    border: 3px solid var(--primary);
+    border-radius: 10px;
+    padding: 2rem;
+    text-align: center;
+    width: 90%;
+    max-width: 300px;
+}
+
+#wheel-game-over-result {
+    font-size: 1.2rem;
+    margin: 1rem 0;
+    color: var(--primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .wheel-container {
+        max-width: 300px;
+    }
+    
+    .wheel-segment {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .wheel-container {
+        max-width: 250px;
+    }
+    
+    .wheel-number-bet {
+        width: 80px;
+    }
+}
+
 /* Loading Indicator - UPDATED DURATION */
 .spin-loading {
     position: fixed;
