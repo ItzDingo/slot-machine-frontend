@@ -720,10 +720,21 @@ body {
 }
 
 /* Update the mines user panel to match slots layout */
-#mines-user-panel #wheel-user-panel .user-info {
+#mines-user-panel .user-info {
     display: flex;
     align-items: center;
     gap: 15px;
+}
+
+#wheel-user-panel {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+#wheel-back-to-menu-btn {
+    margin-top: 20px !important;
+    padding: 15px !important;
 }
 
 #mines-user-panel .user-details {
@@ -886,6 +897,11 @@ body {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
     transform-origin: center;
     text-align: center;
+    color: white !important;
+    font-size: 1.2rem !important;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 6px;
+    border-radius: 10px;
 }
 
 .wheel-pointer {
@@ -926,13 +942,9 @@ body {
 }
 
 .wheel-number-bet {
-    width: 80px;
-    padding: 8px;
-    border-radius: 5px;
-    border: 2px solid var(--primary);
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    text-align: center;
+    width: 100px !important;
+    padding: 10px !important;
+    font-size: 1rem !important;
 }
 
 .wheel-info {
@@ -959,18 +971,10 @@ body {
 }
 
 /* Wheel Buttons */
-.wheel-lock-btn {
-    background: var(--secondary);
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    width: 100%;
-    margin: 10px 0;
-    transition: all 0.3s;
+.wheel-lock-btn, .wheel-spin-btn {
+    padding: 15px !important;
+    font-size: 1.1rem !important;
+    margin: 10px 0 !important
 }
 
 .wheel-lock-btn:hover {
