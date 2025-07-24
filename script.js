@@ -235,6 +235,10 @@ function initSpinState() {
     gameState.winCombo = null;
     if (elements.spinBtn) elements.spinBtn.disabled = true;
     if (elements.winPopup) elements.winPopup.style.display = 'none';
+    
+    // Show loading spinner
+    const loading = document.getElementById('slot-loading');
+    if (loading) loading.classList.add('active');
 }
 
 function startEnhancedSpinAnimation(targetSymbols) {
@@ -305,6 +309,22 @@ function completeSpin() {
     resetSpinState();
     checkWin();
     highlightWinningSymbols();
+    
+    // Hide loading spinner
+    const loading = document.getElementById('slot-loading');
+    if (loading) loading.classList.remove('active');
+}
+
+function completeSpin() {
+    resetSpinState();
+    checkWin();
+    highlightWinningSymbols();
+    
+    // Hide loading spinner after a slight delay
+    setTimeout(() => {
+        const loading = document.getElementById('slot-loading');
+        if (loading) loading.classList.remove('active');
+    }, 500); // 0.5 second delay
 }
 
 function resetSpinState() {
