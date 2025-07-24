@@ -28,13 +28,12 @@ const CONFIG = {
         'ANY_TWO_MATCH': 20
     },
     mines: {
-        minBet: 0.1,  // Now accepts decimal bets
+        minBet: 0.1,
         maxBet: 1000,
         minMines: 1,
         maxMines: 10,
         gridSize: 5,
         getMultiplier: function(minesCount, revealedCells) {
-            // Base multipliers that increase with mine count
             const baseMultipliers = {
                 1: 1.04,  2: 1.07,  3: 1.10,
                 4: 1.14,  5: 1.18,  6: 1.23,
@@ -42,7 +41,6 @@ const CONFIG = {
                 10: 1.50
             };
             
-            // Growth curve based on revealed cells
             const growthCurve = [
                 { cells: 1, factor: 1.00 },
                 { cells: 2, factor: 1.05 },
@@ -53,11 +51,9 @@ const CONFIG = {
                 { cells: 24, factor: 2.10 }
             ];
             
-            // Find base multiplier
             const base = baseMultipliers[minesCount] || 1.0;
-            
-            // Find growth factor
             let growth = 1.0;
+            
             for (let i = growthCurve.length - 1; i >= 0; i--) {
                 if (revealedCells >= growthCurve[i].cells) {
                     growth = growthCurve[i].factor;
@@ -65,14 +61,11 @@ const CONFIG = {
                 }
             }
             
-            // Calculate final multiplier (before house edge)
             const rawMultiplier = base * growth;
-            
-            // Apply house edge and return with 4 decimal precision
             const withHouseEdge = rawMultiplier * (1 - this.houseEdge);
             return parseFloat(withHouseEdge.toFixed(4));
         },
-        houseEdge: 0.03  // 3% house edge
+        houseEdge: 0.03
     }
 };
 
@@ -102,7 +95,8 @@ let gameState = {
         totalGames: 0,
         wins: 0,
         totalWins: 0,
-        totalGamesPlayed: 0
+        totalGamesPlayed: 0,
+        winRate: 0
     }
 };
 
@@ -186,7 +180,7 @@ function showNotification(message, isSuccess) {
     setTimeout(() => notification.remove(), 3000);
 }
 
-// Slot Machine Functions (unchanged)
+// Slot Machine Functions
 async function startSpin() {
     if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
         if (gameState.chips < CONFIG.spinCost) {
@@ -404,7 +398,7 @@ async function claimWin() {
     if (elements.winPopup) elements.winPopup.style.display = 'none';
 }
 
-// Mines Game Functions (updated for float numbers)
+// Mines Game Functions
 function showGameSelectScreen() {
     if (!gameState.userId) {
         showLoginScreen();
@@ -476,10 +470,13 @@ async function setupMinesGameUI() {
         
         if (response.ok) {
             const data = await response.json();
-            gameState.minesStats.totalGames = data.totalGames || 0;
-            gameState.minesStats.wins = data.wins || 0;
-            gameState.minesStats.totalWins = data.totalWins || 0;
-            gameState.minesStats.totalGamesPlayed = data.totalGamesPlayed || 0;
+            gameState.minesStats = {
+                totalGames: data.totalGames || 0,
+                wins: data.wins || 0,
+                totalWins: data.totalWins || 0,
+                totalGamesPlayed: data.totalGamesPlayed || 0,
+                winRate: data.winRate || 0
+            };
             updateMinesStats();
         }
     } catch (error) {
@@ -489,10 +486,9 @@ async function setupMinesGameUI() {
 
 function updateMinesStats() {
     if (elements.minesWinsCounter) elements.minesWinsCounter.textContent = gameState.minesStats.wins;
-    const winRate = gameState.minesStats.totalGames > 0 
-        ? Math.round((gameState.minesStats.wins / gameState.minesStats.totalGames) * 100)
-        : 0;
-    if (elements.minesWinRate) elements.minesWinRate.textContent = `${winRate}%`;
+    if (elements.minesWinRate) {
+        elements.minesWinRate.textContent = `${gameState.minesStats.winRate || 0}%`;
+    }
 }
 
 async function startNewMinesGame() {
@@ -533,9 +529,6 @@ async function startNewMinesGame() {
     if (elements.minesCountInput) elements.minesCountInput.disabled = true;
     if (elements.minesStartBtn) elements.minesStartBtn.disabled = true;
     if (elements.minesCashoutBtn) elements.minesCashoutBtn.disabled = false;
-    
-    gameState.minesStats.totalGames++;
-    updateMinesStats();
     
     try {
         const response = await fetch(`${API_BASE_URL}/api/spin`, {
@@ -627,13 +620,11 @@ function revealMineCell(index) {
     cell.classList.add('revealed');
     gameState.minesGame.revealedCells++;
     
-    // Calculate multiplier using the new system
     gameState.minesGame.multiplier = CONFIG.mines.getMultiplier(
         gameState.minesGame.minesCount,
         gameState.minesGame.revealedCells
     );
     
-    // Calculate current win with precise decimal values
     gameState.minesGame.currentWin = parseFloat(
         (gameState.minesGame.betAmount * gameState.minesGame.multiplier).toFixed(4)
     );
@@ -675,7 +666,6 @@ async function endMinesGame(isWin) {
     }
     
     try {
-        // Send game result to backend
         const response = await fetch(`${API_BASE_URL}/api/mines/result`, {
             method: 'POST',
             headers: { 
@@ -698,10 +688,13 @@ async function endMinesGame(isWin) {
         const data = await response.json();
         
         // Update local stats with data from server
-        gameState.minesStats.totalGames = data.totalGames;
-        gameState.minesStats.wins = data.wins;
-        gameState.minesStats.totalWins = data.totalWins;
-        gameState.minesStats.totalGamesPlayed = data.totalGamesPlayed;
+        gameState.minesStats = {
+            totalGames: data.totalGames,
+            wins: data.wins,
+            totalWins: data.totalWins,
+            totalGamesPlayed: data.totalGamesPlayed,
+            winRate: data.winRate
+        };
         
         updateMinesStats();
         
