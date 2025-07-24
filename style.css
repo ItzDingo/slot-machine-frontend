@@ -613,8 +613,9 @@ body {
 }
 
 .mines-cell.revealed {
-    background: rgba(255, 215, 0, 0.1);
-    border-color: var(--secondary);
+    background: rgba(76, 175, 80, 0.2); /* Green with 20% opacity */
+    border-color: var(--success); /* Uses your success color variable */
+    animation: pulseGreen 0.5s ease; /* Optional pulse effect */
 }
 
 .mines-cell.mine {
@@ -645,9 +646,22 @@ body {
     transform: scale(1.02);
 }
 
-.mines-button.disabled {
-    opacity: 0.5;
+#mines-cashout-btn.disabled {
+    opacity: 0.6;
     cursor: not-allowed;
+    background-color: #cccccc !important;
+    color: #666 !important;
+    pointer-events: none;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+#mines-cashout-btn[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: #cccccc !important;
+    color: #666 !important;
+    pointer-events: none;
 }
 
 
@@ -857,6 +871,12 @@ body {
 @keyframes pulse {
     from { transform: scale(1); }
     to { transform: scale(1.1); }
+}
+
+@keyframes pulseGreen {
+    0% { background-color: rgba(76, 175, 80, 0.2); }
+    50% { background-color: rgba(76, 175, 80, 0.5); }
+    100% { background-color: rgba(76, 175, 80, 0.2); }
 }
 
 @keyframes highlight {
