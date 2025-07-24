@@ -214,8 +214,8 @@ function initSpinState() {
 
 function startEnhancedSpinAnimation(targetSymbols) {
     gameState.currentSymbols = targetSymbols.map(s => s.name);
-    const baseDuration = 1000;
-    const spinCycles = 5;
+    const baseDuration = 3000;
+    const spinCycles = 10;
     
     elements.reels.forEach((reel, index) => {
         if (!reel) return;
