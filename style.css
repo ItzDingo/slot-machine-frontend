@@ -560,19 +560,17 @@ body {
     margin-bottom: 3px;
 }
 
-
 .mines-info span:last-child {
     font-size: 1rem;
     font-weight: bold;
 }
-
 
 #mines-grid {
     display: grid;
     gap: 5px;
     margin: 20px 0;
     width: 100%;
-    max-width: 500px; /* Adjust based on your design */
+    max-width: 500px;
 }
 
 .mines-cell {
@@ -589,21 +587,17 @@ body {
     font-size: 1.2rem;
 }
 
-
 #mines-grid[style*="repeat(5"] .mines-cell {
-    /* 5x5 grid cells */
     min-width: 50px;
     min-height: 50px;
 }
 
 #mines-grid[style*="repeat(6"] .mines-cell {
-    /* 6x6 grid cells */
     min-width: 40px;
     min-height: 40px;
 }
 
 #mines-grid[style*="repeat(7"] .mines-cell {
-    /* 7x7 grid cells */
     min-width: 35px;
     min-height: 35px;
 }
@@ -613,9 +607,9 @@ body {
 }
 
 .mines-cell.revealed {
-    background: rgba(76, 175, 80, 0.2); /* Green with 20% opacity */
-    border-color: var(--success); /* Uses your success color variable */
-    animation: pulseGreen 0.5s ease; /* Optional pulse effect */
+    background: rgba(76, 175, 80, 0.2);
+    border-color: var(--success);
+    animation: pulseGreen 0.5s ease;
 }
 
 .mines-cell.mine {
@@ -664,8 +658,6 @@ body {
     pointer-events: none;
 }
 
-
-
 /* Back to Menu Button */
 #back-to-menu-btn, #mines-back-to-menu-btn {
     background: #444;
@@ -696,14 +688,11 @@ body {
     border-radius: 5px;
 }
 
-
-
 @media (max-width: 600px) {
     .mines-info {
-        grid-template-columns: repeat(2, 1fr); /* Remove this if deleting entire stats */
+        grid-template-columns: repeat(2, 1fr);
     }
 }
-
 
 /* Mines Game Over Popup */
 #mines-avatar {
@@ -719,7 +708,6 @@ body {
     transform: scale(1.05);
 }
 
-/* Update the mines user panel to match slots layout */
 #mines-user-panel .user-info {
     display: flex;
     align-items: center;
@@ -799,6 +787,277 @@ body {
     margin-top: 1rem;
 }
 
+/* Wheel Game Layout */
+#wheel-game-screen {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
+    padding: 20px;
+    max-width: 900px;
+    width: 100%;
+    background: rgba(20, 20, 20, 0.9);
+    border-radius: 15px;
+    border: 3px solid var(--primary);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+}
+
+.wheel-controls-panel {
+    background: rgba(20, 20, 20, 0.9);
+    border-radius: 15px;
+    padding: 20px;
+    border: 3px solid var(--primary);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+.wheel-center-panel {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.wheel-container {
+    width: 400px;
+    height: 400px;
+    position: relative;
+}
+
+.wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    border: 5px solid var(--primary);
+    transition: transform 5s cubic-bezier(0.17, 0.67, 0.21, 0.99);
+    transform: rotate(0deg);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.wheel-segment {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    transform-origin: bottom right;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.wheel-segment-label {
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    transform-origin: center;
+    text-align: center;
+    color: white;
+}
+
+.wheel-pointer {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 40px solid var(--secondary);
+    z-index: 10;
+    filter: drop-shadow(0 0 5px rgba(255, 87, 51, 0.7));
+}
+
+/* Wheel Bet Options */
+.wheel-bet-options {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.wheel-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 2px solid var(--primary);
+}
+
+.wheel-option span {
+    font-weight: bold;
+    color: white;
+}
+
+.wheel-number-bet {
+    width: 80px;
+    padding: 8px;
+    border-radius: 5px;
+    border: 2px solid var(--primary);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    text-align: center;
+}
+
+.wheel-info {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0;
+    border: 2px solid var(--primary);
+}
+
+.wheel-info div {
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 0;
+}
+
+.wheel-info span:first-child {
+    color: var(--primary);
+}
+
+.wheel-info span:last-child {
+    font-weight: bold;
+    color: white;
+}
+
+/* Wheel Buttons */
+.wheel-lock-btn {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    margin: 10px 0;
+    transition: all 0.3s;
+}
+
+.wheel-lock-btn:hover {
+    background: #E04B2D;
+    transform: translateY(-2px);
+}
+
+.wheel-spin-btn {
+    background: linear-gradient(to bottom, var(--primary), #D4AF37);
+    color: #000;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s;
+}
+
+.wheel-spin-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+}
+
+.wheel-spin-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #666;
+    color: #ccc;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Wheel Game Over Popup */
+.wheel-game-over-content {
+    background: var(--dark);
+    border: 3px solid var(--primary);
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    width: 90%;
+    max-width: 350px;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+}
+
+.wheel-game-over-content h3 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.wheel-result-details {
+    margin: 1.5rem 0;
+    font-size: 1.2rem;
+}
+
+.wheel-result-details span {
+    display: inline-block;
+    margin: 0 5px;
+}
+
+.winning-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.losing-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+#wheel-game-over-close {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all 0.3s;
+}
+
+#wheel-game-over-close:hover {
+    background: #E04B2D;
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    #wheel-game-screen {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+    }
+    
+    .wheel-container {
+        width: 300px;
+        height: 300px;
+    }
+}
+
+@media (max-width: 500px) {
+    .wheel-container {
+        width: 250px;
+        height: 250px;
+    }
+    
+    .wheel-controls-panel {
+        padding: 15px;
+    }
+    
+    .wheel-option {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .wheel-number-bet {
+        width: 100%;
+    }
+}
+
 /* Loading Indicator - UPDATED DURATION */
 .spin-loading {
     position: fixed;
@@ -827,7 +1086,7 @@ body {
     border: 5px solid rgba(255, 215, 0, 0.3);
     border-radius: 50%;
     border-top-color: var(--primary);
-    animation: spin 1.5s linear infinite; /* Reduced from 5s to 1.5s */
+    animation: spin 1.5s linear infinite;
 }
 
 /* Notifications */
