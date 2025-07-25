@@ -116,9 +116,10 @@
         <button id="mines-cashout-btn" class="mines-cashout-btn disabled" disabled>Cash Out</button>
     </div>
 
-    <!-- Wheel Game Screen - Updated Layout -->
+    <!-- Wheel Game Screen -->
+
     <div id="wheel-game-screen" class="game-container">
-        <!-- Left Panel - Bet Options and Controls -->
+        <!-- Left Panel - Controls -->
         <div class="wheel-controls-panel">
             <div id="wheel-user-panel" class="user-panel">
                 <div class="user-info">
@@ -140,24 +141,24 @@
                 </div>
             </div>
             
-            <div class="wheel-bet-container">
-                <div class="wheel-bet-option" data-value="1" data-multiplier="1.5">
-                    <span>1 (1.5x)</span>
+            <div class="wheel-bet-options">
+                <div class="wheel-option" data-value="1" data-multiplier="1">
+                    <span>1 (1x)</span>
                     <input type="number" min="0" placeholder="Bet" class="wheel-number-bet">
                 </div>
-                <div class="wheel-bet-option" data-value="3" data-multiplier="3">
+                <div class="wheel-option" data-value="3" data-multiplier="3">
                     <span>3 (3x)</span>
                     <input type="number" min="0" placeholder="Bet" class="wheel-number-bet">
                 </div>
-                <div class="wheel-bet-option" data-value="5" data-multiplier="5">
+                <div class="wheel-option" data-value="5" data-multiplier="5">
                     <span>5 (5x)</span>
                     <input type="number" min="0" placeholder="Bet" class="wheel-number-bet">
                 </div>
-                <div class="wheel-bet-option" data-value="10" data-multiplier="10">
+                <div class="wheel-option" data-value="10" data-multiplier="10">
                     <span>10 (10x)</span>
                     <input type="number" min="0" placeholder="Bet" class="wheel-number-bet">
                 </div>
-                <div class="wheel-bet-option" data-value="20" data-multiplier="20">
+                <div class="wheel-option" data-value="20" data-multiplier="20">
                     <span>20 (20x)</span>
                     <input type="number" min="0" placeholder="Bet" class="wheel-number-bet">
                 </div>
@@ -179,17 +180,11 @@
             <button id="wheel-back-to-menu-btn" class="back-to-menu-btn">Back to Menu</button>
         </div>
 
-        <!-- Right Panel - Wheel and Results -->
+        <!-- Center Panel - Wheel -->
         <div class="wheel-center-panel">
             <div class="wheel-container">
                 <div class="wheel" id="wheel"></div>
                 <div class="wheel-pointer"></div>
-            </div>
-            
-            <div class="wheel-result-display">
-                <div>Landed On:</div>
-                <div class="wheel-result-value" id="wheel-result-value">-</div>
-                <div class="wheel-result-multiplier" id="wheel-result-multiplier">Multiplier: -</div>
             </div>
         </div>
     </div>
