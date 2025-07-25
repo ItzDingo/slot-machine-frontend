@@ -799,6 +799,240 @@ body {
     margin-top: 1rem;
 }
 
+
+/* Wheel Game Styles */
+#wheel-game-screen {
+    display: none;
+}
+
+.wheel-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.wheel-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.wheel-input-group label {
+    color: var(--primary);
+    font-weight: bold;
+}
+
+.wheel-input-group input {
+    padding: 10px;
+    border-radius: 5px;
+    border: 2px solid var(--primary);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1rem;
+}
+
+.wheel-bet-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.wheel-bet-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+}
+
+.wheel-bet-option input {
+    width: 100%;
+    margin-top: 5px;
+    padding: 5px;
+    border-radius: 3px;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-align: center;
+}
+
+.wheel-start-btn {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.wheel-start-btn:hover {
+    background: #E04B2D;
+    transform: translateY(-2px);
+}
+
+.wheel-start-btn:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.wheel-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 0 auto;
+}
+
+.wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    border: 5px solid var(--primary);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+    transform: rotate(0deg);
+}
+
+.wheel-segment {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    transform-origin: bottom right;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.wheel-pointer {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 30px solid var(--primary);
+    z-index: 10;
+}
+
+.wheel-info {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.wheel-info div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px;
+}
+
+.wheel-info span:first-child {
+    color: var(--primary);
+    font-size: 0.8rem;
+    margin-bottom: 3px;
+}
+
+.wheel-info span:last-child {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.wheel-result-content {
+    background: var(--dark);
+    border: 3px solid var(--primary);
+    border-radius: 10px;
+    padding: 2rem;
+    text-align: center;
+    width: 90%;
+    max-width: 300px;
+    position: relative;
+    overflow: hidden;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.wheel-result-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+}
+
+.wheel-result-content h3 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+    text-transform: uppercase;
+}
+
+#wheel-result-multiplier {
+    font-size: 2rem;
+    color: var(--primary);
+    margin: 1rem 0;
+    font-weight: bold;
+}
+
+#wheel-result-amount {
+    font-size: 1.5rem;
+    color: white;
+    margin: 1rem 0;
+    font-weight: bold;
+}
+
+#wheel-result-close {
+    background: var(--secondary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .wheel-container {
+        width: 250px;
+        height: 250px;
+    }
+    
+    .wheel-bet-options {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 400px) {
+    .wheel-container {
+        width: 200px;
+        height: 200px;
+    }
+    
+    .wheel-segment {
+        font-size: 1rem;
+    }
+}
+
 /* Loading Indicator - UPDATED DURATION */
 .spin-loading {
     position: fixed;
