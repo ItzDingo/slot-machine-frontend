@@ -73,34 +73,34 @@ const CONFIG = {
         houseEdge: 0.03
     },
     wheel: {
-        minBet: 1,
-        maxBet: 1000,
-        segments: [
-            { value: 1, multiplier: 1.5, color: '#FFD700' }, // Yellow
-            { value: 3, multiplier: 3, color: '#009933' }, // Green
-            { value: 1, multiplier: 1.5, color: '#FFD700' },
-            { value: 10, multiplier: 10, color: '#FF69B4' }, // Pink
-            { value: 1, multiplier: 1.5, color: '#FFD700' },
-            { value: 3, multiplier: 3, color: '#009933' },
-            { value: 1, multiplier: 1.5, color: '#FFD700' },
-            { value: 5, multiplier: 5, color: '#0000FF' }, // Blue
-            { value: 1, multiplier: 1.5, color: '#FFD700' },
-            { value: 3, multiplier: 3, color: '#009933' },
-            { value: 1, multiplier: 1.5, color: '#FFD700' },
-            { value: 20, multiplier: 20, color: '#FF8C00' }, // Orange
-            { value: 1, multiplier: 1.5, color: '#FFD700' },
-            { value: 3, multiplier: 3, color: '#009933' },
-            { value: 1, multiplier: 1.5, color: '#FFD700' },
-            { value: 5, multiplier: 5, color: '#0000FF' },
-            { value: 1, multiplier: 1.5, color: '#FFD700' },
-            { value: 3, multiplier: 3, color: '#009933' },
-            { value: 1, multiplier: 1.5, color: '#FFD700' },
-            { value: 10, multiplier: 10, color: '#FF69B4' },
-            { value: 1, multiplier: 1.5, color: '#FFD700' },
-            { value: 3, multiplier: 3, color: '#009933' },
-            { value: 5, multiplier: 5, color: '#0000FF' },
-            { value: 1, multiplier: 1.5, color: '#FFD700' },
-            { value: 5, multiplier: 5, color: '#0000FF' }
+    minBet: 1,
+    maxBet: 1000,
+    segments: [
+        { value: 1, multiplier: 1, color: '#CCB800' }, // Darker Yellow
+        { value: 3, multiplier: 3, color: '#009933' }, // Darker Green
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 10, multiplier: 10, color: '#CC0099' }, // Darker Pink
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 3, multiplier: 3, color: '#009933' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 5, multiplier: 5, color: '#0033CC' }, // Darker Blue
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 3, multiplier: 3, color: '#009933' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 20, multiplier: 20, color: '#CC3300' }, // Darker Orange
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 3, multiplier: 3, color: '#009933' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 5, multiplier: 5, color: '#0033CC' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 3, multiplier: 3, color: '#009933' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 10, multiplier: 10, color: '#CC0099' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 3, multiplier: 3, color: '#009933' },
+        { value: 5, multiplier: 5, color: '#0033CC' },
+        { value: 1, multiplier: 1, color: '#CCB800' },
+        { value: 5, multiplier: 5, color: '#0033CC' }
         ],
         houseEdge: 0.05
     }
@@ -852,12 +852,14 @@ function setupWheelGameUI() {
     }
 }
 
+// Update the createWheelSegments function
 function createWheelSegments() {
     if (!elements.wheelContainer) return;
     elements.wheelContainer.innerHTML = '';
     
     const segmentAngle = 360 / CONFIG.wheel.segments.length;
     const radius = elements.wheelContainer.offsetWidth / 2;
+    const fontSize = Math.max(14, radius / 8);
     
     CONFIG.wheel.segments.forEach((segment, index) => {
         const segmentElement = document.createElement('div');
@@ -870,7 +872,7 @@ function createWheelSegments() {
         const label = document.createElement('div');
         label.className = 'wheel-segment-label';
         label.textContent = segment.value;
-        label.style.fontSize = `${Math.max(14, radius / 10)}px`;
+        label.style.fontSize = `${fontSize}px`;
         label.style.transform = `rotate(${segmentAngle / 2}deg) translate(${radius * 0.7}px) rotate(-${(index * segmentAngle) + (segmentAngle / 2)}deg)`;
         
         segmentElement.appendChild(label);
@@ -947,7 +949,7 @@ async function spinWheel() {
     if (!gameState.wheelGame.locked || gameState.wheelGame.spinning) return;
     
     gameState.wheelGame.spinning = true;
-
+    
     try {
         const response = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
@@ -983,15 +985,10 @@ async function spinWheel() {
         }
         
         if (elements.wheelSpinBtn) elements.wheelSpinBtn.disabled = true;
-
+        
         setTimeout(() => {
             gameState.wheelGame.spinning = false;
             gameState.wheelGame.result = winningSegment;
-            
-            // Display the result
-            document.getElementById('wheel-result-value').textContent = winningSegment.value;
-            document.getElementById('wheel-result-multiplier').textContent = `Multiplier: ${winningSegment.multiplier}x`;
-            document.getElementById('wheel-result-value').style.color = winningSegment.color;
             
             let winAmount = 0;
             if (gameState.wheelGame.bets[winningSegment.value]) {
@@ -1003,17 +1000,18 @@ async function spinWheel() {
             setTimeout(() => {
                 setupWheelGameUI();
             }, 3000);
-        }, spinDuration);  
+            
+        }, spinDuration);
+        
     } catch (error) {
         console.error('Wheel spin error:', error);
-        showNotification('Failed to spin wheel. Please try again.', false);
+        showNotification('Failed to process spin. Please try again.', false);
         gameState.wheelGame.spinning = false;
         setupWheelGameUI();
     }
 }
-    
 
-
+// Update the showWheelResult function
 async function showWheelResult(winningSegment, winAmount) {
     if (!elements.wheelGameOverPopup || !elements.wheelGameOverResult || !elements.wheelGameOverAmount) return;
     
