@@ -318,7 +318,7 @@ body {
     animation: highlight 0.5s ease-in-out 3;
 }
 
-/* Spin Button */
+/* Spin Button - UPDATED ANIMATIONS */
 #spin-btn {
     background: linear-gradient(to bottom, var(--secondary), #C70039);
     color: white;
@@ -374,7 +374,19 @@ body {
     display: none;
 }
 
+/* NEW: Button Press Animation */
 #spin-btn:active {
+    animation: quickSpin 2s ease-out;
+    transform: scale(0.95);
+}
+
+@keyframes quickSpin {
+    0% { transform: rotate(0deg) scale(0.95); }
+    80% { transform: rotate(360deg) scale(0.95); }
+    100% { transform: rotate(360deg) scale(0.95); }
+}
+
+#spin-btn.playing {
     animation: quickSpin 2s ease-out;
     transform: scale(0.95);
 }
@@ -548,17 +560,19 @@ body {
     margin-bottom: 3px;
 }
 
+
 .mines-info span:last-child {
     font-size: 1rem;
     font-weight: bold;
 }
+
 
 #mines-grid {
     display: grid;
     gap: 5px;
     margin: 20px 0;
     width: 100%;
-    max-width: 500px;
+    max-width: 500px; /* Adjust based on your design */
 }
 
 .mines-cell {
@@ -575,17 +589,21 @@ body {
     font-size: 1.2rem;
 }
 
+
 #mines-grid[style*="repeat(5"] .mines-cell {
+    /* 5x5 grid cells */
     min-width: 50px;
     min-height: 50px;
 }
 
 #mines-grid[style*="repeat(6"] .mines-cell {
+    /* 6x6 grid cells */
     min-width: 40px;
     min-height: 40px;
 }
 
 #mines-grid[style*="repeat(7"] .mines-cell {
+    /* 7x7 grid cells */
     min-width: 35px;
     min-height: 35px;
 }
@@ -595,9 +613,9 @@ body {
 }
 
 .mines-cell.revealed {
-    background: rgba(76, 175, 80, 0.2);
-    border-color: var(--success);
-    animation: pulseGreen 0.5s ease;
+    background: rgba(76, 175, 80, 0.2); /* Green with 20% opacity */
+    border-color: var(--success); /* Uses your success color variable */
+    animation: pulseGreen 0.5s ease; /* Optional pulse effect */
 }
 
 .mines-cell.mine {
@@ -646,6 +664,8 @@ body {
     pointer-events: none;
 }
 
+
+
 /* Back to Menu Button */
 #back-to-menu-btn, #mines-back-to-menu-btn {
     background: #444;
@@ -665,6 +685,26 @@ body {
     transform: translateY(-2px);
 }
 
+/* Mines Stats */
+.mines-info {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+
+
+@media (max-width: 600px) {
+    .mines-info {
+        grid-template-columns: repeat(2, 1fr); /* Remove this if deleting entire stats */
+    }
+}
+
+
 /* Mines Game Over Popup */
 #mines-avatar {
     width: 60px;
@@ -679,6 +719,7 @@ body {
     transform: scale(1.05);
 }
 
+/* Update the mines user panel to match slots layout */
 #mines-user-panel .user-info {
     display: flex;
     align-items: center;
@@ -758,23 +799,16 @@ body {
     margin-top: 1rem;
 }
 
-/* Wheel Game Layout - Updated */
+
+/* Wheel Game Layout */
 #wheel-game-screen {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 300px 1fr;
     gap: 20px;
     padding: 20px;
-    max-width: 900px;
-    width: 100%;
-    background: rgba(20, 20, 20, 0.9);
-    border-radius: 15px;
-    border: 3px solid var(--primary);
-    box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
 }
 
 .wheel-controls-panel {
-    display: flex;
-    flex-direction: column;
     background: rgba(20, 20, 20, 0.9);
     border-radius: 15px;
     padding: 20px;
@@ -784,16 +818,14 @@ body {
 
 .wheel-center-panel {
     display: flex;
-    flex-direction: column;
-    gap: 20px;
+    justify-content: center;
+    align-items: center;
 }
 
 .wheel-container {
-    width: 100%;
-    max-width: 400px;
+    width: 400px;
     height: 400px;
     position: relative;
-    margin: 0 auto;
 }
 
 .wheel {
@@ -824,9 +856,6 @@ body {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
     transform-origin: center;
     text-align: center;
-    color: white;
-    font-size: 1.2rem;
-    pointer-events: none;
 }
 
 .wheel-pointer {
@@ -843,31 +872,31 @@ body {
     filter: drop-shadow(0 0 5px rgba(255, 87, 51, 0.7));
 }
 
-/* Wheel Bet Options - Updated */
-.wheel-bet-container {
+/* Wheel Bet Options */
+.wheel-bet-options {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 10px;
-    margin-bottom: 20px;
+    margin: 20px 0;
 }
 
-.wheel-bet-option {
+.wheel-option {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    padding: 10px;
+    padding: 12px;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
     border: 2px solid var(--primary);
 }
 
-.wheel-bet-option span {
+.wheel-option span {
     font-weight: bold;
-    margin-bottom: 5px;
+    color: white;
 }
 
 .wheel-number-bet {
-    width: 100%;
+    width: 80px;
     padding: 8px;
     border-radius: 5px;
     border: 2px solid var(--primary);
@@ -876,7 +905,6 @@ body {
     text-align: center;
 }
 
-/* Wheel Info */
 .wheel-info {
     background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
@@ -947,28 +975,6 @@ body {
     box-shadow: none;
 }
 
-/* Wheel Result Display */
-.wheel-result-display {
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-    padding: 15px;
-    border: 2px solid var(--primary);
-    text-align: center;
-    margin-top: 20px;
-}
-
-.wheel-result-value {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--primary);
-    margin: 10px 0;
-}
-
-.wheel-result-multiplier {
-    font-size: 1.5rem;
-    color: white;
-}
-
 /* Wheel Game Over Popup */
 .wheel-game-over-content {
     background: var(--dark);
@@ -1028,18 +1034,145 @@ body {
 @media (max-width: 900px) {
     #wheel-game-screen {
         grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
     }
     
     .wheel-container {
         width: 300px;
         height: 300px;
     }
+}
+
+@media (max-width: 500px) {
+    .wheel-container {
+        width: 250px;
+        height: 250px;
+    }
     
-    .wheel-bet-container {
-        grid-template-columns: 1fr;
+    .wheel-controls-panel {
+        padding: 15px;
+    }
+    
+    .wheel-option {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .wheel-number-bet {
+        width: 100%;
     }
 }
 
+/* Loading Indicator - UPDATED DURATION */
+.spin-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.spin-loading.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(255, 215, 0, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--primary);
+    animation: spin 1.5s linear infinite; /* Reduced from 5s to 1.5s */
+}
+
+/* Notifications */
+.notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 25px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s;
+    max-width: 80%;
+    text-align: center;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.notification.show {
+    opacity: 1;
+}
+
+.notification.success {
+    background-color: rgba(76, 175, 80, 0.9);
+    border: 1px solid #4CAF50;
+}
+
+.notification.error {
+    background-color: rgba(244, 67, 54, 0.9);
+    border: 1px solid #f44336;
+}
+
+/* Animations - UPDATED */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); }
+}
+
+@keyframes pulseGreen {
+    0% { background-color: rgba(76, 175, 80, 0.2); }
+    50% { background-color: rgba(76, 175, 80, 0.5); }
+    100% { background-color: rgba(76, 175, 80, 0.2); }
+}
+
+@keyframes highlight {
+    0% { filter: brightness(1); }
+    50% { filter: brightness(1.5); }
+    100% { filter: brightness(1); }
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes landingBounce {
+    0% { transform: translateY(0%) scale(1); }
+    50% { transform: translateY(-20%) scale(1.1); }
+    100% { transform: translateY(0%) scale(1); }
+}
+
+/* NEW: Quick spin animation for button press */
+@keyframes quickSpin {
+    0% { transform: rotate(0deg) scale(0.95); }
+    100% { transform: rotate(360deg) scale(0.95); }
+}
+
+/* Responsive */
 @media (max-width: 600px) {
     .user-panel {
         flex-direction: column;
@@ -1082,85 +1215,4 @@ body {
     .win-content, .mines-game-over-content {
         padding: 1.5rem;
     }
-    
-    .wheel-container {
-        width: 250px;
-        height: 250px;
-    }
-}
-
-/* Animations */
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-@keyframes pulse {
-    from { transform: scale(1); }
-    to { transform: scale(1.1); }
-}
-
-@keyframes pulseGreen {
-    0% { background-color: rgba(76, 175, 80, 0.2); }
-    50% { background-color: rgba(76, 175, 80, 0.5); }
-    100% { background-color: rgba(76, 175, 80, 0.2); }
-}
-
-@keyframes highlight {
-    0% { filter: brightness(1); }
-    50% { filter: brightness(1.5); }
-    100% { filter: brightness(1); }
-}
-
-@keyframes popIn {
-    0% { transform: scale(0.8); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes landingBounce {
-    0% { transform: translateY(0%) scale(1); }
-    50% { transform: translateY(-20%) scale(1.1); }
-    100% { transform: translateY(0%) scale(1); }
-}
-
-@keyframes quickSpin {
-    0% { transform: rotate(0deg) scale(0.95); }
-    100% { transform: rotate(360deg) scale(0.95); }
-}
-
-/* Notifications */
-.notification {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 15px 25px;
-    border-radius: 5px;
-    color: white;
-    font-weight: bold;
-    z-index: 1000;
-    opacity: 0;
-    transition: opacity 0.3s;
-    max-width: 80%;
-    text-align: center;
-    backdrop-filter: blur(5px);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-}
-
-.notification.show {
-    opacity: 1;
-}
-
-.notification.success {
-    background-color: rgba(76, 175, 80, 0.9);
-    border: 1px solid #4CAF50;
-}
-
-.notification.error {
-    background-color: rgba(244, 67, 54, 0.9);
-    border: 1px solid #f44336;
 }
