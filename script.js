@@ -858,7 +858,6 @@ function createWheelSegments() {
     
     const segmentAngle = 360 / CONFIG.wheel.segments.length;
     const radius = elements.wheelContainer.offsetWidth / 2;
-    const fontSize = Math.max(14, radius / 8);
     
     CONFIG.wheel.segments.forEach((segment, index) => {
         const segmentElement = document.createElement('div');
@@ -871,7 +870,7 @@ function createWheelSegments() {
         const label = document.createElement('div');
         label.className = 'wheel-segment-label';
         label.textContent = segment.value;
-        label.style.fontSize = `${fontSize}px`;
+        label.style.fontSize = `${Math.max(14, radius / 10)}px`;
         label.style.transform = `rotate(${segmentAngle / 2}deg) translate(${radius * 0.7}px) rotate(-${(index * segmentAngle) + (segmentAngle / 2)}deg)`;
         
         segmentElement.appendChild(label);
@@ -948,7 +947,7 @@ async function spinWheel() {
     if (!gameState.wheelGame.locked || gameState.wheelGame.spinning) return;
     
     gameState.wheelGame.spinning = true;
-    
+
     try {
         const response = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
@@ -984,10 +983,15 @@ async function spinWheel() {
         }
         
         if (elements.wheelSpinBtn) elements.wheelSpinBtn.disabled = true;
-        
+
         setTimeout(() => {
             gameState.wheelGame.spinning = false;
             gameState.wheelGame.result = winningSegment;
+            
+            // Display the result
+            document.getElementById('wheel-result-value').textContent = winningSegment.value;
+            document.getElementById('wheel-result-multiplier').textContent = `Multiplier: ${winningSegment.multiplier}x`;
+            document.getElementById('wheel-result-value').style.color = winningSegment.color;
             
             let winAmount = 0;
             if (gameState.wheelGame.bets[winningSegment.value]) {
@@ -999,16 +1003,16 @@ async function spinWheel() {
             setTimeout(() => {
                 setupWheelGameUI();
             }, 3000);
-            
-        }, spinDuration);
-        
+        }, spinDuration);  
     } catch (error) {
         console.error('Wheel spin error:', error);
-        showNotification('Failed to process spin. Please try again.', false);
+        showNotification('Failed to spin wheel. Please try again.', false);
         gameState.wheelGame.spinning = false;
         setupWheelGameUI();
     }
 }
+    
+
 
 async function showWheelResult(winningSegment, winAmount) {
     if (!elements.wheelGameOverPopup || !elements.wheelGameOverResult || !elements.wheelGameOverAmount) return;
