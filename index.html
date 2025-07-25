@@ -28,7 +28,6 @@
         <h1>Select Game</h1>
         <button id="slot-machine-btn" class="game-select-btn">Slot Machine</button>
         <button id="mines-game-btn" class="game-select-btn">Mines Game</button>
-        <button id="wheel-game-btn" class="game-select-btn">Spin Wheel</button>
     </div>
 
     <!-- Slot Machine Game Screen -->
@@ -59,8 +58,12 @@
             <div class="reel" id="reel3"></div>
         </div>
 
+        <div class="slot-loading" id="slot-loading">
+            <div class="slot-spinner"></div>
+        </div>
+
         <button id="spin-btn" class="spin-button">SPIN</button>
-        <button id="back-to-menu-btn" class="mines-start-btn">Back to Menu</button>
+        <button id="back-to-menu-btn" class="mines-start-btn" style="margin-top: 10px;">Back to Menu</button>
     </div>
 
     <!-- Mines Game Screen -->
@@ -97,7 +100,7 @@
             </div>
             
             <button id="mines-start-btn" class="mines-start-btn">Start Game</button>
-            <button id="mines-back-to-menu-btn" class="mines-start-btn">Back to Menu</button>
+            <button id="mines-back-to-menu-btn" class="mines-start-btn" style="margin-top: 10px;">Back to Menu</button>
         </div>
         
         <div class="mines-info">
@@ -116,79 +119,6 @@
         <button id="mines-cashout-btn" class="mines-cashout-btn disabled" disabled>Cash Out</button>
     </div>
 
-    <!-- Wheel Game Screen -->
-
-    <div id="wheel-game-screen" class="game-container">
-        <!-- Left Panel - Controls -->
-        <div class="wheel-controls-panel">
-            <div id="wheel-user-panel" class="user-panel">
-                <div class="user-info">
-                    <img id="wheel-avatar" src="assets/default-avatar.png" alt="User Avatar">
-                    <div class="user-details">
-                        <span id="wheel-username">Guest</span>
-                        <button id="wheel-logout-btn">Logout</button>
-                    </div>
-                </div>
-                <div class="currency-display">
-                    <div class="currency">
-                        <img src="assets/chip.png" alt="Chips">
-                        <span id="wheel-chips">0</span>
-                    </div>
-                    <div class="currency">
-                        <img src="assets/dice.png" alt="Dice">
-                        <span id="wheel-dice">0</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="wheel-bet-options">
-                <div class="wheel-option" data-value="1" data-multiplier="1">
-                    <span>1 (1x)</span>
-                    <input type="number" min="0" placeholder="Bet" class="wheel-number-bet">
-                </div>
-                <div class="wheel-option" data-value="3" data-multiplier="3">
-                    <span>3 (3x)</span>
-                    <input type="number" min="0" placeholder="Bet" class="wheel-number-bet">
-                </div>
-                <div class="wheel-option" data-value="5" data-multiplier="5">
-                    <span>5 (5x)</span>
-                    <input type="number" min="0" placeholder="Bet" class="wheel-number-bet">
-                </div>
-                <div class="wheel-option" data-value="10" data-multiplier="10">
-                    <span>10 (10x)</span>
-                    <input type="number" min="0" placeholder="Bet" class="wheel-number-bet">
-                </div>
-                <div class="wheel-option" data-value="20" data-multiplier="20">
-                    <span>20 (20x)</span>
-                    <input type="number" min="0" placeholder="Bet" class="wheel-number-bet">
-                </div>
-            </div>
-            
-            <div class="wheel-info">
-                <div>
-                    <span>Total Bet:</span>
-                    <span id="wheel-total-bet">0</span>
-                </div>
-                <div>
-                    <span>Potential Win:</span>
-                    <span id="wheel-potential-win">0</span>
-                </div>
-            </div>
-            
-            <button id="wheel-lock-btn" class="wheel-lock-btn">Lock Bets</button>
-            <button id="wheel-spin-btn" class="wheel-spin-btn" disabled>Spin Wheel</button>
-            <button id="wheel-back-to-menu-btn" class="back-to-menu-btn">Back to Menu</button>
-        </div>
-
-        <!-- Center Panel - Wheel -->
-        <div class="wheel-center-panel">
-            <div class="wheel-container">
-                <div class="wheel" id="wheel"></div>
-                <div class="wheel-pointer"></div>
-            </div>
-        </div>
-    </div>
-
     <!-- Slot Machine Win Popup -->
     <div id="win-popup" class="win-popup">
         <div class="win-content">
@@ -205,18 +135,6 @@
             <h3 id="mines-game-over-message">Game Over!</h3>
             <div id="mines-game-over-amount">+0</div>
             <button id="mines-game-over-close">Continue</button>
-        </div>
-    </div>
-
-    <!-- Wheel Game Over Popup -->
-    <div id="wheel-game-over-popup" class="win-popup">
-        <div class="wheel-game-over-content">
-            <h3 id="wheel-game-over-message"></h3>
-            <div class="wheel-result-details">
-                <div id="wheel-game-over-result"></div>
-                <div id="wheel-game-over-amount"></div>
-            </div>
-            <button id="wheel-game-over-close">Continue</button>
         </div>
     </div>
 
