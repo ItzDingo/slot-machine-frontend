@@ -122,23 +122,61 @@
 
     <!-- Wheel of Fortune Game Screen -->
     <div id="wheel-game-screen" class="game-container">
-        <div id="wheel-user-panel" class="user-panel">
-            <div class="user-info">
-                <img id="wheel-avatar" src="assets/default-avatar.png" alt="User Avatar">
-                <div class="user-details">
-                    <span id="wheel-username">Guest</span>
-                    <button id="wheel-logout-btn">Logout</button>
+        <div class="wheel-controls">
+            <div id="wheel-user-panel" class="user-panel">
+                <div class="user-info">
+                    <img id="wheel-avatar" src="assets/default-avatar.png" alt="User Avatar">
+                    <div class="user-details">
+                        <span id="wheel-username">Guest</span>
+                        <button id="wheel-logout-btn">Logout</button>
+                    </div>
+                </div>
+                <div class="currency-display">
+                    <div class="currency">
+                        <img src="assets/chip.png" alt="Chips">
+                        <span id="wheel-chips">0</span>
+                    </div>
+                    <div class="currency">
+                        <img src="assets/dice.png" alt="Dice">
+                        <span id="wheel-dice">0</span>
+                    </div>
                 </div>
             </div>
-            <div class="currency-display">
-                <div class="currency">
-                    <img src="assets/chip.png" alt="Chips">
-                    <span id="wheel-chips">0</span>
+
+            <div class="wheel-bets">
+                <div class="wheel-input-group">
+                    <label>Total Bet</label>
+                    <span id="wheel-total-bet">0</span>
                 </div>
-                <div class="currency">
-                    <img src="assets/dice.png" alt="Dice">
-                    <span id="wheel-dice">0</span>
+                
+                <div class="wheel-multipliers">
+                    <div class="multiplier-option" data-multiplier="2">
+                        <span>2x</span>
+                        <input type="number" min="0" placeholder="Bet">
+                    </div>
+                    <div class="multiplier-option" data-multiplier="5">
+                        <span>5x</span>
+                        <input type="number" min="0" placeholder="Bet">
+                    </div>
+                    <div class="multiplier-option" data-multiplier="10">
+                        <span>10x</span>
+                        <input type="number" min="0" placeholder="Bet">
+                    </div>
+                    <div class="multiplier-option" data-multiplier="20">
+                        <span>20x</span>
+                        <input type="number" min="0" placeholder="Bet">
+                    </div>
+                    <div class="multiplier-option" data-multiplier="50">
+                        <span>50x</span>
+                        <input type="number" min="0" placeholder="Bet">
+                    </div>
                 </div>
+            </div>
+            
+            <div class="wheel-buttons">
+                <button id="wheel-lock-btn" class="wheel-btn">Lock Bets</button>
+                <button id="wheel-spin-btn" class="wheel-btn spin-btn" disabled>Spin Wheel</button>
+                <button id="wheel-clear-btn" class="wheel-btn">Clear Bets</button>
             </div>
         </div>
 
@@ -147,47 +185,9 @@
                 <div id="wheel" class="wheel"></div>
                 <div class="wheel-pointer"></div>
             </div>
-            
-            <div class="wheel-controls">
-                <div class="wheel-bets">
-                    <div class="wheel-input-group">
-                        <label>Total Bet</label>
-                        <span id="wheel-total-bet">0</span>
-                    </div>
-                    
-                    <div class="wheel-multipliers">
-                        <div class="multiplier-option" data-multiplier="2">
-                            <span>2x</span>
-                            <input type="number" min="0" placeholder="Bet">
-                        </div>
-                        <div class="multiplier-option" data-multiplier="5">
-                            <span>5x</span>
-                            <input type="number" min="0" placeholder="Bet">
-                        </div>
-                        <div class="multiplier-option" data-multiplier="10">
-                            <span>10x</span>
-                            <input type="number" min="0" placeholder="Bet">
-                        </div>
-                        <div class="multiplier-option" data-multiplier="20">
-                            <span>20x</span>
-                            <input type="number" min="0" placeholder="Bet">
-                        </div>
-                        <div class="multiplier-option" data-multiplier="50">
-                            <span>50x</span>
-                            <input type="number" min="0" placeholder="Bet">
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="wheel-buttons">
-                    <button id="wheel-lock-btn" class="wheel-btn">Lock Bets</button>
-                    <button id="wheel-spin-btn" class="wheel-btn spin-btn" disabled>Spin</button>
-                    <button id="wheel-clear-btn" class="wheel-btn">Clear</button>
-                </div>
-            </div>
         </div>
         
-        <button id="wheel-back-to-menu-btn" class="mines-start-btn" style="margin-top: 10px;">Back to Menu</button>
+        <button id="wheel-back-to-menu-btn" class="mines-start-btn">Back to Menu</button>
     </div>
 
     <!-- Slot Machine Win Popup -->
