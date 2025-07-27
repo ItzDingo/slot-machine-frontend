@@ -35,7 +35,7 @@ const CONFIG = {
         getGridSize: function(minesCount) {
             if (minesCount <= 6) return 5;    // 5x5 grid (25 cells)
             if (minesCount <= 9) return 6;    // 6x6 grid (36 cells)
-            return 7;                         // 7x7 grid (49 cells)
+            return 6;                         // 7x7 grid (49 cells)
         },
         getMultiplier: function(minesCount, revealedCells) {
     // Base risk multipliers - higher mines = higher base multiplier
