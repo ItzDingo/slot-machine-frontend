@@ -29,7 +29,7 @@ const CONFIG = {
     },
     mines: {
         minBet: 0.1,  // Now accepts decimal bets
-        maxBet: 1000,
+        maxBet: 10000,
         minMines: 1,
         maxMines: 10,
         getGridSize: function(minesCount) {
