@@ -38,66 +38,46 @@ const CONFIG = {
             return 7;                         // 7x7 grid (49 cells)
         },
         getMultiplier: function(minesCount, revealedCells) {
-            // Base risk multipliers - higher mines = higher base multiplier
-            const baseMultipliers = {
-                1: 1.04,   // Lowest base for 1 mine
-                2: 1.07,
-                3: 1.10,
-                4: 1.15,
-                5: 1.18,
-                6: 1.23,
-                7: 1.30,
-                8: 1.45,
-                9: 1.65,
-                10: 2   // Highest base for 10 mines
-            };
-            
-            // Growth factors - higher mines get more aggressive growth per reveal
-            const growthFactors = {
-                1: 0.02,   // +2% per reveal for 1 mine
-                2: 0.03,
-                3: 0.04,
-                4: 0.05,
-                5: 0.06,
-                6: 0.08,
-                7: 0.10,
-                8: 0.13,
-                9: 0.16,
-                10: 0.20   // +20% per reveal for 10 mines
-            };
-            
-            // Get base and growth values based on mine count
-            const base = baseMultipliers[minesCount] || 1.0;
-            const growth = growthFactors[minesCount] || 0.05;
-            
-            // Calculate multiplier with compounding growth
-            const rawMultiplier = base * Math.pow(1 + growth, revealedCells);
-            
-            // Apply house edge and return with 4 decimal precision
-            const withHouseEdge = rawMultiplier * (1 - this.houseEdge);
-            return parseFloat(withHouseEdge.toFixed(4));
-        },
+    // Base risk multipliers - higher mines = higher base multiplier
+    const baseMultipliers = {
+        1: 1.04,   // Lowest base for 1 mine
+        2: 1.07,
+        3: 1.10,
+        4: 1.15,
+        5: 1.18,
+        6: 1.23,
+        7: 1.30,
+        8: 1.45,
+        9: 1.65,
+        10: 2   // Highest base for 10 mines
+    };
+    
+    // Growth factors - higher mines get more aggressive growth per reveal
+    const growthFactors = {
+        1: 0.02,   // +2% per reveal for 1 mine
+        2: 0.03,
+        3: 0.04,
+        4: 0.05,
+        5: 0.06,
+        6: 0.08,
+        7: 0.10,
+        8: 0.13,
+        9: 0.16,
+        10: 0.20   // +20% per reveal for 10 mines
+    };
+    
+    // Get base and growth values based on mine count
+    const base = baseMultipliers[minesCount] || 1.0;
+    const growth = growthFactors[minesCount] || 0.05;
+    
+    // Calculate multiplier with compounding growth
+    const rawMultiplier = base * Math.pow(1 + growth, revealedCells);
+    
+    // Apply house edge and return with 4 decimal precision
+    const withHouseEdge = rawMultiplier * (1 - this.houseEdge);
+    return parseFloat(withHouseEdge.toFixed(4));
+},
         houseEdge: 0.03  // 3% house edge
-    },
-    wheel: {
-        segments: 25,
-        multipliers: [1.5, 3, 5, 10, 25],
-        colors: {
-            '1.5': '#FFD700', // Gold
-            '3': '#4CAF50',   // Green
-            '5': '#2196F3',   // Blue
-            '10': '#E91E63',  // Pink
-            '25': '#FF9800'   // Orange
-        },
-        distribution: {
-            '1.5': 10,  // 10 segments (40%)
-            '3': 7,     // 7 segments (28%)
-            '5': 4,     // 4 segments (16%)
-            '10': 3,    // 3 segments (12%)
-            '25': 1     // 1 segment (4%)
-        },
-        minBet: 0.1,
-        maxBet: 1000
     }
 };
 
@@ -128,19 +108,6 @@ let gameState = {
         wins: 0,
         totalWins: 0,
         totalGamesPlayed: 0
-    },
-    wheelGame: {
-        bets: {
-            '1.5': 0,
-            '3': 0,
-            '5': 0,
-            '10': 0,
-            '25': 0
-        },
-        totalBet: 0,
-        potentialWin: 0,
-        isSpinning: false,
-        isLocked: false
     }
 };
 
@@ -152,7 +119,6 @@ const elements = {
     loginBtn: document.getElementById('login-btn'),
     logoutBtn: document.getElementById('logout-btn'),
     minesLogoutBtn: document.getElementById('mines-logout-btn'),
-    wheelLogoutBtn: document.getElementById('wheel-logout-btn'),
     usernameDisplay: document.getElementById('username'),
     userAvatar: document.getElementById('user-avatar'),
     chipsDisplay: document.getElementById('chips'),
@@ -170,9 +136,7 @@ const elements = {
     gameSelectScreen: document.getElementById('game-select-screen'),
     slotMachineBtn: document.getElementById('slot-machine-btn'),
     minesGameBtn: document.getElementById('mines-game-btn'),
-    wheelGameBtn: document.getElementById('wheel-game-btn'),
     minesGameScreen: document.getElementById('mines-game-screen'),
-    wheelGameScreen: document.getElementById('wheel-game-screen'),
     minesBetInput: document.getElementById('mines-bet-input'),
     minesCountInput: document.getElementById('mines-count-input'),
     minesStartBtn: document.getElementById('mines-start-btn'),
@@ -187,24 +151,8 @@ const elements = {
     minesAvatar: document.getElementById('mines-avatar'),
     minesChips: document.getElementById('mines-chips'),
     minesDice: document.getElementById('mines-dice'),
-    wheelUsername: document.getElementById('wheel-username'),
-    wheelAvatar: document.getElementById('wheel-avatar'),
-    wheelChips: document.getElementById('wheel-chips'),
-    wheelDice: document.getElementById('wheel-dice'),
-    wheelBetInput: document.getElementById('wheel-bet-input'),
-    wheelLockBtn: document.getElementById('wheel-lock-btn'),
-    wheelSpinBtn: document.getElementById('wheel-spin-btn'),
-    wheelTotalBet: document.getElementById('wheel-total-bet'),
-    wheelPotentialWin: document.getElementById('wheel-potential-win'),
-    wheel: document.getElementById('wheel'),
-    wheelResultPopup: document.getElementById('wheel-result-popup'),
-    wheelResultMessage: document.getElementById('wheel-result-message'),
-    wheelResultMultiplier: document.getElementById('wheel-result-multiplier'),
-    wheelResultAmount: document.getElementById('wheel-result-amount'),
-    wheelResultClose: document.getElementById('wheel-result-close'),
     backToMenuBtn: document.getElementById('back-to-menu-btn'),
     minesBackToMenuBtn: document.getElementById('mines-back-to-menu-btn'),
-    wheelBackToMenuBtn: document.getElementById('wheel-back-to-menu-btn'),
     minesWinsCounter: document.getElementById('mines-wins-counter'),
     minesWinRate: document.getElementById('mines-win-rate')
 };
@@ -233,8 +181,6 @@ function updateCurrencyDisplay() {
     if (elements.diceDisplay) elements.diceDisplay.textContent = gameState.dice;
     if (elements.minesChips) elements.minesChips.textContent = gameState.chips.toFixed(2);
     if (elements.minesDice) elements.minesDice.textContent = gameState.dice;
-    if (elements.wheelChips) elements.wheelChips.textContent = gameState.chips.toFixed(2);
-    if (elements.wheelDice) elements.wheelDice.textContent = gameState.dice;
 }
 
 function showNotification(message, isSuccess) {
@@ -245,7 +191,7 @@ function showNotification(message, isSuccess) {
     setTimeout(() => notification.remove(), 3000);
 }
 
-// Slot Machine Functions
+// Slot Machine Functions (unchanged)
 async function startSpin() {
     if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
         if (gameState.chips < CONFIG.spinCost) {
@@ -463,7 +409,7 @@ async function claimWin() {
     if (elements.winPopup) elements.winPopup.style.display = 'none';
 }
 
-// Mines Game Functions
+// Mines Game Functions (updated for float numbers)
 function showGameSelectScreen() {
     if (!gameState.userId) {
         showLoginScreen();
@@ -472,7 +418,6 @@ function showGameSelectScreen() {
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     if (elements.gameScreen) elements.gameScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
-    if (elements.wheelGameScreen) elements.wheelGameScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'block';
     updateCurrencyDisplay();
 }
@@ -486,7 +431,6 @@ function startSlotMachineGame() {
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
-    if (elements.wheelGameScreen) elements.wheelGameScreen.style.display = 'none';
     if (elements.gameScreen) elements.gameScreen.style.display = 'block';
 }
 
@@ -499,279 +443,8 @@ function startMinesGame() {
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
     if (elements.gameScreen) elements.gameScreen.style.display = 'none';
-    if (elements.wheelGameScreen) elements.wheelGameScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'block';
     setupMinesGameUI();
-}
-
-function startWheelGame() {
-    if (!gameState.userId) {
-        showLoginScreen();
-        return;
-    }
-    gameState.currentGame = 'wheel';
-    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
-    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
-    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
-    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
-    if (elements.wheelGameScreen) {
-        elements.wheelGameScreen.style.display = 'block';
-        setupWheelGame();
-    }
-}
-
-function setupWheelGame() {
-    // Clear previous wheel
-    if (elements.wheel) elements.wheel.innerHTML = '';
-    
-    // Create wheel segments based on distribution
-    const segments = [];
-    for (const [multiplier, count] of Object.entries(CONFIG.wheel.distribution)) {
-        for (let i = 0; i < count; i++) {
-            segments.push({
-                multiplier: parseFloat(multiplier),
-                color: CONFIG.wheel.colors[multiplier]
-            });
-        }
-    }
-    
-    // Shuffle segments
-    for (let i = segments.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [segments[i], segments[j]] = [segments[j], segments[i]];
-    }
-    
-    // Create wheel segments
-    const segmentAngle = 360 / CONFIG.wheel.segments;
-    segments.forEach((segment, index) => {
-        const segmentElement = document.createElement('div');
-        segmentElement.className = 'wheel-segment';
-        segmentElement.style.transform = `rotate(${index * segmentAngle}deg)`;
-        segmentElement.style.backgroundColor = segment.color;
-        segmentElement.innerHTML = `<span>${segment.multiplier}x</span>`;
-        segmentElement.dataset.multiplier = segment.multiplier;
-        elements.wheel.appendChild(segmentElement);
-    });
-    
-    // Reset game state
-    gameState.wheelGame = {
-        bets: {
-            '1.5': 0,
-            '3': 0,
-            '5': 0,
-            '10': 0,
-            '25': 0
-        },
-        totalBet: 0,
-        potentialWin: 0,
-        isSpinning: false,
-        isLocked: false
-    };
-    
-    // Reset UI
-    if (elements.wheelTotalBet) elements.wheelTotalBet.textContent = '0';
-    if (elements.wheelPotentialWin) elements.wheelPotentialWin.textContent = '0';
-    if (elements.wheelBetInput) elements.wheelBetInput.value = '';
-    
-    // Reset all bet inputs
-    document.querySelectorAll('.wheel-bet-option input').forEach(input => {
-        input.value = '';
-    });
-    
-    // Enable/disable buttons
-    if (elements.wheelLockBtn) elements.wheelLockBtn.disabled = false;
-    if (elements.wheelSpinBtn) elements.wheelSpinBtn.disabled = true;
-}
-
-function updateWheelBets() {
-    let totalBet = 0;
-    let potentialWin = 0;
-    
-    // Update bets in game state
-    document.querySelectorAll('.wheel-bet-option').forEach(option => {
-        const multiplier = option.dataset.multiplier;
-        const input = option.querySelector('input');
-        const betAmount = parseFloat(input.value) || 0;
-        
-        gameState.wheelGame.bets[multiplier] = betAmount;
-        totalBet += betAmount;
-        
-        if (betAmount > 0) {
-            potentialWin += betAmount * parseFloat(multiplier);
-        }
-    });
-    
-    gameState.wheelGame.totalBet = totalBet;
-    gameState.wheelGame.potentialWin = potentialWin;
-    
-    // Update UI
-    if (elements.wheelTotalBet) elements.wheelTotalBet.textContent = totalBet.toFixed(2);
-    if (elements.wheelPotentialWin) elements.wheelPotentialWin.textContent = potentialWin.toFixed(2);
-    if (elements.wheelBetInput) elements.wheelBetInput.value = totalBet.toFixed(2);
-}
-
-function lockWheelBets() {
-    const totalBet = gameState.wheelGame.totalBet;
-    
-    if (totalBet <= 0) {
-        showNotification("Please place at least one bet", false);
-        return;
-    }
-    
-    if (totalBet > gameState.chips) {
-        showNotification("Not enough chips for this bet", false);
-        return;
-    }
-    
-    gameState.wheelGame.isLocked = true;
-    
-    if (elements.wheelLockBtn) elements.wheelLockBtn.disabled = true;
-    if (elements.wheelSpinBtn) elements.wheelSpinBtn.disabled = false;
-    
-    // Disable all bet inputs
-    document.querySelectorAll('.wheel-bet-option input').forEach(input => {
-        input.disabled = true;
-    });
-    
-    showNotification("Bets locked! Ready to spin", true);
-}
-
-async function spinWheel() {
-    if (gameState.wheelGame.isSpinning || !gameState.wheelGame.isLocked) return;
-    
-    // Deduct chips from balance
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/spin`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                userId: gameState.userId,
-                cost: gameState.wheelGame.totalBet
-            }),
-            credentials: 'include'
-        });
-
-        if (!response.ok) throw new Error('Bet failed');
-        
-        const data = await response.json();
-        gameState.chips = data.newBalance;
-        updateCurrencyDisplay();
-        
-        // Start spinning animation
-        gameState.wheelGame.isSpinning = true;
-        if (elements.wheelSpinBtn) elements.wheelSpinBtn.disabled = true;
-        
-        const spinDuration = 5000; // 5 seconds
-        const spinRotations = 5; // 5 full rotations
-        const segmentAngle = 360 / CONFIG.wheel.segments;
-        
-        // Randomly select a winning segment (1-25)
-        const winningSegment = Math.floor(Math.random() * CONFIG.wheel.segments);
-        const winningAngle = 360 - (winningSegment * segmentAngle) + (segmentAngle / 2);
-        const totalRotation = (spinRotations * 360) + winningAngle;
-        
-        // Apply spin animation
-        elements.wheel.style.transform = `rotate(${totalRotation}deg)`;
-        
-        // Wait for spin to complete
-        setTimeout(() => {
-            gameState.wheelGame.isSpinning = false;
-            checkWheelResult(winningSegment);
-        }, spinDuration);
-        
-    } catch (error) {
-        console.error('Wheel spin error:', error);
-        showNotification('Failed to place bet. Please try again.', false);
-        resetWheelGame();
-    }
-}
-
-function checkWheelResult(winningSegment) {
-    const segments = Array.from(elements.wheel.children);
-    const winningElement = segments[winningSegment];
-    const winningMultiplier = parseFloat(winningElement.dataset.multiplier);
-    
-    // Check if player bet on this multiplier
-    const betAmount = gameState.wheelGame.bets[winningMultiplier.toString()] || 0;
-    const winAmount = betAmount > 0 ? betAmount * winningMultiplier : 0;
-    
-    // Show result
-    showWheelResult(winningMultiplier, winAmount);
-    
-    // Update chips if won
-    if (winAmount > 0) {
-        claimWheelWin(winAmount);
-    }
-    
-    // Reset for next game
-    gameState.wheelGame.isLocked = false;
-}
-
-async function claimWheelWin(amount) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/win`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                userId: gameState.userId,
-                amount: amount
-            }),
-            credentials: 'include'
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            gameState.chips = data.newBalance;
-            updateCurrencyDisplay();
-        }
-    } catch (error) {
-        console.error('Wheel win claim error:', error);
-    }
-}
-
-function showWheelResult(multiplier, amount) {
-    if (!elements.wheelResultMessage || !elements.wheelResultMultiplier || !elements.wheelResultAmount) return;
-    
-    if (amount > 0) {
-        elements.wheelResultMessage.textContent = "YOU WON!";
-        elements.wheelResultAmount.textContent = `+${amount.toFixed(2)}`;
-    } else {
-        elements.wheelResultMessage.textContent = "NO WIN";
-        elements.wheelResultAmount.textContent = `-${gameState.wheelGame.totalBet.toFixed(2)}`;
-    }
-    
-    elements.wheelResultMultiplier.textContent = `${multiplier}x`;
-    
-    if (elements.wheelResultPopup) elements.wheelResultPopup.style.display = 'flex';
-}
-
-function closeWheelResult() {
-    if (elements.wheelResultPopup) elements.wheelResultPopup.style.display = 'none';
-    resetWheelGame();
-}
-
-function resetWheelGame() {
-    // Enable all bet inputs
-    document.querySelectorAll('.wheel-bet-option input').forEach(input => {
-        input.disabled = false;
-    });
-    
-    // Reset wheel position
-    elements.wheel.style.transition = 'none';
-    elements.wheel.style.transform = 'rotate(0deg)';
-    // Force reflow
-    void elements.wheel.offsetWidth;
-    elements.wheel.style.transition = 'transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99)';
-    
-    // Enable buttons
-    if (elements.wheelLockBtn) elements.wheelLockBtn.disabled = false;
-    if (elements.wheelSpinBtn) elements.wheelSpinBtn.disabled = true;
 }
 
 async function setupMinesGameUI() {
@@ -800,9 +473,9 @@ async function setupMinesGameUI() {
     }
     if (elements.minesStartBtn) elements.minesStartBtn.disabled = false;
     if (elements.minesCashoutBtn) {
-        elements.minesCashoutBtn.disabled = true;
-        elements.minesCashoutBtn.classList.add('disabled');
-    }
+    elements.minesCashoutBtn.disabled = true;
+    elements.minesCashoutBtn.classList.add('disabled');
+}
     
     try {
         const response = await fetch(`${API_BASE_URL}/api/mines/stats?userId=${gameState.userId}`, {
@@ -942,6 +615,7 @@ function createMinesGrid() {
     }
 }
 
+
 function placeMines(minesCount) {
     const gridSize = CONFIG.mines.getGridSize(minesCount);
     const totalCells = gridSize * gridSize;
@@ -997,13 +671,14 @@ function revealMineCell(index) {
     }
     
     // Enable cashout button after minimum 2 reveals
-    if (gameState.minesGame.revealedCells >= 2 && elements.minesCashoutBtn) {
-        elements.minesCashoutBtn.disabled = false;
-        elements.minesCashoutBtn.classList.remove('disabled');
-    } else {
-        elements.minesCashoutBtn.disabled = true;
-        elements.minesCashoutBtn.classList.add('disabled');
-    }
+    // Enable cashout button after 2 reveals
+if (gameState.minesGame.revealedCells >= 2 && elements.minesCashoutBtn) {
+    elements.minesCashoutBtn.disabled = false;
+    elements.minesCashoutBtn.classList.remove('disabled');
+} else {
+    elements.minesCashoutBtn.disabled = true;
+    elements.minesCashoutBtn.classList.add('disabled');
+}
     
     // Add visual feedback for multiplier increase
     cell.querySelector('.safe-cell').textContent = `+${(CONFIG.mines.growthFactors[gameState.minesGame.minesCount] * 100).toFixed(0)}%`;
@@ -1017,6 +692,7 @@ function revealMineCell(index) {
     const safeCells = gameState.minesGame.totalCells - gameState.minesGame.minesCount;
     if (gameState.minesGame.revealedCells === safeCells) {
         endMinesGame(true);
+
     }
 }
 
@@ -1160,8 +836,6 @@ function handleSuccessfulLogin(user) {
     if (elements.userAvatar) elements.userAvatar.src = user.avatar || 'assets/default-avatar.png';
     if (elements.minesUsername) elements.minesUsername.textContent = user.username;
     if (elements.minesAvatar) elements.minesAvatar.src = user.avatar || 'assets/default-avatar.png';
-    if (elements.wheelUsername) elements.wheelUsername.textContent = user.username;
-    if (elements.wheelAvatar) elements.wheelAvatar.src = user.avatar || 'assets/default-avatar.png';
     
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     showGameSelectScreen();
@@ -1176,8 +850,6 @@ function handleSuccessfulLogin(user) {
     
     if (gameState.currentGame === 'mines') {
         setupMinesGameUI();
-    } else if (gameState.currentGame === 'wheel') {
-        setupWheelGame();
     }
 }
 
@@ -1186,7 +858,6 @@ function showLoginScreen() {
     if (elements.gameScreen) elements.gameScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
-    if (elements.wheelGameScreen) elements.wheelGameScreen.style.display = 'none';
     gameState.userId = null;
     if (elements.tokenInput) elements.tokenInput.value = '';
 }
@@ -1237,38 +908,18 @@ if (elements.loginBtn) {
 
 if (elements.logoutBtn) elements.logoutBtn.addEventListener('click', logout);
 if (elements.minesLogoutBtn) elements.minesLogoutBtn.addEventListener('click', logout);
-if (elements.wheelLogoutBtn) elements.wheelLogoutBtn.addEventListener('click', logout);
 if (elements.spinBtn) elements.spinBtn.addEventListener('click', startSpin);
 if (elements.claimBtn) elements.claimBtn.addEventListener('click', claimWin);
 
 if (elements.slotMachineBtn) elements.slotMachineBtn.addEventListener('click', startSlotMachineGame);
 if (elements.minesGameBtn) elements.minesGameBtn.addEventListener('click', startMinesGame);
-if (elements.wheelGameBtn) elements.wheelGameBtn.addEventListener('click', startWheelGame);
 if (elements.minesStartBtn) elements.minesStartBtn.addEventListener('click', startNewMinesGame);
 if (elements.minesCashoutBtn) elements.minesCashoutBtn.addEventListener('click', cashoutMinesGame);
 if (document.getElementById('mines-game-over-close')) {
     document.getElementById('mines-game-over-close').addEventListener('click', closeMinesGameOverPopup);
 }
-if (elements.wheelResultClose) {
-    elements.wheelResultClose.addEventListener('click', closeWheelResult);
-}
 if (elements.backToMenuBtn) elements.backToMenuBtn.addEventListener('click', showGameSelectScreen);
 if (elements.minesBackToMenuBtn) elements.minesBackToMenuBtn.addEventListener('click', showGameSelectScreen);
-if (elements.wheelBackToMenuBtn) elements.wheelBackToMenuBtn.addEventListener('click', showGameSelectScreen);
-
-// Wheel game event listeners
-if (elements.wheelLockBtn) {
-    elements.wheelLockBtn.addEventListener('click', lockWheelBets);
-}
-
-if (elements.wheelSpinBtn) {
-    elements.wheelSpinBtn.addEventListener('click', spinWheel);
-}
-
-// Update bets when inputs change
-document.querySelectorAll('.wheel-bet-option input').forEach(input => {
-    input.addEventListener('input', updateWheelBets);
-});
 
 // Initialize Game
 async function initGame() {
