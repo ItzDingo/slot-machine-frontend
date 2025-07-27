@@ -873,6 +873,12 @@ async function checkAuthStatus() {
             handleSuccessfulLogin(user);
             return true;
         } else {
+            // More detailed error handling
+            if (response.status === 401) {
+                console.log('Session expired or not authenticated');
+            } else {
+                console.error('Auth check failed with status:', response.status);
+            }
             showLoginScreen();
             return false;
         }
@@ -925,11 +931,16 @@ if (elements.minesBackToMenuBtn) elements.minesBackToMenuBtn.addEventListener('c
 async function initGame() {
     try {
         const authCheck = await checkAuthStatus();
-        if (authCheck && !gameState.authChecked) {
+        if (!authCheck) {
+            console.log('User not authenticated, showing login screen');
+            showLoginScreen();
+        } else {
+            console.log('User authenticated');
             gameState.authChecked = true;
         }
     } catch (error) {
         console.error('Initialization error:', error);
+        showLoginScreen();
     }
 }
 
