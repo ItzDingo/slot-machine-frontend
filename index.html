@@ -28,7 +28,6 @@
         <h1>Select Game</h1>
         <button id="slot-machine-btn" class="game-select-btn">Slot Machine</button>
         <button id="mines-game-btn" class="game-select-btn">Mines Game</button>
-        <button id="lootbox-game-btn" class="game-select-btn">Loot Box</button>
     </div>
 
     <!-- Slot Machine Game Screen -->
@@ -64,7 +63,7 @@
         </div>
 
         <button id="spin-btn" class="spin-button">SPIN</button>
-        <button id="back-to-menu-btn" class="mines-start-btn">Back to Menu</button>
+        <button id="back-to-menu-btn" class="mines-start-btn" style="margin-top: 10px;">Back to Menu</button>
     </div>
 
     <!-- Mines Game Screen -->
@@ -101,7 +100,7 @@
             </div>
             
             <button id="mines-start-btn" class="mines-start-btn">Start Game</button>
-            <button id="mines-back-to-menu-btn" class="mines-start-btn">Back to Menu</button>
+            <button id="mines-back-to-menu-btn" class="mines-start-btn" style="margin-top: 10px;">Back to Menu</button>
         </div>
         
         <div class="mines-info">
@@ -120,76 +119,6 @@
         <button id="mines-cashout-btn" class="mines-cashout-btn disabled" disabled>Cash Out</button>
     </div>
 
-    <!-- Loot Box Game Screen - NEW IMPROVED VERSION -->
-    <div id="lootbox-game-screen" class="game-container">
-        <div id="lootbox-user-panel" class="user-panel">
-            <div class="user-info">
-                <img id="lootbox-avatar" src="assets/default-avatar.png" alt="User Avatar">
-                <div class="user-details">
-                    <span id="lootbox-username">Guest</span>
-                    <button id="lootbox-logout-btn">Logout</button>
-                </div>
-            </div>
-            <div class="currency-display">
-                <div class="currency">
-                    <img src="assets/chip.png" alt="Chips">
-                    <span id="lootbox-chips">0</span>
-                </div>
-                <div class="currency">
-                    <img src="assets/dice.png" alt="Dice">
-                    <span id="lootbox-dice">0</span>
-                </div>
-                <div class="currency">
-                    <img src="assets/spins/money.png" alt="Dollars">
-                    <span id="lootbox-dollars">0</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="lootbox-container">
-            <!-- Left/Middle Column - Wheel and Controls -->
-            <div class="lootbox-game-area">
-                <div class="lootbox-wheel-container">
-                    <div class="lootbox-wheel" id="lootbox-wheel"></div>
-                    <div class="lootbox-center"></div>
-                </div>
-                
-                <div class="lootbox-controls">
-                    <button id="lootbox-spin-btn" class="spin-button">SPIN (50 chips)</button>
-                    <button id="lootbox-back-to-menu-btn" class="mines-start-btn">Back to Menu</button>
-                </div>
-            </div>
-
-            <!-- Right Column - Stats and Info -->
-            <div class="lootbox-info-panel">
-                <div class="lootbox-info">
-                    <h3>Drop Rates</h3>
-                    <div class="rarity-info">
-                        <div class="rarity-item mythic">
-                            <span>Mythic: 1%</span>
-                        </div>
-                        <div class="rarity-item legendary">
-                            <span>Legendary: 5%</span>
-                        </div>
-                        <div class="rarity-item epic">
-                            <span>Epic: 15%</span>
-                        </div>
-                        <div class="rarity-item uncommon">
-                            <span>Uncommon: 30%</span>
-                        </div>
-                        <div class="rarity-item common">
-                            <span>Common: 49%</span>
-                        </div>
-                    </div>
-                    <div class="lootbox-prizes">
-                        <h3>Your Prizes</h3>
-                        <div id="lootbox-prize-list"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Slot Machine Win Popup -->
     <div id="win-popup" class="win-popup">
         <div class="win-content">
@@ -206,16 +135,6 @@
             <h3 id="mines-game-over-message">Game Over!</h3>
             <div id="mines-game-over-amount">+0</div>
             <button id="mines-game-over-close">Continue</button>
-        </div>
-    </div>
-
-    <!-- Loot Box Win Popup -->
-    <div id="lootbox-win-popup" class="win-popup">
-        <div class="lootbox-win-content">
-            <h3>YOU WON!</h3>
-            <div id="lootbox-win-item" class="lootbox-win-item"></div>
-            <div class="win-amount">+<span id="lootbox-win-amount">0</span> dollars</div>
-            <button id="lootbox-claim-btn" class="claim-btn">CLAIM</button>
         </div>
     </div>
 
