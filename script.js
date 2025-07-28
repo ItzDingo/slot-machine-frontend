@@ -54,18 +54,31 @@ const CONFIG = {
         },
         houseEdge: 0.03
     },
-    wheel: {
-        minBet: 1,
-        maxBet: 1000,
-        sections: [
-            { multiplier: 2, color: '#FF5733', probability: 0.4 },
-            { multiplier: 5, color: '#33FF57', probability: 0.3 },
-            { multiplier: 10, color: '#3357FF', probability: 0.15 },
-            { multiplier: 20, color: '#F033FF', probability: 0.1 },
-            { multiplier: 50, color: '#FF33F0', probability: 0.05 }
+    lootbox: {
+        spinCost: 50,
+        items: [
+            { name: 'AK-47', img: 'assets/spins/ak.png', rarity: 'mythic', value: 1000 },
+            { name: 'Nuke', img: 'assets/spins/nuke.png', rarity: 'legendary', value: 500 },
+            { name: 'Broken Phone', img: 'assets/spins/broken-phone.png', rarity: 'epic', value: 200 },
+            { name: 'Butterfly', img: 'assets/spins/butterfly.png', rarity: 'epic', value: 200 },
+            { name: 'Classic Car', img: 'assets/spins/classic-car.png', rarity: 'legendary', value: 500 },
+            { name: 'Garbage', img: 'assets/spins/garbage.png', rarity: 'common', value: 10 },
+            { name: 'Gold', img: 'assets/spins/gold.png', rarity: 'legendary', value: 500 },
+            { name: 'Karambit', img: 'assets/spins/karambit.png', rarity: 'mythic', value: 1000 },
+            { name: 'Katana', img: 'assets/spins/katana.png', rarity: 'legendary', value: 500 },
+            { name: 'Knife', img: 'assets/spins/knife.png', rarity: 'epic', value: 200 },
+            { name: 'MP5', img: 'assets/spins/mp5.png', rarity: 'epic', value: 200 },
+            { name: 'Null', img: 'assets/spins/null.png', rarity: 'common', value: 10 },
+            { name: 'RPG', img: 'assets/spins/rpg.png', rarity: 'legendary', value: 500 },
+            { name: 'Water Gun', img: 'assets/spins/watergun.png', rarity: 'uncommon', value: 50 }
         ],
-        spinDuration: 4000,
-        spinRounds: 5
+        dropRates: {
+            mythic: 0.01,
+            legendary: 0.05,
+            epic: 0.15,
+            uncommon: 0.30,
+            common: 0.49
+        }
     }
 };
 
@@ -73,6 +86,7 @@ const CONFIG = {
 let gameState = {
     chips: 0,
     dice: 0,
+    dollars: 0,
     isSpinning: false,
     spinningReels: 0,
     currentSymbols: [],
@@ -91,18 +105,15 @@ let gameState = {
         currentWin: 0,
         gameActive: false
     },
+    lootboxGame: {
+        isSpinning: false,
+        prizes: []
+    },
     minesStats: {
         totalGames: 0,
         wins: 0,
         totalWins: 0,
         totalGamesPlayed: 0
-    },
-    wheelGame: {
-        bets: {},
-        totalBet: 0,
-        locked: false,
-        spinning: false,
-        result: null
     }
 };
 
@@ -114,7 +125,7 @@ const elements = {
     loginBtn: document.getElementById('login-btn'),
     logoutBtn: document.getElementById('logout-btn'),
     minesLogoutBtn: document.getElementById('mines-logout-btn'),
-    wheelLogoutBtn: document.getElementById('wheel-logout-btn'),
+    lootboxLogoutBtn: document.getElementById('lootbox-logout-btn'),
     usernameDisplay: document.getElementById('username'),
     userAvatar: document.getElementById('user-avatar'),
     chipsDisplay: document.getElementById('chips'),
@@ -132,8 +143,9 @@ const elements = {
     gameSelectScreen: document.getElementById('game-select-screen'),
     slotMachineBtn: document.getElementById('slot-machine-btn'),
     minesGameBtn: document.getElementById('mines-game-btn'),
-    wheelGameBtn: document.getElementById('wheel-game-btn'),
+    lootboxGameBtn: document.getElementById('lootbox-game-btn'),
     minesGameScreen: document.getElementById('mines-game-screen'),
+    lootboxGameScreen: document.getElementById('lootbox-game-screen'),
     minesBetInput: document.getElementById('mines-bet-input'),
     minesCountInput: document.getElementById('mines-count-input'),
     minesStartBtn: document.getElementById('mines-start-btn'),
@@ -148,23 +160,21 @@ const elements = {
     minesAvatar: document.getElementById('mines-avatar'),
     minesChips: document.getElementById('mines-chips'),
     minesDice: document.getElementById('mines-dice'),
+    lootboxUsername: document.getElementById('lootbox-username'),
+    lootboxAvatar: document.getElementById('lootbox-avatar'),
+    lootboxChips: document.getElementById('lootbox-chips'),
+    lootboxDice: document.getElementById('lootbox-dice'),
+    lootboxDollars: document.getElementById('lootbox-dollars'),
+    lootboxWheel: document.getElementById('lootbox-wheel'),
+    lootboxSpinBtn: document.getElementById('lootbox-spin-btn'),
+    lootboxPrizeList: document.getElementById('lootbox-prize-list'),
+    lootboxWinPopup: document.getElementById('lootbox-win-popup'),
+    lootboxWinItem: document.getElementById('lootbox-win-item'),
+    lootboxWinAmount: document.getElementById('lootbox-win-amount'),
+    lootboxClaimBtn: document.getElementById('lootbox-claim-btn'),
     backToMenuBtn: document.getElementById('back-to-menu-btn'),
     minesBackToMenuBtn: document.getElementById('mines-back-to-menu-btn'),
-    wheelGameScreen: document.getElementById('wheel-game-screen'),
-    wheelAvatar: document.getElementById('wheel-avatar'),
-    wheelUsername: document.getElementById('wheel-username'),
-    wheelChips: document.getElementById('wheel-chips'),
-    wheelDice: document.getElementById('wheel-dice'),
-    wheel: document.getElementById('wheel'),
-    wheelLockBtn: document.getElementById('wheel-lock-btn'),
-    wheelSpinBtn: document.getElementById('wheel-spin-btn'),
-    wheelClearBtn: document.getElementById('wheel-clear-btn'),
-    wheelTotalBet: document.getElementById('wheel-total-bet'),
-    wheelWinPopup: document.getElementById('wheel-win-popup'),
-    wheelWinMultiplier: document.getElementById('wheel-win-multiplier'),
-    wheelWinAmount: document.getElementById('wheel-win-amount'),
-    wheelWinClaimBtn: document.getElementById('wheel-win-claim-btn'),
-    wheelBackToMenuBtn: document.getElementById('wheel-back-to-menu-btn')
+    lootboxBackToMenuBtn: document.getElementById('lootbox-back-to-menu-btn')
 };
 
 // Helper Functions
@@ -191,8 +201,9 @@ function updateCurrencyDisplay() {
     if (elements.diceDisplay) elements.diceDisplay.textContent = gameState.dice;
     if (elements.minesChips) elements.minesChips.textContent = gameState.chips.toFixed(2);
     if (elements.minesDice) elements.minesDice.textContent = gameState.dice;
-    if (elements.wheelChips) elements.wheelChips.textContent = gameState.chips.toFixed(2);
-    if (elements.wheelDice) elements.wheelDice.textContent = gameState.dice;
+    if (elements.lootboxChips) elements.lootboxChips.textContent = gameState.chips.toFixed(2);
+    if (elements.lootboxDice) elements.lootboxDice.textContent = gameState.dice;
+    if (elements.lootboxDollars) elements.lootboxDollars.textContent = gameState.dollars.toFixed(2);
 }
 
 function showNotification(message, isSuccess) {
@@ -421,104 +432,222 @@ async function claimWin() {
     if (elements.winPopup) elements.winPopup.style.display = 'none';
 }
 
-// Mines Game Functions
-function showGameSelectScreen() {
+// Loot Box Game Functions
+function startLootboxGame() {
     if (!gameState.userId) {
         showLoginScreen();
         return;
     }
-    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
-    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
-    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
-    if (elements.wheelGameScreen) elements.wheelGameScreen.style.display = 'none';
-    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'block';
-    updateCurrencyDisplay();
-}
-
-function startSlotMachineGame() {
-    if (!gameState.userId) {
-        showLoginScreen();
-        return;
-    }
-    gameState.currentGame = 'slots';
-    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
-    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
-    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
-    if (elements.wheelGameScreen) elements.wheelGameScreen.style.display = 'none';
-    if (elements.gameScreen) elements.gameScreen.style.display = 'block';
-}
-
-function startMinesGame() {
-    if (!gameState.userId) {
-        showLoginScreen();
-        return;
-    }
-    gameState.currentGame = 'mines';
+    gameState.currentGame = 'lootbox';
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
     if (elements.gameScreen) elements.gameScreen.style.display = 'none';
-    if (elements.wheelGameScreen) elements.wheelGameScreen.style.display = 'none';
-    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'block';
-    setupMinesGameUI();
+    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
+    if (elements.lootboxGameScreen) elements.lootboxGameScreen.style.display = 'block';
+    setupLootboxGame();
 }
 
-async function setupMinesGameUI() {
-    gameState.minesGame = {
-        betAmount: 0,
-        minesCount: 0,
-        multiplier: 1.0,
-        revealedCells: 0,
-        totalCells: 25,
-        minePositions: [],
-        currentWin: 0,
-        gameActive: false
-    };
+function setupLootboxGame() {
+    if (!elements.lootboxWheel) return;
     
-    if (elements.minesCurrentWin) elements.minesCurrentWin.textContent = '0.00';
-    if (elements.minesMultiplier) elements.minesMultiplier.textContent = '1.0000x';
-    if (elements.minesGrid) elements.minesGrid.innerHTML = '';
+    // Clear previous items
+    elements.lootboxWheel.innerHTML = '';
+    gameState.lootboxGame.prizes = [];
     
-    if (elements.minesBetInput) {
-        elements.minesBetInput.disabled = false;
-        elements.minesBetInput.value = '';
+    // Create wheel items
+    CONFIG.lootbox.items.forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'lootbox-item';
+        itemElement.innerHTML = `
+            <img src="${item.img}" alt="${item.name}">
+            <span class="rarity ${item.rarity}">${item.rarity}</span>
+        `;
+        elements.lootboxWheel.appendChild(itemElement);
+    });
+    
+    // Duplicate items for seamless looping
+    CONFIG.lootbox.items.forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'lootbox-item';
+        itemElement.innerHTML = `
+            <img src="${item.img}" alt="${item.name}">
+            <span class="rarity ${item.rarity}">${item.rarity}</span>
+        `;
+        elements.lootboxWheel.appendChild(itemElement);
+    });
+    
+    updateLootboxPrizes();
+}
+
+function updateLootboxPrizes() {
+    if (!elements.lootboxPrizeList) return;
+    
+    elements.lootboxPrizeList.innerHTML = '';
+    gameState.lootboxGame.prizes.forEach(prize => {
+        const prizeElement = document.createElement('div');
+        prizeElement.className = `prize-item ${prize.rarity}`;
+        prizeElement.innerHTML = `
+            <img src="${prize.img}" alt="${prize.name}">
+            <span class="rarity">${prize.rarity}</span>
+        `;
+        elements.lootboxPrizeList.appendChild(prizeElement);
+    });
+}
+
+async function spinLootbox() {
+    if (gameState.lootboxGame.isSpinning || gameState.chips < CONFIG.lootbox.spinCost) {
+        if (gameState.chips < CONFIG.lootbox.spinCost) {
+            showNotification("Not enough chips!", false);
+        }
+        return;
     }
-    if (elements.minesCountInput) {
-        elements.minesCountInput.disabled = false;
-        elements.minesCountInput.value = '';
-    }
-    if (elements.minesStartBtn) elements.minesStartBtn.disabled = false;
-    if (elements.minesCashoutBtn) {
-        elements.minesCashoutBtn.disabled = true;
-        elements.minesCashoutBtn.classList.add('disabled');
-    }
+
+    gameState.lootboxGame.isSpinning = true;
+    if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = true;
     
     try {
-        const response = await fetch(`${API_BASE_URL}/api/mines/stats?userId=${gameState.userId}`, {
+        // Deduct spin cost
+        const response = await fetch(`${API_BASE_URL}/api/spin`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                cost: CONFIG.lootbox.spinCost
+            }),
             credentials: 'include'
         });
+
+        if (!response.ok) throw new Error('Spin failed');
+
+        const data = await response.json();
+        gameState.chips = data.newBalance;
+        updateCurrencyDisplay();
         
-        if (response.ok) {
-            const data = await response.json();
-            gameState.minesStats.totalGames = data.totalGames || 0;
-            gameState.minesStats.wins = data.wins || 0;
-            gameState.minesStats.totalWins = data.totalWins || 0;
-            gameState.minesStats.totalGamesPlayed = data.totalGamesPlayed || 0;
-        }
+        // Determine prize based on rarity weights
+        const prize = getRandomPrize();
+        gameState.lootboxGame.prizes.unshift(prize);
+        
+        // Animate wheel
+        animateLootboxWheel(prize);
+        
     } catch (error) {
-        console.error('Failed to load mines stats:', error);
+        console.error('Lootbox spin error:', error);
+        showNotification('Failed to process spin. Please try again.', false);
+        gameState.lootboxGame.isSpinning = false;
+        if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = false;
+    }
+}
+
+function getRandomPrize() {
+    const rand = Math.random();
+    let cumulativeProbability = 0;
+    let selectedRarity = 'common';
+    
+    for (const [rarity, probability] of Object.entries(CONFIG.lootbox.dropRates)) {
+        cumulativeProbability += probability;
+        if (rand <= cumulativeProbability) {
+            selectedRarity = rarity;
+            break;
+        }
     }
     
-    updateMinesStats();
+    // Filter items by selected rarity and pick one randomly
+    const eligibleItems = CONFIG.lootbox.items.filter(item => item.rarity === selectedRarity);
+    const prize = eligibleItems[Math.floor(Math.random() * eligibleItems.length)];
+    
+    return prize;
 }
 
-function updateMinesStats() {
-    if (elements.minesWinsCounter) elements.minesWinsCounter.textContent = gameState.minesStats.wins;
-    const winRate = gameState.minesStats.totalGames > 0 
-        ? Math.round((gameState.minesStats.wins / gameState.minesStats.totalGames) * 100)
-        : 0;
-    if (elements.minesWinRate) elements.minesWinRate.textContent = `${winRate}%`;
+function animateLootboxWheel(prize) {
+    if (!elements.lootboxWheel) return;
+    
+    const itemWidth = 100; // Width of each item in pixels
+    const itemIndex = CONFIG.lootbox.items.findIndex(item => item.name === prize.name);
+    const targetPosition = -(itemIndex * itemWidth) - (Math.random() * itemWidth * 0.8 + itemWidth * 0.1);
+    const extraSpins = 5; // Number of extra full spins
+    
+    const totalDistance = Math.abs(targetPosition) + (CONFIG.lootbox.items.length * itemWidth * extraSpins);
+    const duration = 5000; // 5 seconds
+    
+    let startTime = null;
+    let startPosition = 0;
+    
+    function animate(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = timestamp - startTime;
+        const spinProgress = Math.min(progress / duration, 1);
+        
+        // Ease-out function for smooth stopping
+        const easedProgress = 1 - Math.pow(1 - spinProgress, 3);
+        
+        if (spinProgress < 1) {
+            const position = startPosition - (easedProgress * totalDistance);
+            elements.lootboxWheel.style.transform = `translateX(${position}px)`;
+            requestAnimationFrame(animate);
+        } else {
+            // Animation complete
+            elements.lootboxWheel.style.transform = `translateX(${targetPosition}px)`;
+            completeLootboxSpin(prize);
+        }
+    }
+    
+    requestAnimationFrame(animate);
 }
 
+async function completeLootboxSpin(prize) {
+    gameState.lootboxGame.isSpinning = false;
+    if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = false;
+    
+    // Add dollars to user's balance
+    gameState.dollars += prize.value;
+    updateCurrencyDisplay();
+    
+    // Show win popup
+    showLootboxWinPopup(prize);
+    
+    // Update prize list
+    updateLootboxPrizes();
+    
+    try {
+        // Save prize to user's account
+        await fetch(`${API_BASE_URL}/api/lootbox/win`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                item: prize.name,
+                rarity: prize.rarity,
+                value: prize.value
+            }),
+            credentials: 'include'
+        });
+    } catch (error) {
+        console.error('Failed to save lootbox prize:', error);
+    }
+}
+
+function showLootboxWinPopup(prize) {
+    if (!elements.lootboxWinItem || !elements.lootboxWinAmount || !elements.lootboxWinPopup) return;
+    
+    elements.lootboxWinItem.innerHTML = `
+        <img src="${prize.img}" alt="${prize.name}">
+        <div class="rarity ${prize.rarity}">${prize.rarity.toUpperCase()}</div>
+    `;
+    elements.lootboxWinAmount.textContent = prize.value;
+    elements.lootboxWinPopup.style.display = 'flex';
+}
+
+function claimLootboxWin() {
+    if (elements.lootboxWinPopup) elements.lootboxWinPopup.style.display = 'none';
+}
+
+// Mines Game Functions
 async function startNewMinesGame() {
     if (!gameState.userId) {
         showLoginScreen();
@@ -528,7 +657,7 @@ async function startNewMinesGame() {
     const betAmount = parseFloat(elements.minesBetInput?.value);
     const minesCount = parseInt(elements.minesCountInput?.value);
     
-    if (isNaN(betAmount)) {
+    if (isNaN(betAmount) || betAmount <= 0) {
         showNotification("Please enter a valid bet amount", false);
         return;
     }
@@ -768,227 +897,6 @@ function closeMinesGameOverPopup() {
     setupMinesGameUI();
 }
 
-// Wheel of Fortune Game Functions
-function startWheelGame() {
-    if (!gameState.userId) {
-        showLoginScreen();
-        return;
-    }
-    gameState.currentGame = 'wheel';
-    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
-    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
-    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
-    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
-    if (elements.wheelGameScreen) elements.wheelGameScreen.style.display = 'block';
-    
-    setupWheelGameUI();
-}
-
-function initWheel() {
-    if (!elements.wheel) return;
-    
-    elements.wheel.innerHTML = '';
-    const sectionAngle = 360 / CONFIG.wheel.sections.length;
-    
-    CONFIG.wheel.sections.forEach((section, index) => {
-        const sectionElement = document.createElement('div');
-        sectionElement.className = 'section';
-        sectionElement.style.transform = `rotate(${index * sectionAngle}deg)`;
-        sectionElement.style.backgroundColor = section.color;
-        sectionElement.dataset.multiplier = section.multiplier;
-        sectionElement.innerHTML = `<span>${section.multiplier}x</span>`;
-        elements.wheel.appendChild(sectionElement);
-    });
-}
-
-function setupWheelGameUI() {
-    gameState.wheelGame = {
-        bets: {},
-        totalBet: 0,
-        locked: false,
-        spinning: false,
-        result: null
-    };
-    
-    if (elements.wheelTotalBet) elements.wheelTotalBet.textContent = '0';
-    if (elements.wheelSpinBtn) {
-        elements.wheelSpinBtn.disabled = true;
-        elements.wheelSpinBtn.textContent = 'Spin';
-    }
-    if (elements.wheelLockBtn) {
-        elements.wheelLockBtn.disabled = false;
-        elements.wheelLockBtn.textContent = 'Lock Bets';
-    }
-    
-    document.querySelectorAll('.multiplier-option input').forEach(input => {
-        input.value = '';
-        input.disabled = false;
-    });
-    
-    if (elements.wheel) {
-        elements.wheel.style.transform = 'rotate(0deg)';
-    }
-}
-
-function updateWheelBets() {
-    if (gameState.wheelGame.locked || gameState.wheelGame.spinning) return;
-    
-    let totalBet = 0;
-    gameState.wheelGame.bets = {};
-    
-    document.querySelectorAll('.multiplier-option').forEach(option => {
-        const multiplier = parseFloat(option.dataset.multiplier);
-        const betInput = option.querySelector('input');
-        const betAmount = parseFloat(betInput.value) || 0;
-        
-        if (betAmount > 0) {
-            gameState.wheelGame.bets[multiplier] = betAmount;
-            totalBet += betAmount;
-        }
-    });
-    
-    gameState.wheelGame.totalBet = totalBet;
-    if (elements.wheelTotalBet) elements.wheelTotalBet.textContent = totalBet.toFixed(2);
-}
-
-function lockWheelBets() {
-    if (gameState.wheelGame.totalBet <= 0) {
-        showNotification('Please place at least one bet', false);
-        return;
-    }
-    
-    if (gameState.wheelGame.totalBet > gameState.chips) {
-        showNotification('Not enough chips for this bet', false);
-        return;
-    }
-    
-    gameState.wheelGame.locked = true;
-    if (elements.wheelLockBtn) {
-        elements.wheelLockBtn.disabled = true;
-        elements.wheelLockBtn.textContent = 'Bets Locked';
-    }
-    if (elements.wheelSpinBtn) elements.wheelSpinBtn.disabled = false;
-    
-    document.querySelectorAll('.multiplier-option input').forEach(input => {
-        input.disabled = true;
-    });
-}
-
-async function spinWheel() {
-    if (!gameState.wheelGame.locked || gameState.wheelGame.spinning) return;
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/spin`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                userId: gameState.userId,
-                cost: gameState.wheelGame.totalBet
-            }),
-            credentials: 'include'
-        });
-
-        const data = await response.json();
-        gameState.chips = data.newBalance;
-        updateCurrencyDisplay();
-        
-        gameState.wheelGame.spinning = true;
-        if (elements.wheelSpinBtn) elements.wheelSpinBtn.disabled = true;
-        
-        const random = Math.random();
-        let cumulativeProbability = 0;
-        let winningSection = null;
-        
-        for (const section of CONFIG.wheel.sections) {
-            cumulativeProbability += section.probability;
-            if (random <= cumulativeProbability) {
-                winningSection = section;
-                break;
-            }
-        }
-        
-        const sectionAngle = 360 / CONFIG.wheel.sections.length;
-        const sectionIndex = CONFIG.wheel.sections.findIndex(s => s.multiplier === winningSection.multiplier);
-        const targetAngle = (360 * CONFIG.wheel.spinRounds) + (360 - (sectionIndex * sectionAngle)) + (Math.random() * sectionAngle);
-        
-        if (elements.wheel) {
-            elements.wheel.style.transition = `transform ${CONFIG.wheel.spinDuration}ms cubic-bezier(0.17, 0.67, 0.12, 0.99)`;
-            elements.wheel.style.transform = `rotate(${targetAngle}deg)`;
-        }
-        
-        setTimeout(() => {
-            gameState.wheelGame.spinning = false;
-            gameState.wheelGame.result = winningSection;
-            processWheelResult(winningSection);
-        }, CONFIG.wheel.spinDuration + 500);
-        
-    } catch (error) {
-        console.error('Wheel spin error:', error);
-        showNotification('Failed to process wheel spin', false);
-        gameState.wheelGame.spinning = false;
-        if (elements.wheelSpinBtn) elements.wheelSpinBtn.disabled = false;
-    }
-}
-
-async function processWheelResult(winningSection) {
-    const winMultiplier = winningSection.multiplier;
-    let winAmount = 0;
-    
-    if (gameState.wheelGame.bets[winMultiplier]) {
-        winAmount = gameState.wheelGame.bets[winMultiplier] * winMultiplier;
-    }
-    
-    if (winAmount > 0) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/win`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: gameState.userId,
-                    amount: winAmount
-                }),
-                credentials: 'include'
-            });
-
-            const data = await response.json();
-            gameState.chips = data.newBalance;
-            updateCurrencyDisplay();
-            
-            if (elements.wheelWinMultiplier) elements.wheelWinMultiplier.textContent = `${winMultiplier}x`;
-            if (elements.wheelWinAmount) elements.wheelWinAmount.textContent = winAmount.toFixed(2);
-            if (elements.wheelWinPopup) elements.wheelWinPopup.style.display = 'flex';
-            
-        } catch (error) {
-            console.error('Wheel win error:', error);
-            showNotification('Failed to process win', false);
-        }
-    } else {
-        showNotification(`Landed on ${winMultiplier}x but no bet placed`, false);
-    }
-    
-    setupWheelGameUI();
-}
-
-function clearWheelBets() {
-    if (gameState.wheelGame.locked || gameState.wheelGame.spinning) return;
-    
-    document.querySelectorAll('.multiplier-option input').forEach(input => {
-        input.value = '';
-    });
-    
-    updateWheelBets();
-}
-
-function claimWheelWin() {
-    if (elements.wheelWinPopup) elements.wheelWinPopup.style.display = 'none';
-}
-
 // Authentication Functions
 async function loginWithToken(token) {
     try {
@@ -1050,13 +958,14 @@ function handleSuccessfulLogin(user) {
     gameState.userId = user.id;
     gameState.chips = user.chips;
     gameState.dice = user.dice;
+    gameState.dollars = user.dollars || 0;
     
     if (elements.usernameDisplay) elements.usernameDisplay.textContent = user.username;
     if (elements.userAvatar) elements.userAvatar.src = user.avatar || 'assets/default-avatar.png';
     if (elements.minesUsername) elements.minesUsername.textContent = user.username;
     if (elements.minesAvatar) elements.minesAvatar.src = user.avatar || 'assets/default-avatar.png';
-    if (elements.wheelUsername) elements.wheelUsername.textContent = user.username;
-    if (elements.wheelAvatar) elements.wheelAvatar.src = user.avatar || 'assets/default-avatar.png';
+    if (elements.lootboxUsername) elements.lootboxUsername.textContent = user.username;
+    if (elements.lootboxAvatar) elements.lootboxAvatar.src = user.avatar || 'assets/default-avatar.png';
     
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     showGameSelectScreen();
@@ -1071,8 +980,8 @@ function handleSuccessfulLogin(user) {
     
     if (gameState.currentGame === 'mines') {
         setupMinesGameUI();
-    } else if (gameState.currentGame === 'wheel') {
-        setupWheelGameUI();
+    } else if (gameState.currentGame === 'lootbox') {
+        setupLootboxGame();
     }
 }
 
@@ -1081,9 +990,49 @@ function showLoginScreen() {
     if (elements.gameScreen) elements.gameScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
-    if (elements.wheelGameScreen) elements.wheelGameScreen.style.display = 'none';
+    if (elements.lootboxGameScreen) elements.lootboxGameScreen.style.display = 'none';
     gameState.userId = null;
     if (elements.tokenInput) elements.tokenInput.value = '';
+}
+
+function showGameSelectScreen() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
+    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
+    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
+    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
+    if (elements.lootboxGameScreen) elements.lootboxGameScreen.style.display = 'none';
+    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'block';
+    updateCurrencyDisplay();
+}
+
+function startSlotMachineGame() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
+    gameState.currentGame = 'slots';
+    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
+    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
+    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
+    if (elements.lootboxGameScreen) elements.lootboxGameScreen.style.display = 'none';
+    if (elements.gameScreen) elements.gameScreen.style.display = 'block';
+}
+
+function startMinesGame() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
+    gameState.currentGame = 'mines';
+    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
+    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
+    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
+    if (elements.lootboxGameScreen) elements.lootboxGameScreen.style.display = 'none';
+    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'block';
+    setupMinesGameUI();
 }
 
 async function checkAuthStatus() {
@@ -1107,17 +1056,6 @@ async function checkAuthStatus() {
     }
 }
 
-// Add CSS animation for landing bounce
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes landingBounce {
-        0% { transform: translateY(0%) scale(1); }
-        50% { transform: translateY(-20%) scale(1.1); }
-        100% { transform: translateY(0%) scale(1); }
-    }
-`;
-document.head.appendChild(style);
-
 // Event Listeners
 if (elements.loginBtn) {
     elements.loginBtn.addEventListener('click', async () => {
@@ -1132,13 +1070,15 @@ if (elements.loginBtn) {
 
 if (elements.logoutBtn) elements.logoutBtn.addEventListener('click', logout);
 if (elements.minesLogoutBtn) elements.minesLogoutBtn.addEventListener('click', logout);
-if (elements.wheelLogoutBtn) elements.wheelLogoutBtn.addEventListener('click', logout);
+if (elements.lootboxLogoutBtn) elements.lootboxLogoutBtn.addEventListener('click', logout);
 if (elements.spinBtn) elements.spinBtn.addEventListener('click', startSpin);
+if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.addEventListener('click', spinLootbox);
 if (elements.claimBtn) elements.claimBtn.addEventListener('click', claimWin);
+if (elements.lootboxClaimBtn) elements.lootboxClaimBtn.addEventListener('click', claimLootboxWin);
 
 if (elements.slotMachineBtn) elements.slotMachineBtn.addEventListener('click', startSlotMachineGame);
 if (elements.minesGameBtn) elements.minesGameBtn.addEventListener('click', startMinesGame);
-if (elements.wheelGameBtn) elements.wheelGameBtn.addEventListener('click', startWheelGame);
+if (elements.lootboxGameBtn) elements.lootboxGameBtn.addEventListener('click', startLootboxGame);
 if (elements.minesStartBtn) elements.minesStartBtn.addEventListener('click', startNewMinesGame);
 if (elements.minesCashoutBtn) elements.minesCashoutBtn.addEventListener('click', cashoutMinesGame);
 if (document.getElementById('mines-game-over-close')) {
@@ -1146,29 +1086,7 @@ if (document.getElementById('mines-game-over-close')) {
 }
 if (elements.backToMenuBtn) elements.backToMenuBtn.addEventListener('click', showGameSelectScreen);
 if (elements.minesBackToMenuBtn) elements.minesBackToMenuBtn.addEventListener('click', showGameSelectScreen);
-if (elements.wheelBackToMenuBtn) elements.wheelBackToMenuBtn.addEventListener('click', showGameSelectScreen);
-
-// Wheel game event listeners
-if (elements.wheelLockBtn) {
-    elements.wheelLockBtn.addEventListener('click', lockWheelBets);
-}
-
-if (elements.wheelSpinBtn) {
-    elements.wheelSpinBtn.addEventListener('click', spinWheel);
-}
-
-if (elements.wheelClearBtn) {
-    elements.wheelClearBtn.addEventListener('click', clearWheelBets);
-}
-
-if (elements.wheelWinClaimBtn) {
-    elements.wheelWinClaimBtn.addEventListener('click', claimWheelWin);
-}
-
-// Bet input change listeners
-document.querySelectorAll('.multiplier-option input').forEach(input => {
-    input.addEventListener('input', updateWheelBets);
-});
+if (elements.lootboxBackToMenuBtn) elements.lootboxBackToMenuBtn.addEventListener('click', showGameSelectScreen);
 
 // Initialize Game
 async function initGame() {
@@ -1177,9 +1095,6 @@ async function initGame() {
         if (authCheck && !gameState.authChecked) {
             gameState.authChecked = true;
         }
-        
-        // Initialize wheel
-        initWheel();
     } catch (error) {
         console.error('Initialization error:', error);
     }
