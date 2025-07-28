@@ -454,14 +454,27 @@ function setupLootboxGame() {
     elements.lootboxWheel.innerHTML = '';
     gameState.lootboxGame.prizes = [];
     
+    // Show more items on the wheel
+    const visibleItems = 5; // Number of items visible at once
+    
     // Create wheel items
     CONFIG.lootbox.items.forEach(item => {
         const itemElement = document.createElement('div');
         itemElement.className = 'lootbox-item';
+        
+        const img = document.createElement('img');
+        img.src = item.img;
+        img.alt = item.name;
+        img.onerror = function() {
+            console.error('Failed to load image:', item.img);
+            this.src = 'assets/default-item.png';
+        };
+        
         itemElement.innerHTML = `
-            <img src="${item.img}" alt="${item.name}">
             <span class="rarity ${item.rarity}">${item.rarity}</span>
         `;
+        itemElement.prepend(img);
+        
         elements.lootboxWheel.appendChild(itemElement);
     });
     
@@ -469,10 +482,20 @@ function setupLootboxGame() {
     CONFIG.lootbox.items.forEach(item => {
         const itemElement = document.createElement('div');
         itemElement.className = 'lootbox-item';
+        
+        const img = document.createElement('img');
+        img.src = item.img;
+        img.alt = item.name;
+        img.onerror = function() {
+            console.error('Failed to load image:', item.img);
+            this.src = 'assets/default-item.png';
+        };
+        
         itemElement.innerHTML = `
-            <img src="${item.img}" alt="${item.name}">
             <span class="rarity ${item.rarity}">${item.rarity}</span>
         `;
+        itemElement.prepend(img);
+        
         elements.lootboxWheel.appendChild(itemElement);
     });
     
