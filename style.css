@@ -1,4 +1,6 @@
-/* Base Styles */
+/* ==================== */
+/* BASE STYLES */
+/* ==================== */
 :root {
     --primary: #FFD700;
     --secondary: #FF5733;
@@ -12,6 +14,11 @@
     --epic: linear-gradient(135deg, #3f51b5, #00bcd4);
     --uncommon: linear-gradient(135deg, #4caf50, #8bc34a);
     --common: linear-gradient(135deg, #9e9e9e, #607d8b);
+    --mythic-border: #9c27b0;
+    --legendary-border: #ff9800;
+    --epic-border: #3f51b5;
+    --uncommon-border: #4caf50;
+    --common-border: #9e9e9e;
 }
 
 * {
@@ -31,7 +38,9 @@ body {
     text-shadow: var(--shadow-gold);
 }
 
-/* Login Screen */
+/* ==================== */
+/* LOGIN SCREEN */
+/* ==================== */
 .login-container {
     width: 100%;
     max-width: 500px;
@@ -134,7 +143,9 @@ body {
     font-family: monospace;
 }
 
-/* Game Select Screen */
+/* ==================== */
+/* GAME SELECT SCREEN */
+/* ==================== */
 #game-select-screen {
     display: none;
     width: 100%;
@@ -166,11 +177,13 @@ body {
     box-shadow: 0 0 15px rgba(255, 87, 51, 0.7);
 }
 
-/* Slot Machine Game */
+/* ==================== */
+/* GAME CONTAINER BASE */
+/* ==================== */
 .game-container {
     display: none;
     width: 100%;
-    max-width: 600px;
+    max-width: 900px;
     background: rgba(20, 20, 20, 0.9);
     border-radius: 15px;
     padding: 2rem;
@@ -253,7 +266,9 @@ body {
     object-fit: contain;
 }
 
-/* Slot Machine */
+/* ==================== */
+/* SLOT MACHINE GAME */
+/* ==================== */
 .slot-machine {
     display: flex;
     gap: 15px;
@@ -323,155 +338,7 @@ body {
     animation: highlight 0.5s ease-in-out 3;
 }
 
-/* Loot Box Game */
-.lootbox-container {
-    display: flex;
-    gap: 20px;
-    margin: 1rem 0;
-}
-
-.lootbox-wheel-container {
-    flex: 2;
-    position: relative;
-    height: 200px;
-    overflow: hidden;
-    border: 3px solid var(--primary);
-    border-radius: 10px;
-    background: rgba(0, 0, 0, 0.5);
-}
-
-.lootbox-wheel {
-    display: flex;
-    height: 100%;
-    position: relative;
-    transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
-}
-
-.lootbox-item {
-    min-width: 100px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-    position: relative;
-}
-
-.lootbox-item img {
-    width: 80px;
-    height: 80px;
-    object-fit: contain;
-    margin-bottom: 5px;
-}
-
-.lootbox-item .rarity {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    font-size: 0.7rem;
-    font-weight: bold;
-    padding: 2px 5px;
-    border-radius: 3px;
-}
-
-.lootbox-center {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 10px;
-    height: 100%;
-    background: rgba(255, 215, 0, 0.3);
-    z-index: 2;
-}
-
-.lootbox-info {
-    flex: 1;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-    padding: 15px;
-    border: 2px solid var(--primary);
-}
-
-.rarity-info {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 10px;
-}
-
-.rarity-item {
-    padding: 8px;
-    border-radius: 5px;
-    font-weight: bold;
-    text-align: center;
-}
-
-.mythic {
-    background: var(--mythic);
-    border: 1px solid #9c27b0;
-}
-
-.legendary {
-    background: var(--legendary);
-    border: 1px solid #ff9800;
-    color: #000;
-}
-
-.epic {
-    background: var(--epic);
-    border: 1px solid #3f51b5;
-}
-
-.uncommon {
-    background: var(--uncommon);
-    border: 1px solid #4caf50;
-}
-
-.common {
-    background: var(--common);
-    border: 1px solid #9e9e9e;
-}
-
-.lootbox-prizes {
-    margin-top: 20px;
-}
-
-#lootbox-prize-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 10px;
-    max-height: 150px;
-    overflow-y: auto;
-}
-
-.prize-item {
-    width: 60px;
-    height: 80px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 5px;
-    border-radius: 5px;
-    position: relative;
-}
-
-.prize-item img {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-}
-
-.prize-item .rarity {
-    font-size: 0.6rem;
-    margin-top: 3px;
-}
-
-/* Spin Button */
-#spin-btn, #lootbox-spin-btn {
+#spin-btn {
     background: linear-gradient(to bottom, var(--secondary), #C70039);
     color: white;
     border: none;
@@ -490,7 +357,7 @@ body {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-#spin-btn::before, #lootbox-spin-btn::before {
+#spin-btn::before {
     content: '';
     position: absolute;
     top: -50%;
@@ -506,153 +373,34 @@ body {
     transition: all 0.3s;
 }
 
-#spin-btn:hover, #lootbox-spin-btn:hover {
+#spin-btn:hover {
     transform: scale(1.05);
     box-shadow: 0 0 20px rgba(255, 87, 51, 0.7);
 }
 
-#spin-btn:hover::before, #lootbox-spin-btn:hover::before {
+#spin-btn:hover::before {
     transform: rotate(30deg) translate(10%, 10%);
 }
 
-#spin-btn:disabled, #lootbox-spin-btn:disabled {
+#spin-btn:disabled {
     background: #666;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
 }
 
-#spin-btn:disabled::before, #lootbox-spin-btn:disabled::before {
+#spin-btn:disabled::before {
     display: none;
 }
 
-/* Win Popup */
-.win-popup {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 100;
-    justify-content: center;
-    align-items: center;
-    animation: fadeIn 0.3s ease-out;
+#spin-btn:active {
+    animation: quickSpin 2s ease-out;
+    transform: scale(0.95);
 }
 
-.win-content, .lootbox-win-content {
-    background: var(--dark);
-    border: 3px solid var(--primary);
-    border-radius: 10px;
-    padding: 2rem;
-    text-align: center;
-    width: 90%;
-    max-width: 300px;
-    position: relative;
-    overflow: hidden;
-    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.win-content::before, .lootbox-win-content::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 5px;
-    background: linear-gradient(to right, var(--primary), var(--secondary));
-}
-
-.win-content h3, .lootbox-win-content h3 {
-    color: var(--primary);
-    margin-bottom: 1rem;
-    font-size: 1.8rem;
-    text-transform: uppercase;
-}
-
-.win-combo {
-    margin: 1rem 0;
-    font-size: 1.5rem;
-    color: var(--primary);
-    min-height: 50px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.lootbox-win-item {
-    margin: 1rem 0;
-    min-height: 100px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.lootbox-win-item img {
-    width: 80px;
-    height: 80px;
-    object-fit: contain;
-    margin-bottom: 10px;
-}
-
-.lootbox-win-item .rarity {
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-weight: bold;
-    margin-top: 5px;
-}
-
-.combo-symbols {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin: 15px 0;
-}
-
-.combo-symbols img {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-    animation: pulse 1s infinite alternate;
-}
-
-.win-amount {
-    font-size: 1.5rem;
-    color: white;
-    margin: 1rem 0;
-    font-weight: bold;
-}
-
-#claim-btn, #lootbox-claim-btn {
-    background: linear-gradient(to bottom, var(--primary), #D4AF37);
-    color: #000;
-    border: none;
-    border-radius: 5px;
-    padding: 10px 20px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.3s;
-}
-
-#claim-btn:hover, #lootbox-claim-btn:hover {
-    transform: scale(1.05);
-}
-
-/* Mines Game Screen */
-#mines-game-screen {
-    display: none;
-    width: 100%;
-    max-width: 600px;
-    background: rgba(20, 20, 20, 0.9);
-    border-radius: 15px;
-    padding: 2rem;
-    border: 3px solid var(--primary);
-    box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
-}
-
+/* ==================== */
+/* MINES GAME */
+/* ==================== */
 .mines-controls {
     display: flex;
     flex-direction: column;
@@ -745,21 +493,6 @@ body {
     font-size: 1.2rem;
 }
 
-#mines-grid[style*="repeat(5"] .mines-cell {
-    min-width: 50px;
-    min-height: 50px;
-}
-
-#mines-grid[style*="repeat(6"] .mines-cell {
-    min-width: 40px;
-    min-height: 40px;
-}
-
-#mines-grid[style*="repeat(7"] .mines-cell {
-    min-width: 35px;
-    min-height: 35px;
-}
-
 .mines-cell:hover {
     transform: scale(0.95);
 }
@@ -808,46 +541,256 @@ body {
     transform: none !important;
 }
 
-#mines-cashout-btn[disabled] {
-    opacity: 0.6;
-    cursor: not-allowed;
-    background-color: #cccccc !important;
-    color: #666 !important;
-    pointer-events: none;
+/* ==================== */
+/* LOOT BOX GAME - ENHANCED */
+/* ==================== */
+.lootbox-container {
+    display: flex;
+    width: 100%;
+    gap: 30px;
+    margin-top: 20px;
 }
 
-/* Back to Menu Button */
-#back-to-menu-btn, #mines-back-to-menu-btn, #lootbox-back-to-menu-btn {
-    background: #444;
+/* Wheel Area */
+.lootbox-game-area {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.lootbox-wheel-container {
+    width: 100%;
+    height: 250px;
+    overflow: hidden;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    position: relative;
+    border: 3px solid var(--primary);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+.lootbox-wheel {
+    display: flex;
+    height: 100%;
+    transition: transform 5s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+    align-items: center;
+}
+
+.lootbox-item {
+    min-width: 150px;
+    height: 90%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    margin: 0 5px;
+    position: relative;
+    background: rgba(30, 30, 30, 0.8);
+    border-radius: 8px;
+    border: 3px solid;
+}
+
+.lootbox-item.mythic {
+    border-color: var(--mythic-border);
+    box-shadow: 0 0 15px rgba(156, 39, 176, 0.7);
+}
+.lootbox-item.legendary {
+    border-color: var(--legendary-border);
+    box-shadow: 0 0 15px rgba(255, 152, 0, 0.7);
+}
+.lootbox-item.epic {
+    border-color: var(--epic-border);
+    box-shadow: 0 0 15px rgba(63, 81, 181, 0.7);
+}
+.lootbox-item.uncommon {
+    border-color: var(--uncommon-border);
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.7);
+}
+.lootbox-item.common {
+    border-color: var(--common-border);
+    box-shadow: 0 0 15px rgba(158, 158, 158, 0.7);
+}
+
+.lootbox-item img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    margin-bottom: 10px;
+    filter: drop-shadow(0 0 5px rgba(0,0,0,0.7));
+}
+
+.lootbox-item .rarity {
+    position: absolute;
+    bottom: 5px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: bold;
+    padding: 3px 0;
+}
+
+.lootbox-item.mythic .rarity { background: var(--mythic-border); }
+.lootbox-item.legendary .rarity { background: var(--legendary-border); color: #000; }
+.lootbox-item.epic .rarity { background: var(--epic-border); }
+.lootbox-item.uncommon .rarity { background: var(--uncommon-border); }
+.lootbox-item.common .rarity { background: var(--common-border); }
+
+.lootbox-center {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent, var(--primary), transparent);
+    z-index: 2;
+}
+
+/* Controls */
+.lootbox-controls {
+    margin-top: 25px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+#lootbox-spin-btn {
+    width: 150px;
+    height: 150px;
+    font-size: 1.5rem;
+    background: linear-gradient(to bottom, var(--secondary), #C70039);
     color: white;
     border: none;
-    padding: 10px;
-    border-radius: 5px;
-    font-size: 1rem;
+    border-radius: 50%;
     cursor: pointer;
     transition: all 0.3s;
-    width: 100%;
-    margin-top: 10px;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-#back-to-menu-btn:hover, #mines-back-to-menu-btn:hover, #lootbox-back-to-menu-btn:hover {
-    background: #555;
-    transform: translateY(-2px);
+#lootbox-spin-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(255, 87, 51, 0.7);
 }
 
-/* Mines Stats */
-.mines-info {
+#lootbox-spin-btn:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Info Panel */
+.lootbox-info-panel {
+    flex: 1;
+    min-width: 250px;
+}
+
+.lootbox-info {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 20px;
+    border: 2px solid var(--primary);
+    height: 100%;
+}
+
+.rarity-info {
     display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin: 15px 0;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
 }
 
-/* Mines Game Over Popup */
-#mines-game-over-popup {
+.rarity-item {
+    padding: 8px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-align: center;
+    border: 2px solid;
+}
+
+.rarity-item.mythic {
+    background: var(--mythic);
+    border-color: var(--mythic-border);
+}
+.rarity-item.legendary {
+    background: var(--legendary);
+    border-color: var(--legendary-border);
+    color: #000;
+}
+.rarity-item.epic {
+    background: var(--epic);
+    border-color: var(--epic-border);
+}
+.rarity-item.uncommon {
+    background: var(--uncommon);
+    border-color: var(--uncommon-border);
+}
+.rarity-item.common {
+    background: var(--common);
+    border-color: var(--common-border);
+}
+
+/* Prize History */
+.lootbox-prizes {
+    margin-top: 25px;
+}
+
+#lootbox-prize-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.prize-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(30, 30, 30, 0.8);
+    transition: transform 0.3s;
+    border: 2px solid;
+}
+
+.prize-item:hover {
+    transform: scale(1.05);
+}
+
+.prize-item.mythic { border-color: var(--mythic-border); box-shadow: 0 0 10px rgba(156, 39, 176, 0.5); }
+.prize-item.legendary { border-color: var(--legendary-border); box-shadow: 0 0 10px rgba(255, 152, 0, 0.5); }
+.prize-item.epic { border-color: var(--epic-border); box-shadow: 0 0 10px rgba(63, 81, 181, 0.5); }
+.prize-item.uncommon { border-color: var(--uncommon-border); box-shadow: 0 0 10px rgba(76, 175, 80, 0.5); }
+.prize-item.common { border-color: var(--common-border); box-shadow: 0 0 10px rgba(158, 158, 158, 0.5); }
+
+.prize-item img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    margin-bottom: 5px;
+}
+
+.prize-item .rarity {
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* ==================== */
+/* WIN POPUPS */
+/* ==================== */
+.win-popup {
     display: none;
     position: fixed;
     top: 0;
@@ -858,9 +801,10 @@ body {
     z-index: 100;
     justify-content: center;
     align-items: center;
+    animation: fadeIn 0.3s ease-out;
 }
 
-.mines-game-over-content {
+.win-content, .lootbox-win-content {
     background: var(--dark);
     border: 3px solid var(--primary);
     border-radius: 10px;
@@ -868,95 +812,166 @@ body {
     text-align: center;
     width: 90%;
     max-width: 300px;
+    position: relative;
+    overflow: hidden;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-#mines-game-over-message {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    color: var(--primary);
-}
-
-#mines-game-over-amount {
-    font-size: 1.8rem;
-    font-weight: bold;
-    margin: 1rem 0;
-}
-
-#mines-game-over-close {
-    background: var(--secondary);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 1rem;
-}
-
-/* Loading Indicator */
-.spin-loading {
-    position: fixed;
+.win-content::before, .lootbox-win-content::before {
+    content: '';
+    position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
+    right: 0;
+    height: 5px;
+    background: linear-gradient(to right, var(--primary), var(--secondary));
+}
+
+.win-content h3, .lootbox-win-content h3 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+    text-transform: uppercase;
+}
+
+.win-combo {
+    margin: 1rem 0;
+    font-size: 1.5rem;
+    color: var(--primary);
+    min-height: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
 }
 
-.spin-loading.show {
-    opacity: 1;
-    pointer-events: all;
+.lootbox-win-item {
+    margin: 1rem 0;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid rgba(255, 215, 0, 0.3);
-    border-radius: 50%;
-    border-top-color: var(--primary);
-    animation: spin 1.5s linear infinite;
+.lootbox-win-item img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-bottom: 10px;
 }
 
-/* Notifications */
-.notification {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 15px 25px;
+.lootbox-win-item .rarity {
+    padding: 5px 10px;
     border-radius: 5px;
-    color: white;
     font-weight: bold;
-    z-index: 1000;
-    opacity: 0;
-    transition: opacity 0.3s;
-    max-width: 80%;
-    text-align: center;
-    backdrop-filter: blur(5px);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    margin-top: 5px;
 }
 
-.notification.show {
-    opacity: 1;
+.lootbox-win-item.mythic .rarity { background: var(--mythic-border); }
+.lootbox-win-item.legendary .rarity { background: var(--legendary-border); color: #000; }
+.lootbox-win-item.epic .rarity { background: var(--epic-border); }
+.lootbox-win-item.uncommon .rarity { background: var(--uncommon-border); }
+.lootbox-win-item.common .rarity { background: var(--common-border); }
+
+.win-amount {
+    font-size: 1.5rem;
+    color: white;
+    margin: 1rem 0;
+    font-weight: bold;
 }
 
-.notification.success {
-    background-color: rgba(76, 175, 80, 0.9);
-    border: 1px solid #4CAF50;
+#claim-btn, #lootbox-claim-btn {
+    background: linear-gradient(to bottom, var(--primary), #D4AF37);
+    color: #000;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.3s;
 }
 
-.notification.error {
-    background-color: rgba(244, 67, 54, 0.9);
-    border: 1px solid #f44336;
+#claim-btn:hover, #lootbox-claim-btn:hover {
+    transform: scale(1.05);
 }
 
-/* Animations */
+/* ==================== */
+/* RESPONSIVE DESIGN */
+/* ==================== */
+@media (max-width: 768px) {
+    .game-container {
+        max-width: 95%;
+        padding: 1.5rem;
+    }
+    
+    .lootbox-container {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .lootbox-wheel-container {
+        height: 200px;
+    }
+    
+    .lootbox-item {
+        min-width: 120px;
+        height: 85%;
+    }
+    
+    .lootbox-item img {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .lootbox-info-panel {
+        min-width: 100%;
+    }
+    
+    #lootbox-prize-list {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    #lootbox-spin-btn {
+        width: 130px;
+        height: 130px;
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .lootbox-wheel-container {
+        height: 180px;
+    }
+    
+    .lootbox-item {
+        min-width: 100px;
+        padding: 10px;
+    }
+    
+    .lootbox-item img {
+        width: 70px;
+        height: 70px;
+    }
+    
+    #lootbox-prize-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    #lootbox-spin-btn {
+        width: 110px;
+        height: 110px;
+        font-size: 1.1rem;
+    }
+    
+    .win-content, .lootbox-win-content {
+        padding: 1.5rem;
+    }
+}
+
+/* ==================== */
+/* ANIMATIONS */
+/* ==================== */
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
@@ -964,12 +979,6 @@ body {
 @keyframes pulse {
     from { transform: scale(1); }
     to { transform: scale(1.1); }
-}
-
-@keyframes pulseGreen {
-    0% { background-color: rgba(76, 175, 80, 0.2); }
-    50% { background-color: rgba(76, 175, 80, 0.5); }
-    100% { background-color: rgba(76, 175, 80, 0.2); }
 }
 
 @keyframes highlight {
@@ -999,69 +1008,8 @@ body {
     100% { transform: rotate(360deg) scale(0.95); }
 }
 
-@keyframes wheelSpin {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-}
-
-/* Responsive */
-@media (max-width: 600px) {
-    .user-panel {
-        flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
-    }
-    
-    .currency-display {
-        width: 100%;
-        justify-content: space-between;
-    }
-    
-    .slot-machine {
-        height: 150px;
-        padding: 15px;
-    }
-
-    .lootbox-container {
-        flex-direction: column;
-    }
-
-    .lootbox-wheel-container {
-        height: 150px;
-    }
-
-    .login-box, .game-container, #game-select-screen, #mines-game-screen, #lootbox-game-screen {
-        padding: 1.5rem;
-    }
-
-    #spin-btn, #lootbox-spin-btn {
-        width: 80px;
-        height: 80px;
-        font-size: 1.2rem;
-    }
-}
-
-@media (max-width: 400px) {
-    .slot-machine {
-        height: 120px;
-        gap: 10px;
-        padding: 10px;
-    }
-
-    .symbol img {
-        width: 70%;
-    }
-
-    .win-content, .mines-game-over-content, .lootbox-win-content {
-        padding: 1.5rem;
-    }
-
-    .lootbox-item {
-        min-width: 80px;
-    }
-
-    .lootbox-item img {
-        width: 60px;
-        height: 60px;
-    }
+@keyframes pulseGreen {
+    0% { background-color: rgba(76, 175, 80, 0.2); }
+    50% { background-color: rgba(76, 175, 80, 0.5); }
+    100% { background-color: rgba(76, 175, 80, 0.2); }
 }
