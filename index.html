@@ -64,7 +64,7 @@
         </div>
 
         <button id="spin-btn" class="spin-button">SPIN</button>
-        <button id="back-to-menu-btn" class="mines-start-btn" style="margin-top: 10px;">Back to Menu</button>
+        <button id="back-to-menu-btn" class="mines-start-btn">Back to Menu</button>
     </div>
 
     <!-- Mines Game Screen -->
@@ -101,7 +101,7 @@
             </div>
             
             <button id="mines-start-btn" class="mines-start-btn">Start Game</button>
-            <button id="mines-back-to-menu-btn" class="mines-start-btn" style="margin-top: 10px;">Back to Menu</button>
+            <button id="mines-back-to-menu-btn" class="mines-start-btn">Back to Menu</button>
         </div>
         
         <div class="mines-info">
@@ -120,7 +120,7 @@
         <button id="mines-cashout-btn" class="mines-cashout-btn disabled" disabled>Cash Out</button>
     </div>
 
-    <!-- Loot Box Game Screen -->
+    <!-- Loot Box Game Screen - NEW IMPROVED VERSION -->
     <div id="lootbox-game-screen" class="game-container">
         <div id="lootbox-user-panel" class="user-panel">
             <div class="user-info">
@@ -147,39 +147,47 @@
         </div>
 
         <div class="lootbox-container">
-            <div class="lootbox-wheel-container">
-                <div class="lootbox-wheel" id="lootbox-wheel"></div>
-                <div class="lootbox-center"></div>
-            </div>
-            
-            <div class="lootbox-info">
-                <h3>Drop Rates</h3>
-                <div class="rarity-info">
-                    <div class="rarity-item mythic">
-                        <span>Mythic: 1%</span>
-                    </div>
-                    <div class="rarity-item legendary">
-                        <span>Legendary: 5%</span>
-                    </div>
-                    <div class="rarity-item epic">
-                        <span>Epic: 15%</span>
-                    </div>
-                    <div class="rarity-item uncommon">
-                        <span>Uncommon: 30%</span>
-                    </div>
-                    <div class="rarity-item common">
-                        <span>Common: 49%</span>
-                    </div>
+            <!-- Left/Middle Column - Wheel and Controls -->
+            <div class="lootbox-game-area">
+                <div class="lootbox-wheel-container">
+                    <div class="lootbox-wheel" id="lootbox-wheel"></div>
+                    <div class="lootbox-center"></div>
                 </div>
-                <div class="lootbox-prizes">
-                    <h3>Your Prizes</h3>
-                    <div id="lootbox-prize-list"></div>
+                
+                <div class="lootbox-controls">
+                    <button id="lootbox-spin-btn" class="spin-button">SPIN (50 chips)</button>
+                    <button id="lootbox-back-to-menu-btn" class="mines-start-btn">Back to Menu</button>
+                </div>
+            </div>
+
+            <!-- Right Column - Stats and Info -->
+            <div class="lootbox-info-panel">
+                <div class="lootbox-info">
+                    <h3>Drop Rates</h3>
+                    <div class="rarity-info">
+                        <div class="rarity-item mythic">
+                            <span>Mythic: 1%</span>
+                        </div>
+                        <div class="rarity-item legendary">
+                            <span>Legendary: 5%</span>
+                        </div>
+                        <div class="rarity-item epic">
+                            <span>Epic: 15%</span>
+                        </div>
+                        <div class="rarity-item uncommon">
+                            <span>Uncommon: 30%</span>
+                        </div>
+                        <div class="rarity-item common">
+                            <span>Common: 49%</span>
+                        </div>
+                    </div>
+                    <div class="lootbox-prizes">
+                        <h3>Your Prizes</h3>
+                        <div id="lootbox-prize-list"></div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <button id="lootbox-spin-btn" class="spin-button">SPIN (50 chips)</button>
-        <button id="lootbox-back-to-menu-btn" class="mines-start-btn" style="margin-top: 10px;">Back to Menu</button>
     </div>
 
     <!-- Slot Machine Win Popup -->
