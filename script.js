@@ -20,24 +20,47 @@ const CONFIG = {
         { name: 'clover', img: 'assets/clover.png' }
     ],
     lootboxItems: [
-        { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 0.1 },
-        { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 0.11 },
-        { name: 'M4A1-S Night Terror', img: 'spins/M4A1-S-Night-Terror.png', rarity: 'uncommon', chance: 0.032 },
-        { name: 'P2000 Lifted Spirits', img: 'spins/P2000-Lifted-Spirits.png', rarity: 'common', chance: 0.11 },
-        { name: 'USP Ticket to Hell', img: 'spins/USP-Ticket-to-Hell-Skin.png', rarity: 'epic', chance: 0.032 },
-        { name: 'MAG-7 Foresight', img: 'spins/MAG-7-Foresight-Skin.png', rarity: 'common', chance: 0.11 },
-        { name: 'G3SG1 Dream Glade', img: 'spins/G3SG1-Dream-Glade-Skin.png', rarity: 'uncommon', chance: 0.032 },
-        { name: 'AK-47 Nightwish', img: 'spins/AK-47-Nightwish-Skin.png', rarity: 'mythic', chance: 0.003 },
-        { name: 'XM1014 Zombie Offensive', img: 'spins/XM1014-Zombie-Offensive-Skin.png', rarity: 'uncommon', chance: 0.032 },
-        { name: 'MP9 Starlight Protector', img: 'spins/MP9-Starlight-Protector-Skin.png', rarity: 'mythic', chance: 0.003 },
-        { name: 'PP-Bizon Space Cat', img: 'spins/PP-Bizon-Space-Cat-Skin.png', rarity: 'uncommon', chance: 0.032 },
-        { name: 'Dual Berettas Melondrama', img: 'spins/Dual-Berettas-Melondrama-Skin.png', rarity: 'legendary', chance: 0.1 },
-        { name: 'Five SeveN Scrawl', img: 'spins/Five-SeveN-Scrawl-Skin.png', rarity: 'common', chance: 0.11 },
-        { name: 'FAMAS Rapid Eye Movement', img: 'spins/FAMAS-Rapid-Eye-Movement-Skin.png', rarity: 'legendary', chance: 0.01 },
-        { name: 'MAC-10 Ensnared', img: 'spins/MAC-10-Ensnared-Skin.png', rarity: 'common', chance: 0.11 },
-        { name: 'MP5-SD Necro Jr', img: 'spins/MP5-SD-Necro-Jr-Skin.png', rarity: 'common', chance: 0.11 },
-        { name: 'Knife', img: 'spins/gold.png', rarity: 'mythic', chance: 0.003 }
-        
+        { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 1.07 },
+        { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 11.28 },
+        { name: 'M4A1-S Night Terror', img: 'spins/M4A1-S-Night-Terror.png', rarity: 'epic', chance: 3.2 },
+        { name: 'P2000 Lifted Spirits', img: 'spins/P2000-Lifted-Spirits.png', rarity: 'common', chance: 11.28 },
+        { name: 'USP-S Ticket to Hell', img: 'spins/USP-Ticket-to-Hell-Skin.png', rarity: 'epic', chance: 2.55 },
+        { name: 'MAG-7 Foresight', img: 'spins/MAG-7-Foresight-Skin.png', rarity: 'common', chance: 11.28 },
+        { name: 'G3SG1 Dream Glade', img: 'spins/G3SG1-Dream-Glade-Skin.png', rarity: 'uncommon', chance: 3.2 },
+        { name: 'AK-47 Nightwish', img: 'spins/AK-47-Nightwish-Skin.png', rarity: 'legendary', chance: 0.32 },
+        { name: 'XM1014 Zombie Offensive', img: 'spins/XM1014-Zombie-Offensive-Skin.png', rarity: 'uncommon', chance: 11.28 },
+        { name: 'MP9 Starlight Protector', img: 'spins/MP9-Starlight-Protector-Skin.png', rarity: 'legendary', chance: 0.32 },
+        { name: 'PP-Bizon Space Cat', img: 'spins/PP-Bizon-Space-Cat-Skin.png', rarity: 'uncommon', chance: 2.55 },
+        { name: 'Dual Berettas Melondrama', img: 'spins/Dual-Berettas-Melondrama-Skin.png', rarity: 'legendary', chance: 1.07 },
+        { name: 'Five SeveN Scrawl', img: 'spins/Five-SeveN-Scrawl-Skin.png', rarity: 'common', chance: 11.28 },
+        { name: 'FAMAS Rapid Eye Movement', img: 'spins/FAMAS-Rapid-Eye-Movement-Skin.png', rarity: 'legendary', chance: 1.07 },
+        { name: 'MAC-10 Ensnared', img: 'spins/MAC-10-Ensnared-Skin.png', rarity: 'common', chance: 11.28 },
+        { name: 'MP5-SD Necro Jr', img: 'spins/MP5-SD-Necro-Jr-Skin.png', rarity: 'common', chance: 11.28 },
+        { name: 'Knife', img: 'spins/gold.png', rarity: 'mythic', chance: 0.3 }
+    ],
+    // New knife system for mythic rewards
+    knifes: [
+        { name: 'Butterfly Knife Black Laminate', img: 'spins/Butterfly-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Huntsman Knife Black Laminate', img: 'spins/Huntsman-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Bowie Knife Bright Water', img: 'spins/Bowie-Knife-Bright-Water-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Butterfly Knife Lore', img: 'spins/Butterfly-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Huntsman Knife Freehand', img: 'spins/Huntsman-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Huntsman Knife Lore', img: 'spins/Huntsman-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Butterfly Knife Autotronic', img: 'spins/Butterfly-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Huntsman Knife Bright Water', img: 'spins/Huntsman-Knife-Bright-Water-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Butterfly Knife Freehand', img: 'spins/Butterfly-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Shadow Daggers Freehand', img: 'spins/Shadow-Daggers-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Huntsman Knife Gamma Doppler', img: 'spins/Huntsman-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Butterfly Knife Gamma Doppler', img: 'spins/Butterfly-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Bowie Knife Gamma Doppler', img: 'spins/Bowie-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Shadow Daggers Gamma Doppler', img: 'spins/Shadow-Daggers-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Falchion Knife Gamma Doppler', img: 'spins/Falchion-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Bowie Knife Lore', img: 'spins/Bowie-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Bowie Knife Black Laminate', img: 'spins/Bowie-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Falchion Knife Autotronic', img: 'spins/Falchion-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Bowie Knife Autotronic', img: 'spins/Bowie-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Bowie Knife Freehand', img: 'spins/Bowie-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867 },
+        { name: 'Falchion Knife Black Laminate', img: 'spins/Falchion-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867 }
     ],
     payouts: {
         '7-7-7': 500,
@@ -202,19 +225,49 @@ function getRandomSymbol() {
     return CONFIG.symbols[Math.floor(Math.random() * CONFIG.symbols.length)];
 }
 
+// Updated lootbox item selection with new chance system
 function getRandomLootboxItem() {
-    const random = Math.random();
-    let cumulativeChance = 0;
+    // Calculate total weight (sum of all chances)
+    const totalWeight = CONFIG.lootboxItems.reduce((sum, item) => sum + item.chance, 0);
+    
+    // Generate random number between 0 and total weight
+    const random = Math.random() * totalWeight;
+    let cumulativeWeight = 0;
     
     for (const item of CONFIG.lootboxItems) {
-        cumulativeChance += item.chance;
-        if (random <= cumulativeChance) {
+        cumulativeWeight += item.chance;
+        if (random <= cumulativeWeight) {
             return item;
         }
     }
     
-    // Fallback to common item if no item was selected
-    return CONFIG.lootboxItems.find(item => item.rarity === 'common');
+    // Fallback to first item if no item was selected
+    return CONFIG.lootboxItems[0];
+}
+
+// New function to get random knife for mythic items
+function getRandomKnife() {
+    if (CONFIG.knifes.length === 0) {
+        // If no knives configured, return a default knife
+        return { name: 'Default Knife', img: 'spins/default-knife.png', rarity: 'legendary' };
+    }
+    
+    // Calculate total weight for knives
+    const totalWeight = CONFIG.knifes.reduce((sum, knife) => sum + knife.chance, 0);
+    
+    // Generate random number between 0 and total weight
+    const random = Math.random() * totalWeight;
+    let cumulativeWeight = 0;
+    
+    for (const knife of CONFIG.knifes) {
+        cumulativeWeight += knife.chance;
+        if (random <= cumulativeWeight) {
+            return knife;
+        }
+    }
+    
+    // Fallback to first knife if no knife was selected
+    return CONFIG.knifes[0];
 }
 
 // Modified Loot Box functions
@@ -225,11 +278,12 @@ function initializeLootboxItems() {
     
     track.innerHTML = '';
     
-    // Create a more balanced item pool
+    // Create a more balanced item pool based on new chance system
     const itemsPool = [];
     CONFIG.lootboxItems.forEach(item => {
-        // Add items based on their rarity (more common = more copies)
-        const count = Math.max(3, Math.floor(item.chance * 200));
+        // Add items based on their chance (higher chance = more copies)
+        // Scale the chance to get reasonable number of copies
+        const count = Math.max(1, Math.floor(item.chance * 10));
         for (let i = 0; i < count; i++) {
             itemsPool.push(item);
         }
@@ -564,7 +618,7 @@ async function startLootboxSpin() {
     
     // Get the winning item first
     const resultItem = getRandomLootboxItem();
-    console.log('Target item:', resultItem.name);
+    console.log('Target item:', resultItem.name, 'Rarity:', resultItem.rarity);
     
     // Find a suitable target item in the middle section (second loop)
     const allItems = track.querySelectorAll('.lootbox-item');
@@ -678,15 +732,30 @@ async function startLootboxSpin() {
                 
                 console.log('Stopped at position:', currentPosition, 'Center position:', centerPosition, 'Item:', wonItem.name);
                 
+                // Check if the item is mythic and should get a knife instead
+                let finalReward = wonItem;
+                if (wonItem.rarity === 'mythic') {
+                    const randomKnife = getRandomKnife();
+                    console.log('Mythic item won! Giving random knife:', randomKnife.name, 'Knife rarity:', randomKnife.rarity);
+                    finalReward = randomKnife;
+                }
+                
                 // Show result immediately - no more animations!
                 setTimeout(() => {
-                    showLootboxPopup(wonItem);
+                    showLootboxPopup(finalReward);
                     resetLootboxSpinState();
                 }, 200);
             } else {
                 // Fallback to original result
+                let finalReward = resultItem;
+                if (resultItem.rarity === 'mythic') {
+                    const randomKnife = getRandomKnife();
+                    console.log('Fallback mythic item! Giving random knife:', randomKnife.name);
+                    finalReward = randomKnife;
+                }
+                
                 setTimeout(() => {
-                    showLootboxPopup(resultItem);
+                    showLootboxPopup(finalReward);
                     resetLootboxSpinState();
                 }, 200);
             }
@@ -741,7 +810,6 @@ async function claimLootboxWin() {
         track.style.opacity = '1'; // Ensure items remain visible
     }
 }
-
 
 function startLootboxGame() {
     if (!gameState.userId) {
