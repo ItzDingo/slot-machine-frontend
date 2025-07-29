@@ -218,6 +218,7 @@ function getRandomLootboxItem() {
 }
 
 // Modified Loot Box functions
+
 function initializeLootboxItems() {
     const track = document.getElementById('lootbox-items-track');
     if (!track) return;
@@ -642,59 +643,66 @@ async function startLootboxSpin() {
         
         // Check if we should start stopping logic
         if (spinTime >= targetSpinTime && velocity <= minVelocity) {
-            // Calculate distance to target (accounting for looping)
-            let distanceToTarget = targetPosition - currentPosition;
+            // Simple final positioning - just stop at current position and find nearest item
+            const itemWidth = 140;
+            const containerCenter = container.offsetWidth / 2;
             
-            // Handle wrapping - find the shortest path to target
-            if (Math.abs(distanceToTarget) > loopWidth / 2) {
-                if (distanceToTarget > 0) {
-                    distanceToTarget -= loopWidth;
-                } else {
-                    distanceToTarget += loopWidth;
-                }
-            }
+            // Find the item closest to center position
+            let nearestItemIndex = Math.round((currentPosition + containerCenter - (itemWidth / 2)) / itemWidth);
             
-            // If we're close enough to the target, do final positioning
-            if (Math.abs(distanceToTarget) < 50) {
-                // Smooth final approach
-                let finalPosition = currentPosition;
-                let adjustmentSteps = 0;
-                const maxAdjustmentSteps = 30;
+            // Ensure we're targeting an item from the middle loop (to avoid edge cases)
+            const itemsPerLoop = allItems.length / 3;
+            const middleStart = Math.floor(itemsPerLoop);
+            const middleEnd = Math.floor(itemsPerLoop * 2);
+            
+            // Adjust to middle loop if needed
+            while (nearestItemIndex < middleStart) nearestItemIndex += itemsPerLoop;
+            while (nearestItemIndex >= middleEnd) nearestItemIndex -= itemsPerLoop;
+            
+            // Calculate final position to center this item
+            const finalPosition = (nearestItemIndex * itemWidth) + (itemWidth / 2) - containerCenter;
+            
+            // Smooth final positioning
+            let adjustmentSteps = 0;
+            const maxAdjustmentSteps = 20;
+            const startPosition = currentPosition;
+            
+            function finalAdjustment() {
+                adjustmentSteps++;
+                const progress = adjustmentSteps / maxAdjustmentSteps;
+                const easedProgress = 1 - Math.pow(1 - progress, 3);
                 
-                function finalAdjustment() {
-                    adjustmentSteps++;
-                    const progress = adjustmentSteps / maxAdjustmentSteps;
-                    const easedProgress = 1 - Math.pow(1 - progress, 3); // Ease out curve
-                    
-                    finalPosition = currentPosition + (distanceToTarget * easedProgress);
-                    
-                    // Keep within loop bounds
-                    while (finalPosition >= loopWidth) finalPosition -= loopWidth;
-                    while (finalPosition < 0) finalPosition += loopWidth;
-                    
+                const currentPos = startPosition + ((finalPosition - startPosition) * easedProgress);
+                track.style.transform = `translateX(${-currentPos}px)`;
+                
+                if (adjustmentSteps < maxAdjustmentSteps) {
+                    requestAnimationFrame(finalAdjustment);
+                } else {
+                    // Ensure exact final position
                     track.style.transform = `translateX(${-finalPosition}px)`;
                     
-                    if (adjustmentSteps < maxAdjustmentSteps) {
-                        requestAnimationFrame(finalAdjustment);
+                    // Get the actual item that's centered and show popup
+                    const centeredItem = allItems[nearestItemIndex];
+                    if (centeredItem) {
+                        const itemName = centeredItem.dataset.itemName || centeredItem.querySelector('img').alt;
+                        const actualItem = CONFIG.lootboxItems.find(item => item.name === itemName) || resultItem;
+                        
+                        setTimeout(() => {
+                            showLootboxPopup(actualItem);
+                            resetLootboxSpinState();
+                        }, 300);
                     } else {
-                        // Final exact positioning
-                        let exactFinalPosition = targetPosition;
-                        while (exactFinalPosition >= loopWidth) exactFinalPosition -= loopWidth;
-                        while (exactFinalPosition < 0) exactFinalPosition += loopWidth;
-                        
-                        track.style.transform = `translateX(${-exactFinalPosition}px)`;
-                        
-                        // Show result after a brief pause
+                        // Fallback to original result
                         setTimeout(() => {
                             showLootboxPopup(resultItem);
                             resetLootboxSpinState();
-                        }, 500);
+                        }, 300);
                     }
                 }
-                
-                requestAnimationFrame(finalAdjustment);
-                return;
             }
+            
+            requestAnimationFrame(finalAdjustment);
+            return;
         }
         
         // Continue animation
@@ -742,6 +750,7 @@ async function claimLootboxWin() {
         track.style.opacity = '1'; // Ensure items remain visible
     }
 }
+
 
 function startLootboxGame() {
     if (!gameState.userId) {
