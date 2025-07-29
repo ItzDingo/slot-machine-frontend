@@ -72,7 +72,7 @@ const CONFIG = {
     },
     mines: {
         minBet: 0.1,
-        maxBet: 1000,
+        maxBet: 10000000000000000000000000000000,
         minMines: 1,
         maxMines: 10,
         getGridSize: function(minesCount) {
