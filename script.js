@@ -220,13 +220,15 @@ function getRandomLootboxItem() {
 // Modified Loot Box functions
 function initializeLootboxItems() {
     const track = document.getElementById('lootbox-items-track');
+    if (!track) return;
+    
     track.innerHTML = '';
     
     // Create a more balanced item pool
     const itemsPool = [];
     CONFIG.lootboxItems.forEach(item => {
         // Add items based on their rarity (more common = more copies)
-        const count = Math.max(3, Math.floor(item.chance * 200)); // Increased multiplier for better distribution
+        const count = Math.max(3, Math.floor(item.chance * 200));
         for (let i = 0; i < count; i++) {
             itemsPool.push(item);
         }
@@ -238,21 +240,24 @@ function initializeLootboxItems() {
         [itemsPool[i], itemsPool[j]] = [itemsPool[j], itemsPool[i]];
     }
     
-    // Create exactly 3 copies for seamless looping (this prevents repositioning issues)
+    // Create exactly 3 copies for seamless looping
     const singleLoop = itemsPool.slice(0, 50); // Use 50 items per loop for good variety
     for (let loop = 0; loop < 3; loop++) {
         singleLoop.forEach(item => {
             const itemElement = document.createElement('div');
             itemElement.className = `lootbox-item ${item.rarity}`;
-            itemElement.innerHTML = `<img src="${item.img}" alt="${item.name}">`;
-            itemElement.dataset.itemName = item.name; // Add data attribute for identification
+            itemElement.innerHTML = `<img src="${item.img}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain;">`;
+            itemElement.dataset.itemName = item.name;
+            itemElement.style.minWidth = '120px'; // Ensure consistent sizing
+            itemElement.style.minHeight = '120px';
             track.appendChild(itemElement);
         });
     }
     
-    // Reset position
+    // Reset position and ensure no transitions
     track.style.transform = 'translateX(0px)';
     track.style.transition = 'none';
+    track.style.opacity = '1'; // Ensure visibility
 }
 
 function resetReel(reel, centerSymbol) {
@@ -546,7 +551,7 @@ async function startLootboxSpin() {
     
     // Get the winning item first
     const resultItem = getRandomLootboxItem();
-    console.log('Target item:', resultItem.name); // Debug log
+    console.log('Target item:', resultItem.name);
     
     // Find a suitable target item in the middle section (second loop)
     const allItems = track.querySelectorAll('.lootbox-item');
@@ -566,7 +571,7 @@ async function startLootboxSpin() {
         }
     }
     
-    // If not found in middle, look in first section
+    // If not found in middle, look in first section and map to middle
     if (targetIndex === -1) {
         for (let i = 0; i < middleStart; i++) {
             const item = allItems[i];
@@ -578,6 +583,7 @@ async function startLootboxSpin() {
         }
     }
     
+    // Final fallback - use any item in middle section
     if (targetIndex === -1) {
         console.error('Target item not found, using fallback');
         targetIndex = middleStart + Math.floor(Math.random() * (middleEnd - middleStart));
@@ -586,28 +592,30 @@ async function startLootboxSpin() {
     // Calculate positions
     const itemWidth = 140; // 120px width + 20px gap
     const containerCenter = container.offsetWidth / 2;
-    const targetPosition = containerCenter - (targetIndex * itemWidth + 60); // 60 = half item width
     
-    console.log('Target index:', targetIndex, 'Target position:', targetPosition); // Debug log
+    // Calculate the exact position to center the target item
+    const targetPosition = (targetIndex * itemWidth) + (itemWidth / 2) - containerCenter;
     
-    // Reset any existing transforms and start animation
+    console.log('Target index:', targetIndex, 'Target position:', targetPosition);
+    
+    // Animation variables
     let currentPosition = 0;
-    let velocity = 8; // Start slower
-    const maxVelocity = 25; // Reduced max speed
-    const acceleration = 1.1;
-    const deceleration = 0.985; // Slower deceleration
+    let velocity = 5; // Start slower for smoother animation
+    const maxVelocity = 20; // Reduced max speed
+    const acceleration = 1.08;
+    const minVelocity = 0.5; // Minimum velocity before stopping
     
     let phase = 'accelerating';
     let spinTime = 0;
-    const minSpinTime = 2000; // Reduced from 3000
-    const maxSpinTime = 3500; // Reduced from 5000
+    const minSpinTime = 2500;
+    const maxSpinTime = 3500;
     const targetSpinTime = minSpinTime + Math.random() * (maxSpinTime - minSpinTime);
     
     function animate() {
         spinTime += 16; // Approximate 60fps
         
         // Phase management
-        if (phase === 'accelerating' && spinTime > targetSpinTime * 0.3) {
+        if (phase === 'accelerating' && spinTime > targetSpinTime * 0.4) {
             phase = 'decelerating';
         }
         
@@ -615,69 +623,87 @@ async function startLootboxSpin() {
         if (phase === 'accelerating') {
             velocity = Math.min(velocity * acceleration, maxVelocity);
         } else if (phase === 'decelerating') {
-            velocity *= deceleration;
+            // Gradual deceleration
+            velocity *= 0.988;
         }
         
         // Position update
         currentPosition += velocity;
         
-        // Seamless looping
+        // Seamless looping - keep track position within bounds
         const loopWidth = (allItems.length / 3) * itemWidth;
-        if (currentPosition >= loopWidth) {
+        while (currentPosition >= loopWidth) {
             currentPosition -= loopWidth;
         }
         
-        // Apply transform
+        // Apply transform - move left (negative direction)
         track.style.transform = `translateX(${-currentPosition}px)`;
+        track.style.transition = 'none'; // Ensure no CSS transitions interfere
         
-        // Check stopping condition
-        if (spinTime >= targetSpinTime && velocity < 2) {
-            // Final positioning phase
-            const finalTargetPos = -targetPosition;
-            let finalCurrentPos = -currentPosition;
+        // Check if we should start stopping logic
+        if (spinTime >= targetSpinTime && velocity <= minVelocity) {
+            // Calculate distance to target (accounting for looping)
+            let distanceToTarget = targetPosition - currentPosition;
             
-            // Ensure we're in the right "loop" for the target
-            while (finalCurrentPos > finalTargetPos + loopWidth) {
-                finalCurrentPos -= loopWidth;
-            }
-            while (finalCurrentPos < finalTargetPos - loopWidth) {
-                finalCurrentPos += loopWidth;
-            }
-            
-            // Smooth final adjustment
-            const adjustmentDistance = finalTargetPos - finalCurrentPos;
-            let adjustmentProgress = 0;
-            const adjustmentDuration = 60; // frames for smooth stop
-            
-            function finalAdjustment() {
-                adjustmentProgress++;
-                const progress = adjustmentProgress / adjustmentDuration;
-                const easedProgress = 1 - Math.pow(1 - progress, 3); // Ease out
-                
-                const currentFinalPos = finalCurrentPos + (adjustmentDistance * easedProgress);
-                track.style.transform = `translateX(${currentFinalPos}px)`;
-                
-                if (adjustmentProgress < adjustmentDuration) {
-                    requestAnimationFrame(finalAdjustment);
+            // Handle wrapping - find the shortest path to target
+            if (Math.abs(distanceToTarget) > loopWidth / 2) {
+                if (distanceToTarget > 0) {
+                    distanceToTarget -= loopWidth;
                 } else {
-                    // Ensure exact final position
-                    track.style.transform = `translateX(${finalTargetPos}px)`;
-                    
-                    // Show result after a brief pause
-                    setTimeout(() => {
-                        showLootboxPopup(resultItem);
-                        resetLootboxSpinState();
-                    }, 200);
+                    distanceToTarget += loopWidth;
                 }
             }
             
-            requestAnimationFrame(finalAdjustment);
-            return;
+            // If we're close enough to the target, do final positioning
+            if (Math.abs(distanceToTarget) < 50) {
+                // Smooth final approach
+                let finalPosition = currentPosition;
+                let adjustmentSteps = 0;
+                const maxAdjustmentSteps = 30;
+                
+                function finalAdjustment() {
+                    adjustmentSteps++;
+                    const progress = adjustmentSteps / maxAdjustmentSteps;
+                    const easedProgress = 1 - Math.pow(1 - progress, 3); // Ease out curve
+                    
+                    finalPosition = currentPosition + (distanceToTarget * easedProgress);
+                    
+                    // Keep within loop bounds
+                    while (finalPosition >= loopWidth) finalPosition -= loopWidth;
+                    while (finalPosition < 0) finalPosition += loopWidth;
+                    
+                    track.style.transform = `translateX(${-finalPosition}px)`;
+                    
+                    if (adjustmentSteps < maxAdjustmentSteps) {
+                        requestAnimationFrame(finalAdjustment);
+                    } else {
+                        // Final exact positioning
+                        let exactFinalPosition = targetPosition;
+                        while (exactFinalPosition >= loopWidth) exactFinalPosition -= loopWidth;
+                        while (exactFinalPosition < 0) exactFinalPosition += loopWidth;
+                        
+                        track.style.transform = `translateX(${-exactFinalPosition}px)`;
+                        
+                        // Show result after a brief pause
+                        setTimeout(() => {
+                            showLootboxPopup(resultItem);
+                            resetLootboxSpinState();
+                        }, 500);
+                    }
+                }
+                
+                requestAnimationFrame(finalAdjustment);
+                return;
+            }
         }
         
-        requestAnimationFrame(animate);
+        // Continue animation
+        if (isLootboxSpinning) {
+            requestAnimationFrame(animate);
+        }
     }
     
+    // Start the animation
     requestAnimationFrame(animate);
 }
 
@@ -709,10 +735,12 @@ function showLootboxPopup(item) {
 async function claimLootboxWin() {
     if (elements.lootboxPopup) elements.lootboxPopup.style.display = 'none';
     
-    // Reset for next spin - reinitialize items to prevent any positioning issues
-    setTimeout(() => {
-        initializeLootboxItems();
-    }, 100);
+    // Don't reinitialize items immediately - keep them visible
+    // Only reinitialize if needed for the next spin
+    const track = document.getElementById('lootbox-items-track');
+    if (track) {
+        track.style.opacity = '1'; // Ensure items remain visible
+    }
 }
 
 function startLootboxGame() {
