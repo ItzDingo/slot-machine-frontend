@@ -80,6 +80,7 @@ const CONFIG = {
             const growth = growthFactors[minesCount] || 0.05;
             
             const rawMultiplier = base * Math.pow(1 + growth, revealedCells);
+            
             const withHouseEdge = rawMultiplier * (1 - this.houseEdge);
             return parseFloat(withHouseEdge.toFixed(4));
         },
@@ -120,6 +121,11 @@ let gameState = {
         currentItem: null
     }
 };
+
+// Loot Box Variables
+let lootboxItems = [];
+let isLootboxSpinning = false;
+let spinAnimation = null;
 
 // DOM Elements
 const elements = {
@@ -174,7 +180,7 @@ const elements = {
     minesWinsCounter: document.getElementById('mines-wins-counter'),
     minesWinRate: document.getElementById('mines-win-rate'),
     lootboxSpinBtn: document.getElementById('lootbox-spin-btn'),
-    lootboxItem: document.getElementById('lootbox-item'),
+    lootboxItemsTrack: document.getElementById('lootbox-items-track'),
     lootboxPopup: document.getElementById('lootbox-popup'),
     lootboxItemWon: document.getElementById('lootbox-item-won'),
     lootboxItemName: document.getElementById('lootbox-item-name'),
@@ -198,8 +204,39 @@ function getRandomLootboxItem() {
         }
     }
     
-    // Fallback to common item if no item was selected (shouldn't happen if chances sum to 1)
+    // Fallback to common item if no item was selected
     return CONFIG.lootboxItems.find(item => item.rarity === 'common');
+}
+
+function initializeLootboxItems() {
+    lootboxItems = [];
+    // Create a pool of items based on their rarity and chance
+    CONFIG.lootboxItems.forEach(item => {
+        const count = Math.ceil(item.chance * 100); // Create more items for higher chances
+        for (let i = 0; i < count; i++) {
+            lootboxItems.push(item);
+        }
+    });
+    
+    // Shuffle the items
+    for (let i = lootboxItems.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [lootboxItems[i], lootboxItems[j]] = [lootboxItems[j], lootboxItems[i]];
+    }
+    
+    // Add items to the track (duplicate to create infinite loop effect)
+    const track = document.getElementById('lootbox-items-track');
+    track.innerHTML = '';
+    
+    // Add multiple copies to ensure smooth looping
+    for (let i = 0; i < 3; i++) {
+        lootboxItems.forEach(item => {
+            const itemElement = document.createElement('div');
+            itemElement.className = `lootbox-item ${item.rarity}`;
+            itemElement.innerHTML = `<img src="${item.img}" alt="${item.name}">`;
+            track.appendChild(itemElement);
+        });
+    }
 }
 
 function resetReel(reel, centerSymbol) {
@@ -233,7 +270,7 @@ function showNotification(message, isSuccess) {
     setTimeout(() => notification.remove(), 3000);
 }
 
-// Slot Machine Functions (unchanged)
+// Slot Machine Functions
 async function startSpin() {
     if (gameState.isSpinning || gameState.chips < CONFIG.spinCost) {
         if (gameState.chips < CONFIG.spinCost) {
@@ -451,23 +488,20 @@ async function claimWin() {
     if (elements.winPopup) elements.winPopup.style.display = 'none';
 }
 
-// Loot Box Game Functions
+// Loot Box Game Functions - CS:GO Style
 async function startLootboxSpin() {
-    if (gameState.lootboxGame.isSpinning || gameState.chips < CONFIG.lootboxCost) {
+    if (isLootboxSpinning || gameState.chips < CONFIG.lootboxCost) {
         if (gameState.chips < CONFIG.lootboxCost) {
             showNotification("Not enough chips!", false);
         }
         return;
     }
 
-    gameState.lootboxGame.isSpinning = true;
+    isLootboxSpinning = true;
     if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = true;
     
-    // Show spinning animation
-    elements.lootboxItem.classList.add('lootbox-spinning');
-    
+    // Deduct chips
     try {
-        // Deduct chips
         const response = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
             headers: { 
@@ -486,45 +520,99 @@ async function startLootboxSpin() {
         const data = await response.json();
         gameState.chips = data.newBalance;
         updateCurrencyDisplay();
-
-        // Simulate spinning for 2 seconds
-        setTimeout(() => {
-            revealLootboxItem();
-        }, 2000);
     } catch (error) {
         console.error('Lootbox spin error:', error);
         showNotification('Failed to process lootbox spin. Please try again.', false);
         resetLootboxSpinState();
+        return;
     }
-}
 
-function revealLootboxItem() {
-    // Stop spinning animation
-    elements.lootboxItem.classList.remove('lootbox-spinning');
+    // Get random item (this will be our target)
+    const targetItem = getRandomLootboxItem();
+    gameState.lootboxGame.currentItem = targetItem;
     
-    // Get random item
-    const item = getRandomLootboxItem();
-    gameState.lootboxGame.currentItem = item;
+    // Find the position of this item in our track
+    const items = document.querySelectorAll('.lootbox-item');
+    let targetIndex = -1;
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].querySelector('img').src.includes(targetItem.img.split('/').pop())) {
+            targetIndex = i;
+            break;
+        }
+    }
     
-    // Show reveal animation
-    elements.lootboxItem.innerHTML = `<img src="${item.img}" alt="${item.name}">`;
-    elements.lootboxItem.classList.add('lootbox-reveal');
+    if (targetIndex === -1) {
+        console.error('Target item not found in track');
+        resetLootboxSpinState();
+        return;
+    }
     
-    // Add rarity class
-    elements.lootboxItem.className = 'lootbox-item lootbox-reveal';
-    elements.lootboxItem.classList.add(item.rarity);
+    // Calculate target position (center of the screen)
+    const track = document.getElementById('lootbox-items-track');
+    const trackWidth = track.scrollWidth;
+    const containerWidth = track.parentElement.offsetWidth;
+    const targetPosition = (containerWidth / 2) - (targetIndex * 140) - 70;
     
-    // Show win popup
-    showLootboxPopup(item);
+    // Start spinning animation
+    let currentPosition = 0;
+    let speed = 30;
+    const deceleration = 0.995;
+    let lastTime = 0;
     
-    // Reset spin state
-    gameState.lootboxGame.isSpinning = false;
+    function animateSpin(time) {
+        if (!lastTime) lastTime = time;
+        const deltaTime = time - lastTime;
+        lastTime = time;
+        
+        if (speed > 0.5) {
+            currentPosition -= speed;
+            speed *= deceleration;
+            
+            // Loop the track
+            if (-currentPosition > trackWidth / 3) {
+                currentPosition += trackWidth / 3;
+            }
+            
+            track.style.transform = `translateX(${currentPosition}px)`;
+            spinAnimation = requestAnimationFrame(animateSpin);
+        } else {
+            // Final adjustment to center the target item
+            const finalPosition = targetPosition;
+            const duration = 1000; // 1 second for final adjustment
+            const startTime = performance.now();
+            
+            function finalAdjustment(time) {
+                const elapsed = time - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const easedProgress = 0.5 * (1 - Math.cos(Math.PI * progress));
+                
+                track.style.transform = `translateX(${currentPosition + (finalPosition - currentPosition) * easedProgress}px)`;
+                
+                if (progress < 1) {
+                    spinAnimation = requestAnimationFrame(finalAdjustment);
+                } else {
+                    // Spin complete
+                    setTimeout(() => {
+                        showLootboxPopup(targetItem);
+                        resetLootboxSpinState();
+                    }, 500);
+                }
+            }
+            
+            spinAnimation = requestAnimationFrame(finalAdjustment);
+        }
+    }
+    
+    spinAnimation = requestAnimationFrame(animateSpin);
 }
 
 function resetLootboxSpinState() {
-    gameState.lootboxGame.isSpinning = false;
+    isLootboxSpinning = false;
     if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = false;
-    elements.lootboxItem.classList.remove('lootbox-spinning', 'lootbox-reveal');
+    if (spinAnimation) {
+        cancelAnimationFrame(spinAnimation);
+        spinAnimation = null;
+    }
 }
 
 function showLootboxPopup(item) {
@@ -534,7 +622,9 @@ function showLootboxPopup(item) {
     elements.lootboxItemName.textContent = item.name;
     elements.lootboxRarity.textContent = item.rarity.toUpperCase();
     
-    // Set rarity color
+    // Set rarity class
+    elements.lootboxItemWon.className = 'lootbox-item-won';
+    elements.lootboxItemWon.classList.add(item.rarity);
     elements.lootboxRarity.className = 'lootbox-rarity';
     elements.lootboxRarity.classList.add(item.rarity);
     
@@ -544,9 +634,8 @@ function showLootboxPopup(item) {
 async function claimLootboxWin() {
     if (elements.lootboxPopup) elements.lootboxPopup.style.display = 'none';
     
-    // Reset lootbox display
-    elements.lootboxItem.innerHTML = '<img src="assets/question.png" alt="Loot Box">';
-    elements.lootboxItem.className = 'lootbox-item';
+    // Reset for next spin
+    initializeLootboxItems();
     
     if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = false;
 }
@@ -563,16 +652,13 @@ function startLootboxGame() {
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
     if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'block';
     
-    // Reset lootbox display
-    if (elements.lootboxItem) {
-        elements.lootboxItem.innerHTML = '<img src="assets/question.png" alt="Loot Box">';
-        elements.lootboxItem.className = 'lootbox-item';
-    }
+    // Initialize lootbox items
+    initializeLootboxItems();
     
     if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = false;
 }
 
-// Mines Game Functions (unchanged)
+// Mines Game Functions
 function showGameSelectScreen() {
     if (!gameState.userId) {
         showLoginScreen();
@@ -655,7 +741,7 @@ async function setupMinesGameUI() {
             gameState.minesStats.totalWins = data.totalWins || 0;
             gameState.minesStats.totalGamesPlayed = data.totalGamesPlayed || 0;
         }
-    } catch (error) {
+        } catch (error) {
         console.error('Failed to load mines stats:', error);
     }
     
