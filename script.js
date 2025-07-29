@@ -4,6 +4,7 @@ const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com';
 // Game Configuration
 const CONFIG = {
     spinCost: 10,
+    lootboxCost: 2,
     symbols: [
         { name: '7', img: 'assets/7.png' },
         { name: 'dollar', img: 'assets/dollar.png' },
@@ -18,6 +19,17 @@ const CONFIG = {
         { name: 'star', img: 'assets/star.png' },
         { name: 'clover', img: 'assets/clover.png' }
     ],
+    lootboxItems: [
+        { name: 'AK-47', img: 'assets/spins/ak.png', rarity: 'mythic', chance: 0.01 },
+        { name: 'Golden Sword', img: 'assets/spins/golden_sword.png', rarity: 'legendary', chance: 0.05 },
+        { name: 'Diamond Ring', img: 'assets/spins/diamond_ring.png', rarity: 'legendary', chance: 0.05 },
+        { name: 'Magic Staff', img: 'assets/spins/magic_staff.png', rarity: 'epic', chance: 0.15 },
+        { name: 'MP5', img: 'assets/spins/mp5.png', rarity: 'epic', chance: 0.15 },
+        { name: 'Pistol', img: 'assets/spins/pistol.png', rarity: 'uncommon', chance: 0.30 },
+        { name: 'Health Potion', img: 'assets/spins/health_potion.png', rarity: 'uncommon', chance: 0.30 },
+        { name: 'Wooden Shield', img: 'assets/spins/wooden_shield.png', rarity: 'common', chance: 0.49 },
+        { name: 'Rusty Knife', img: 'assets/spins/rusty_knife.png', rarity: 'common', chance: 0.49 }
+    ],
     payouts: {
         '7-7-7': 500,
         'diamond-diamond-diamond': 300,
@@ -28,56 +40,50 @@ const CONFIG = {
         'ANY_TWO_MATCH': 20
     },
     mines: {
-        minBet: 0.1,  // Now accepts decimal bets
+        minBet: 0.1,
         maxBet: 1000,
         minMines: 1,
         maxMines: 10,
         getGridSize: function(minesCount) {
-            if (minesCount <= 6) return 5;    // 5x5 grid (25 cells)
-            if (minesCount <= 9) return 6;    // 6x6 grid (36 cells)
-            return 7;                         // 7x7 grid (49 cells)
+            if (minesCount <= 6) return 5;
+            if (minesCount <= 9) return 6;
+            return 7;
         },
         getMultiplier: function(minesCount, revealedCells) {
-    // Base risk multipliers - higher mines = higher base multiplier
-    const baseMultipliers = {
-        1: 1.04,   // Lowest base for 1 mine
-        2: 1.07,
-        3: 1.10,
-        4: 1.15,
-        5: 1.18,
-        6: 1.23,
-        7: 1.30,
-        8: 1.45,
-        9: 1.65,
-        10: 2   // Highest base for 10 mines
-    };
-    
-    // Growth factors - higher mines get more aggressive growth per reveal
-    const growthFactors = {
-        1: 0.02,   // +2% per reveal for 1 mine
-        2: 0.03,
-        3: 0.04,
-        4: 0.05,
-        5: 0.06,
-        6: 0.08,
-        7: 0.10,
-        8: 0.13,
-        9: 0.16,
-        10: 0.20   // +20% per reveal for 10 mines
-    };
-    
-    // Get base and growth values based on mine count
-    const base = baseMultipliers[minesCount] || 1.0;
-    const growth = growthFactors[minesCount] || 0.05;
-    
-    // Calculate multiplier with compounding growth
-    const rawMultiplier = base * Math.pow(1 + growth, revealedCells);
-    
-    // Apply house edge and return with 4 decimal precision
-    const withHouseEdge = rawMultiplier * (1 - this.houseEdge);
-    return parseFloat(withHouseEdge.toFixed(4));
-},
-        houseEdge: 0.03  // 3% house edge
+            const baseMultipliers = {
+                1: 1.04,
+                2: 1.07,
+                3: 1.10,
+                4: 1.15,
+                5: 1.18,
+                6: 1.23,
+                7: 1.30,
+                8: 1.45,
+                9: 1.65,
+                10: 2
+            };
+            
+            const growthFactors = {
+                1: 0.02,
+                2: 0.03,
+                3: 0.04,
+                4: 0.05,
+                5: 0.06,
+                6: 0.08,
+                7: 0.10,
+                8: 0.13,
+                9: 0.16,
+                10: 0.20
+            };
+            
+            const base = baseMultipliers[minesCount] || 1.0;
+            const growth = growthFactors[minesCount] || 0.05;
+            
+            const rawMultiplier = base * Math.pow(1 + growth, revealedCells);
+            const withHouseEdge = rawMultiplier * (1 - this.houseEdge);
+            return parseFloat(withHouseEdge.toFixed(4));
+        },
+        houseEdge: 0.03
     }
 };
 
@@ -108,6 +114,10 @@ let gameState = {
         wins: 0,
         totalWins: 0,
         totalGamesPlayed: 0
+    },
+    lootboxGame: {
+        isSpinning: false,
+        currentItem: null
     }
 };
 
@@ -119,10 +129,15 @@ const elements = {
     loginBtn: document.getElementById('login-btn'),
     logoutBtn: document.getElementById('logout-btn'),
     minesLogoutBtn: document.getElementById('mines-logout-btn'),
+    lootboxLogoutBtn: document.getElementById('lootbox-logout-btn'),
     usernameDisplay: document.getElementById('username'),
     userAvatar: document.getElementById('user-avatar'),
+    lootboxUsername: document.getElementById('lootbox-username'),
+    lootboxAvatar: document.getElementById('lootbox-avatar'),
     chipsDisplay: document.getElementById('chips'),
     diceDisplay: document.getElementById('dice'),
+    lootboxChips: document.getElementById('lootbox-chips'),
+    lootboxDice: document.getElementById('lootbox-dice'),
     spinBtn: document.getElementById('spin-btn'),
     reels: [
         document.getElementById('reel1'),
@@ -136,7 +151,9 @@ const elements = {
     gameSelectScreen: document.getElementById('game-select-screen'),
     slotMachineBtn: document.getElementById('slot-machine-btn'),
     minesGameBtn: document.getElementById('mines-game-btn'),
+    lootboxBtn: document.getElementById('lootbox-btn'),
     minesGameScreen: document.getElementById('mines-game-screen'),
+    lootboxScreen: document.getElementById('lootbox-screen'),
     minesBetInput: document.getElementById('mines-bet-input'),
     minesCountInput: document.getElementById('mines-count-input'),
     minesStartBtn: document.getElementById('mines-start-btn'),
@@ -153,13 +170,36 @@ const elements = {
     minesDice: document.getElementById('mines-dice'),
     backToMenuBtn: document.getElementById('back-to-menu-btn'),
     minesBackToMenuBtn: document.getElementById('mines-back-to-menu-btn'),
+    lootboxBackToMenuBtn: document.getElementById('lootbox-back-to-menu-btn'),
     minesWinsCounter: document.getElementById('mines-wins-counter'),
-    minesWinRate: document.getElementById('mines-win-rate')
+    minesWinRate: document.getElementById('mines-win-rate'),
+    lootboxSpinBtn: document.getElementById('lootbox-spin-btn'),
+    lootboxItem: document.getElementById('lootbox-item'),
+    lootboxPopup: document.getElementById('lootbox-popup'),
+    lootboxItemWon: document.getElementById('lootbox-item-won'),
+    lootboxItemName: document.getElementById('lootbox-item-name'),
+    lootboxRarity: document.getElementById('lootbox-rarity'),
+    lootboxClaimBtn: document.getElementById('lootbox-claim-btn')
 };
 
 // Helper Functions
 function getRandomSymbol() {
     return CONFIG.symbols[Math.floor(Math.random() * CONFIG.symbols.length)];
+}
+
+function getRandomLootboxItem() {
+    const random = Math.random();
+    let cumulativeChance = 0;
+    
+    for (const item of CONFIG.lootboxItems) {
+        cumulativeChance += item.chance;
+        if (random <= cumulativeChance) {
+            return item;
+        }
+    }
+    
+    // Fallback to common item if no item was selected (shouldn't happen if chances sum to 1)
+    return CONFIG.lootboxItems.find(item => item.rarity === 'common');
 }
 
 function resetReel(reel, centerSymbol) {
@@ -181,6 +221,8 @@ function updateCurrencyDisplay() {
     if (elements.diceDisplay) elements.diceDisplay.textContent = gameState.dice;
     if (elements.minesChips) elements.minesChips.textContent = gameState.chips.toFixed(2);
     if (elements.minesDice) elements.minesDice.textContent = gameState.dice;
+    if (elements.lootboxChips) elements.lootboxChips.textContent = gameState.chips.toFixed(2);
+    if (elements.lootboxDice) elements.lootboxDice.textContent = gameState.dice;
 }
 
 function showNotification(message, isSuccess) {
@@ -409,7 +451,128 @@ async function claimWin() {
     if (elements.winPopup) elements.winPopup.style.display = 'none';
 }
 
-// Mines Game Functions (updated for float numbers)
+// Loot Box Game Functions
+async function startLootboxSpin() {
+    if (gameState.lootboxGame.isSpinning || gameState.chips < CONFIG.lootboxCost) {
+        if (gameState.chips < CONFIG.lootboxCost) {
+            showNotification("Not enough chips!", false);
+        }
+        return;
+    }
+
+    gameState.lootboxGame.isSpinning = true;
+    if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = true;
+    
+    // Show spinning animation
+    elements.lootboxItem.classList.add('lootbox-spinning');
+    
+    try {
+        // Deduct chips
+        const response = await fetch(`${API_BASE_URL}/api/spin`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                cost: CONFIG.lootboxCost
+            }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) throw new Error('Lootbox spin failed');
+
+        const data = await response.json();
+        gameState.chips = data.newBalance;
+        updateCurrencyDisplay();
+
+        // Simulate spinning for 2 seconds
+        setTimeout(() => {
+            revealLootboxItem();
+        }, 2000);
+    } catch (error) {
+        console.error('Lootbox spin error:', error);
+        showNotification('Failed to process lootbox spin. Please try again.', false);
+        resetLootboxSpinState();
+    }
+}
+
+function revealLootboxItem() {
+    // Stop spinning animation
+    elements.lootboxItem.classList.remove('lootbox-spinning');
+    
+    // Get random item
+    const item = getRandomLootboxItem();
+    gameState.lootboxGame.currentItem = item;
+    
+    // Show reveal animation
+    elements.lootboxItem.innerHTML = `<img src="${item.img}" alt="${item.name}">`;
+    elements.lootboxItem.classList.add('lootbox-reveal');
+    
+    // Add rarity class
+    elements.lootboxItem.className = 'lootbox-item lootbox-reveal';
+    elements.lootboxItem.classList.add(item.rarity);
+    
+    // Show win popup
+    showLootboxPopup(item);
+    
+    // Reset spin state
+    gameState.lootboxGame.isSpinning = false;
+}
+
+function resetLootboxSpinState() {
+    gameState.lootboxGame.isSpinning = false;
+    if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = false;
+    elements.lootboxItem.classList.remove('lootbox-spinning', 'lootbox-reveal');
+}
+
+function showLootboxPopup(item) {
+    if (!elements.lootboxPopup || !elements.lootboxItemWon || !elements.lootboxItemName || !elements.lootboxRarity) return;
+    
+    elements.lootboxItemWon.innerHTML = `<img src="${item.img}" alt="${item.name}">`;
+    elements.lootboxItemName.textContent = item.name;
+    elements.lootboxRarity.textContent = item.rarity.toUpperCase();
+    
+    // Set rarity color
+    elements.lootboxRarity.className = 'lootbox-rarity';
+    elements.lootboxRarity.classList.add(item.rarity);
+    
+    elements.lootboxPopup.style.display = 'flex';
+}
+
+async function claimLootboxWin() {
+    if (elements.lootboxPopup) elements.lootboxPopup.style.display = 'none';
+    
+    // Reset lootbox display
+    elements.lootboxItem.innerHTML = '<img src="assets/question.png" alt="Loot Box">';
+    elements.lootboxItem.className = 'lootbox-item';
+    
+    if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = false;
+}
+
+function startLootboxGame() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
+    gameState.currentGame = 'lootbox';
+    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
+    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
+    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
+    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
+    if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'block';
+    
+    // Reset lootbox display
+    if (elements.lootboxItem) {
+        elements.lootboxItem.innerHTML = '<img src="assets/question.png" alt="Loot Box">';
+        elements.lootboxItem.className = 'lootbox-item';
+    }
+    
+    if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = false;
+}
+
+// Mines Game Functions (unchanged)
 function showGameSelectScreen() {
     if (!gameState.userId) {
         showLoginScreen();
@@ -418,6 +581,7 @@ function showGameSelectScreen() {
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     if (elements.gameScreen) elements.gameScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
+    if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'block';
     updateCurrencyDisplay();
 }
@@ -431,6 +595,7 @@ function startSlotMachineGame() {
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
+    if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
     if (elements.gameScreen) elements.gameScreen.style.display = 'block';
 }
 
@@ -443,6 +608,7 @@ function startMinesGame() {
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
     if (elements.gameScreen) elements.gameScreen.style.display = 'none';
+    if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'block';
     setupMinesGameUI();
 }
@@ -473,9 +639,9 @@ async function setupMinesGameUI() {
     }
     if (elements.minesStartBtn) elements.minesStartBtn.disabled = false;
     if (elements.minesCashoutBtn) {
-    elements.minesCashoutBtn.disabled = true;
-    elements.minesCashoutBtn.classList.add('disabled');
-}
+        elements.minesCashoutBtn.disabled = true;
+        elements.minesCashoutBtn.classList.add('disabled');
+    }
     
     try {
         const response = await fetch(`${API_BASE_URL}/api/mines/stats?userId=${gameState.userId}`, {
@@ -599,13 +765,9 @@ function createMinesGrid() {
     const gridSize = CONFIG.mines.getGridSize(gameState.minesGame.minesCount);
     gameState.minesGame.totalCells = gridSize * gridSize;
     
-    // Clear existing grid
     elements.minesGrid.innerHTML = '';
-    
-    // Set up the grid template
     elements.minesGrid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
     
-    // Create cells
     for (let i = 0; i < gameState.minesGame.totalCells; i++) {
         const cell = document.createElement('div');
         cell.className = 'mines-cell';
@@ -615,7 +777,6 @@ function createMinesGrid() {
     }
 }
 
-
 function placeMines(minesCount) {
     const gridSize = CONFIG.mines.getGridSize(minesCount);
     const totalCells = gridSize * gridSize;
@@ -623,7 +784,6 @@ function placeMines(minesCount) {
     gameState.minesGame.minePositions = [];
     const positions = Array.from({length: totalCells}, (_, i) => i);
     
-    // Fisher-Yates shuffle
     for (let i = positions.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [positions[i], positions[j]] = [positions[j], positions[i]];
@@ -638,7 +798,6 @@ function revealMineCell(index) {
     const cell = elements.minesGrid.children[index];
     if (!cell || cell.classList.contains('revealed')) return;
     
-    // Check if cell contains a mine
     if (gameState.minesGame.minePositions.includes(index)) {
         cell.innerHTML = '<img src="assets/mine.png" alt="Mine">';
         cell.classList.add('mine');
@@ -646,23 +805,19 @@ function revealMineCell(index) {
         return;
     }
     
-    // Reveal the safe cell
     cell.classList.add('revealed');
-    cell.innerHTML = '<div class="safe-cell"></div>'; // Add visual for safe cell
+    cell.innerHTML = '<div class="safe-cell"></div>';
     gameState.minesGame.revealedCells++;
     
-    // Calculate new multiplier with the updated system
     gameState.minesGame.multiplier = CONFIG.mines.getMultiplier(
         gameState.minesGame.minesCount,
         gameState.minesGame.revealedCells
     );
     
-    // Update current win with precise decimal values
     gameState.minesGame.currentWin = parseFloat(
         (gameState.minesGame.betAmount * gameState.minesGame.multiplier).toFixed(4)
     );
     
-    // Update UI
     if (elements.minesCurrentWin) {
         elements.minesCurrentWin.textContent = gameState.minesGame.currentWin.toFixed(4);
     }
@@ -670,17 +825,14 @@ function revealMineCell(index) {
         elements.minesMultiplier.textContent = `${gameState.minesGame.multiplier.toFixed(4)}x`;
     }
     
-    // Enable cashout button after minimum 2 reveals
-    // Enable cashout button after 2 reveals
-if (gameState.minesGame.revealedCells >= 2 && elements.minesCashoutBtn) {
-    elements.minesCashoutBtn.disabled = false;
-    elements.minesCashoutBtn.classList.remove('disabled');
-} else {
-    elements.minesCashoutBtn.disabled = true;
-    elements.minesCashoutBtn.classList.add('disabled');
-}
+    if (gameState.minesGame.revealedCells >= 2 && elements.minesCashoutBtn) {
+        elements.minesCashoutBtn.disabled = false;
+        elements.minesCashoutBtn.classList.remove('disabled');
+    } else {
+        elements.minesCashoutBtn.disabled = true;
+        elements.minesCashoutBtn.classList.add('disabled');
+    }
     
-    // Add visual feedback for multiplier increase
     cell.querySelector('.safe-cell').textContent = `+${(CONFIG.mines.growthFactors[gameState.minesGame.minesCount] * 100).toFixed(0)}%`;
     setTimeout(() => {
         if (cell.querySelector('.safe-cell')) {
@@ -688,16 +840,13 @@ if (gameState.minesGame.revealedCells >= 2 && elements.minesCashoutBtn) {
         }
     }, 1000);
     
-    // Check for automatic win if all safe cells are revealed
     const safeCells = gameState.minesGame.totalCells - gameState.minesGame.minesCount;
     if (gameState.minesGame.revealedCells === safeCells) {
         endMinesGame(true);
-
     }
 }
 
 function cashoutMinesGame() {
-    // Minimum 2 cells must be revealed before cashing out
     if (gameState.minesGame.revealedCells < 2) {
         showNotification("You need to reveal at least 2 cells to cashout", false);
         return;
@@ -836,6 +985,8 @@ function handleSuccessfulLogin(user) {
     if (elements.userAvatar) elements.userAvatar.src = user.avatar || 'assets/default-avatar.png';
     if (elements.minesUsername) elements.minesUsername.textContent = user.username;
     if (elements.minesAvatar) elements.minesAvatar.src = user.avatar || 'assets/default-avatar.png';
+    if (elements.lootboxUsername) elements.lootboxUsername.textContent = user.username;
+    if (elements.lootboxAvatar) elements.lootboxAvatar.src = user.avatar || 'assets/default-avatar.png';
     
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     showGameSelectScreen();
@@ -850,6 +1001,8 @@ function handleSuccessfulLogin(user) {
     
     if (gameState.currentGame === 'mines') {
         setupMinesGameUI();
+    } else if (gameState.currentGame === 'lootbox') {
+        startLootboxGame();
     }
 }
 
@@ -858,6 +1011,7 @@ function showLoginScreen() {
     if (elements.gameScreen) elements.gameScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
+    if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
     gameState.userId = null;
     if (elements.tokenInput) elements.tokenInput.value = '';
 }
@@ -908,18 +1062,23 @@ if (elements.loginBtn) {
 
 if (elements.logoutBtn) elements.logoutBtn.addEventListener('click', logout);
 if (elements.minesLogoutBtn) elements.minesLogoutBtn.addEventListener('click', logout);
+if (elements.lootboxLogoutBtn) elements.lootboxLogoutBtn.addEventListener('click', logout);
 if (elements.spinBtn) elements.spinBtn.addEventListener('click', startSpin);
 if (elements.claimBtn) elements.claimBtn.addEventListener('click', claimWin);
+if (elements.lootboxClaimBtn) elements.lootboxClaimBtn.addEventListener('click', claimLootboxWin);
 
 if (elements.slotMachineBtn) elements.slotMachineBtn.addEventListener('click', startSlotMachineGame);
 if (elements.minesGameBtn) elements.minesGameBtn.addEventListener('click', startMinesGame);
+if (elements.lootboxBtn) elements.lootboxBtn.addEventListener('click', startLootboxGame);
 if (elements.minesStartBtn) elements.minesStartBtn.addEventListener('click', startNewMinesGame);
 if (elements.minesCashoutBtn) elements.minesCashoutBtn.addEventListener('click', cashoutMinesGame);
+if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.addEventListener('click', startLootboxSpin);
 if (document.getElementById('mines-game-over-close')) {
     document.getElementById('mines-game-over-close').addEventListener('click', closeMinesGameOverPopup);
 }
 if (elements.backToMenuBtn) elements.backToMenuBtn.addEventListener('click', showGameSelectScreen);
 if (elements.minesBackToMenuBtn) elements.minesBackToMenuBtn.addEventListener('click', showGameSelectScreen);
+if (elements.lootboxBackToMenuBtn) elements.lootboxBackToMenuBtn.addEventListener('click', showGameSelectScreen);
 
 // Initialize Game
 async function initGame() {
