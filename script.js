@@ -261,6 +261,18 @@ function initializeLootboxItems() {
     track.style.opacity = '1'; // Ensure visibility
 }
 
+// Update the claimLootboxWin function to prevent items from disappearing
+async function claimLootboxWin() {
+    if (elements.lootboxPopup) elements.lootboxPopup.style.display = 'none';
+    
+    // Don't reinitialize items immediately - keep them visible
+    // Only reinitialize if needed for the next spin
+    const track = document.getElementById('lootbox-items-track');
+    if (track) {
+        track.style.opacity = '1'; // Ensure items remain visible
+    }
+}
+
 function resetReel(reel, centerSymbol) {
     if (!reel) return;
     
@@ -606,8 +618,8 @@ async function startLootboxSpin() {
     
     let phase = 'accelerating';
     let spinTime = 0;
-    const minSpinTime = 2000;
-    const maxSpinTime = 3500;
+    const minSpinTime = 4500; // 4.5 seconds minimum
+    const maxSpinTime = 5500; // 5.5 seconds maximum  
     const targetSpinTime = minSpinTime + Math.random() * (maxSpinTime - minSpinTime);
     
     function animate() {
@@ -641,8 +653,8 @@ async function startLootboxSpin() {
         // Check if we should stop (no more repositioning!)
         if (spinTime >= targetSpinTime && velocity <= minVelocity) {
             // Calculate which item is in the center highlight box
-            // The center position relative to the track
-            const centerPosition = currentPosition + containerCenter;
+            // The center position relative to the track (adjusted slightly left)
+            const centerPosition = currentPosition + containerCenter - 15; // Move 15px to the left
             
             // Find the item that's closest to this center position
             const nearestItemIndex = Math.round(centerPosition / itemWidth);
@@ -702,7 +714,6 @@ function resetLootboxSpinState() {
     }
     console.log('Lootbox spin state reset - can spin again');
 }
-
 
 function showLootboxPopup(item) {
     if (!elements.lootboxPopup || !elements.lootboxItemWon || !elements.lootboxItemName || !elements.lootboxRarity) return;
