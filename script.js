@@ -308,7 +308,8 @@ async function startLootboxSpin() {
     // Start spinning animation
     let currentPosition = 0;
     let speed = 30;
-    const deceleration = 0.995;
+    const initialDeceleration = 0.995;
+    let deceleration = initialDeceleration;
     let lastTime = 0;
     let passedCenter = false;
     
@@ -318,7 +319,7 @@ async function startLootboxSpin() {
         lastTime = time;
         
         if (speed > 0.5) {
-            currentPosition += speed; // Changed to + for left-to-right movement
+            currentPosition += speed; // Left-to-right movement
             speed *= deceleration;
             
             // Check if we've passed the center point
@@ -328,38 +329,22 @@ async function startLootboxSpin() {
                 deceleration = 0.98;
             }
             
-            // Loop the track (for left-to-right we need to handle this differently)
+            // Loop the track
             if (currentPosition > track.scrollWidth / 3) {
                 currentPosition -= track.scrollWidth / 3;
             }
             
-            track.style.transform = `translateX(${-currentPosition}px)`; // Negative for left-to-right
+            track.style.transform = `translateX(${-currentPosition}px)`;
             spinAnimation = requestAnimationFrame(animateSpin);
         } else {
-            // Final adjustment to center the target item
-            const finalPosition = targetPosition;
-            const duration = 1000; // 1 second for final adjustment
-            const startTime = performance.now();
+            // Immediately snap to the target position without animation
+            track.style.transform = `translateX(${-targetPosition}px)`;
             
-            function finalAdjustment(time) {
-                const elapsed = time - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const easedProgress = 0.5 * (1 - Math.cos(Math.PI * progress));
-                
-                track.style.transform = `translateX(${-(currentPosition + (finalPosition - currentPosition) * easedProgress)}px)`;
-                
-                if (progress < 1) {
-                    spinAnimation = requestAnimationFrame(finalAdjustment);
-                } else {
-                    // Spin complete
-                    setTimeout(() => {
-                        showLootboxPopup(targetItem);
-                        resetLootboxSpinState();
-                    }, 500);
-                }
-            }
-            
-            spinAnimation = requestAnimationFrame(finalAdjustment);
+            // Small delay before showing the popup
+            setTimeout(() => {
+                showLootboxPopup(targetItem);
+                resetLootboxSpinState();
+            }, 300);
         }
     }
     
