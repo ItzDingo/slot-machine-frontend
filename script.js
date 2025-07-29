@@ -20,47 +20,47 @@ const CONFIG = {
         { name: 'clover', img: 'assets/clover.png' }
     ],
     lootboxItems: [
-        { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 1.07 },
-        { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 14.28 },
-        { name: 'M4A1-S Night Terror', img: 'spins/M4A1-S-Night-Terror.png', rarity: 'epic', chance: 3.2 },
-        { name: 'P2000 Lifted Spirits', img: 'spins/P2000-Lifted-Spirits.png', rarity: 'common', chance: 14.28 },
-        { name: 'USP-S Ticket to Hell', img: 'spins/USP-Ticket-to-Hell-Skin.png', rarity: 'epic', chance: 2.55 },
-        { name: 'MAG-7 Foresight', img: 'spins/MAG-7-Foresight-Skin.png', rarity: 'common', chance: 14.28 },
-        { name: 'G3SG1 Dream Glade', img: 'spins/G3SG1-Dream-Glade-Skin.png', rarity: 'uncommon', chance: 11.28 },
-        { name: 'AK-47 Nightwish', img: 'spins/AK-47-Nightwish-Skin.png', rarity: 'legendary', chance: 0.32 },
-        { name: 'XM1014 Zombie Offensive', img: 'spins/XM1014-Zombie-Offensive-Skin.png', rarity: 'uncommon', chance: 11.28 },
-        { name: 'MP9 Starlight Protector', img: 'spins/MP9-Starlight-Protector-Skin.png', rarity: 'legendary', chance: 0.32 },
-        { name: 'PP-Bizon Space Cat', img: 'spins/PP-Bizon-Space-Cat-Skin.png', rarity: 'uncommon', chance: 14.28 },
-        { name: 'Dual Berettas Melondrama', img: 'spins/Dual-Berettas-Melondrama-Skin.png', rarity: 'legendary', chance: 1.07 },
-        { name: 'Five SeveN Scrawl', img: 'spins/Five-SeveN-Scrawl-Skin.png', rarity: 'common', chance: 11.28 },
-        { name: 'FAMAS Rapid Eye Movement', img: 'spins/FAMAS-Rapid-Eye-Movement-Skin.png', rarity: 'legendary', chance: 1.07 },
-        { name: 'MAC-10 Ensnared', img: 'spins/MAC-10-Ensnared-Skin.png', rarity: 'common', chance: 14.28 },
-        { name: 'MP5-SD Necro Jr', img: 'spins/MP5-SD-Necro-Jr-Skin.png', rarity: 'common', chance: 14.28 },
-        { name: 'Knife', img: 'spins/gold.png', rarity: 'mythic', chance: 0.3 }
+        { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 1.07, value: 500 },
+        { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 14.28, value: 50 },
+        { name: 'M4A1-S Night Terror', img: 'spins/M4A1-S-Night-Terror.png', rarity: 'epic', chance: 3.2, value: 200 },
+        { name: 'P2000 Lifted Spirits', img: 'spins/P2000-Lifted-Spirits.png', rarity: 'common', chance: 14.28, value: 50 },
+        { name: 'USP-S Ticket to Hell', img: 'spins/USP-Ticket-to-Hell-Skin.png', rarity: 'epic', chance: 2.55, value: 200 },
+        { name: 'MAG-7 Foresight', img: 'spins/MAG-7-Foresight-Skin.png', rarity: 'common', chance: 14.28, value: 50 },
+        { name: 'G3SG1 Dream Glade', img: 'spins/G3SG1-Dream-Glade-Skin.png', rarity: 'uncommon', chance: 11.28, value: 100 },
+        { name: 'AK-47 Nightwish', img: 'spins/AK-47-Nightwish-Skin.png', rarity: 'legendary', chance: 0.32, value: 500 },
+        { name: 'XM1014 Zombie Offensive', img: 'spins/XM1014-Zombie-Offensive-Skin.png', rarity: 'uncommon', chance: 11.28, value: 100 },
+        { name: 'MP9 Starlight Protector', img: 'spins/MP9-Starlight-Protector-Skin.png', rarity: 'legendary', chance: 0.32, value: 500 },
+        { name: 'PP-Bizon Space Cat', img: 'spins/PP-Bizon-Space-Cat-Skin.png', rarity: 'uncommon', chance: 14.28, value: 100 },
+        { name: 'Dual Berettas Melondrama', img: 'spins/Dual-Berettas-Melondrama-Skin.png', rarity: 'legendary', chance: 1.07, value: 500 },
+        { name: 'Five SeveN Scrawl', img: 'spins/Five-SeveN-Scrawl-Skin.png', rarity: 'common', chance: 11.28, value: 50 },
+        { name: 'FAMAS Rapid Eye Movement', img: 'spins/FAMAS-Rapid-Eye-Movement-Skin.png', rarity: 'legendary', chance: 1.07, value: 500 },
+        { name: 'MAC-10 Ensnared', img: 'spins/MAC-10-Ensnared-Skin.png', rarity: 'common', chance: 14.28, value: 50 },
+        { name: 'MP5-SD Necro Jr', img: 'spins/MP5-SD-Necro-Jr-Skin.png', rarity: 'common', chance: 14.28, value: 50 },
+        { name: 'Knife', img: 'spins/gold.png', rarity: 'mythic', chance: 0.3, value: 0 }
     ],
     // New knife system for mythic rewards
     knifes: [
-        { name: 'Butterfly Knife Black Laminate', img: 'spins/Butterfly-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Huntsman Knife Black Laminate', img: 'spins/Huntsman-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Bowie Knife Bright Water', img: 'spins/Bowie-Knife-Bright-Water-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Butterfly Knife Lore', img: 'spins/Butterfly-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Huntsman Knife Freehand', img: 'spins/Huntsman-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Huntsman Knife Lore', img: 'spins/Huntsman-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Butterfly Knife Autotronic', img: 'spins/Butterfly-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Huntsman Knife Bright Water', img: 'spins/Huntsman-Knife-Bright-Water-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Butterfly Knife Freehand', img: 'spins/Butterfly-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Shadow Daggers Freehand', img: 'spins/Shadow-Daggers-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Huntsman Knife Gamma Doppler', img: 'spins/Huntsman-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Butterfly Knife Gamma Doppler', img: 'spins/Butterfly-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Bowie Knife Gamma Doppler', img: 'spins/Bowie-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Shadow Daggers Gamma Doppler', img: 'spins/Shadow-Daggers-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Falchion Knife Gamma Doppler', img: 'spins/Falchion-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Bowie Knife Lore', img: 'spins/Bowie-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Bowie Knife Black Laminate', img: 'spins/Bowie-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Falchion Knife Autotronic', img: 'spins/Falchion-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Bowie Knife Autotronic', img: 'spins/Bowie-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Bowie Knife Freehand', img: 'spins/Bowie-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867 },
-        { name: 'Falchion Knife Black Laminate', img: 'spins/Falchion-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867 }
+        { name: 'Butterfly Knife Black Laminate', img: 'spins/Butterfly-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Huntsman Knife Black Laminate', img: 'spins/Huntsman-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Bowie Knife Bright Water', img: 'spins/Bowie-Knife-Bright-Water-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Butterfly Knife Lore', img: 'spins/Butterfly-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Huntsman Knife Freehand', img: 'spins/Huntsman-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Huntsman Knife Lore', img: 'spins/Huntsman-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Butterfly Knife Autotronic', img: 'spins/Butterfly-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Huntsman Knife Bright Water', img: 'spins/Huntsman-Knife-Bright-Water-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Butterfly Knife Freehand', img: 'spins/Butterfly-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Shadow Daggers Freehand', img: 'spins/Shadow-Daggers-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Huntsman Knife Gamma Doppler', img: 'spins/Huntsman-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Butterfly Knife Gamma Doppler', img: 'spins/Butterfly-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Bowie Knife Gamma Doppler', img: 'spins/Bowie-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Shadow Daggers Gamma Doppler', img: 'spins/Shadow-Daggers-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Falchion Knife Gamma Doppler', img: 'spins/Falchion-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Bowie Knife Lore', img: 'spins/Bowie-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Bowie Knife Black Laminate', img: 'spins/Bowie-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Falchion Knife Autotronic', img: 'spins/Falchion-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Bowie Knife Autotronic', img: 'spins/Bowie-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Bowie Knife Freehand', img: 'spins/Bowie-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
+        { name: 'Falchion Knife Black Laminate', img: 'spins/Falchion-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 }
     ],
     payouts: {
         '7-7-7': 500,
@@ -73,7 +73,7 @@ const CONFIG = {
     },
     mines: {
         minBet: 0.1,
-        maxBet: 10000,
+        maxBet: 1000,
         minMines: 1,
         maxMines: 10,
         getGridSize: function(minesCount) {
@@ -151,13 +151,17 @@ let gameState = {
     lootboxGame: {
         isSpinning: false,
         currentItem: null
-    }
+    },
+    inventory: []
 };
 
 // Loot Box Variables
 let lootboxItems = [];
 let isLootboxSpinning = false;
 let spinAnimation = null;
+
+// Inventory Variables
+let currentSellingItem = null;
 
 // DOM Elements
 const elements = {
@@ -168,14 +172,19 @@ const elements = {
     logoutBtn: document.getElementById('logout-btn'),
     minesLogoutBtn: document.getElementById('mines-logout-btn'),
     lootboxLogoutBtn: document.getElementById('lootbox-logout-btn'),
+    inventoryLogoutBtn: document.getElementById('inventory-logout-btn'),
     usernameDisplay: document.getElementById('username'),
     userAvatar: document.getElementById('user-avatar'),
     lootboxUsername: document.getElementById('lootbox-username'),
     lootboxAvatar: document.getElementById('lootbox-avatar'),
+    inventoryUsername: document.getElementById('inventory-username'),
+    inventoryAvatar: document.getElementById('inventory-avatar'),
     chipsDisplay: document.getElementById('chips'),
     diceDisplay: document.getElementById('dice'),
     lootboxChips: document.getElementById('lootbox-chips'),
     lootboxDice: document.getElementById('lootbox-dice'),
+    inventoryChips: document.getElementById('inventory-chips'),
+    inventoryDice: document.getElementById('inventory-dice'),
     spinBtn: document.getElementById('spin-btn'),
     reels: [
         document.getElementById('reel1'),
@@ -190,8 +199,10 @@ const elements = {
     slotMachineBtn: document.getElementById('slot-machine-btn'),
     minesGameBtn: document.getElementById('mines-game-btn'),
     lootboxBtn: document.getElementById('lootbox-btn'),
+    inventoryBtn: document.getElementById('inventory-btn'),
     minesGameScreen: document.getElementById('mines-game-screen'),
     lootboxScreen: document.getElementById('lootbox-screen'),
+    inventoryScreen: document.getElementById('inventory-screen'),
     minesBetInput: document.getElementById('mines-bet-input'),
     minesCountInput: document.getElementById('mines-count-input'),
     minesStartBtn: document.getElementById('mines-start-btn'),
@@ -209,6 +220,7 @@ const elements = {
     backToMenuBtn: document.getElementById('back-to-menu-btn'),
     minesBackToMenuBtn: document.getElementById('mines-back-to-menu-btn'),
     lootboxBackToMenuBtn: document.getElementById('lootbox-back-to-menu-btn'),
+    inventoryBackToMenuBtn: document.getElementById('inventory-back-to-menu-btn'),
     minesWinsCounter: document.getElementById('mines-wins-counter'),
     minesWinRate: document.getElementById('mines-win-rate'),
     lootboxSpinBtn: document.getElementById('lootbox-spin-btn'),
@@ -217,7 +229,18 @@ const elements = {
     lootboxItemWon: document.getElementById('lootbox-item-won'),
     lootboxItemName: document.getElementById('lootbox-item-name'),
     lootboxRarity: document.getElementById('lootbox-rarity'),
-    lootboxClaimBtn: document.getElementById('lootbox-claim-btn')
+    lootboxClaimBtn: document.getElementById('lootbox-claim-btn'),
+    inventoryItems: document.getElementById('inventory-items'),
+    inventoryTotalItems: document.getElementById('inventory-total-items'),
+    inventorySellPanel: document.getElementById('inventory-sell-panel'),
+    inventorySellImg: document.getElementById('inventory-sell-img'),
+    inventorySellName: document.getElementById('inventory-sell-name'),
+    inventorySellValue: document.getElementById('inventory-sell-value'),
+    inventorySellInput: document.getElementById('inventory-sell-input'),
+    inventorySellMax: document.getElementById('inventory-sell-max'),
+    inventorySellBtn: document.getElementById('inventory-sell-btn'),
+    inventorySellTotal: document.getElementById('inventory-sell-total'),
+    inventorySellClose: document.querySelector('.inventory-sell-close')
 };
 
 // Helper Functions
@@ -249,7 +272,7 @@ function getRandomLootboxItem() {
 function getRandomKnife() {
     if (CONFIG.knifes.length === 0) {
         // If no knives configured, return a default knife
-        return { name: 'Default Knife', img: 'spins/default-knife.png', rarity: 'legendary' };
+        return { name: 'Default Knife', img: 'spins/default-knife.png', rarity: 'legendary', value: 1000 };
     }
     
     // Calculate total weight for knives
@@ -325,6 +348,11 @@ async function claimLootboxWin() {
     if (track) {
         track.style.opacity = '1'; // Ensure items remain visible
     }
+    
+    // Add the won item to inventory
+    if (gameState.lootboxGame.currentItem) {
+        addItemToInventory(gameState.lootboxGame.currentItem);
+    }
 }
 
 function resetReel(reel, centerSymbol) {
@@ -348,6 +376,8 @@ function updateCurrencyDisplay() {
     if (elements.minesDice) elements.minesDice.textContent = gameState.dice;
     if (elements.lootboxChips) elements.lootboxChips.textContent = gameState.chips.toFixed(2);
     if (elements.lootboxDice) elements.lootboxDice.textContent = gameState.dice;
+    if (elements.inventoryChips) elements.inventoryChips.textContent = gameState.chips.toFixed(2);
+    if (elements.inventoryDice) elements.inventoryDice.textContent = gameState.dice;
 }
 
 function showNotification(message, isSuccess) {
@@ -797,36 +827,169 @@ function showLootboxPopup(item) {
     elements.lootboxRarity.className = 'lootbox-rarity';
     elements.lootboxRarity.classList.add(item.rarity);
     
+    // Store the current item
+    gameState.lootboxGame.currentItem = item;
+    
     elements.lootboxPopup.style.display = 'flex';
 }
 
-async function claimLootboxWin() {
-    if (elements.lootboxPopup) elements.lootboxPopup.style.display = 'none';
+// Inventory Functions
+function addItemToInventory(item) {
+    // Check if item already exists in inventory
+    const existingItem = gameState.inventory.find(i => i.name === item.name);
     
-    // Don't reinitialize items immediately - keep them visible
-    // Only reinitialize if needed for the next spin
-    const track = document.getElementById('lootbox-items-track');
-    if (track) {
-        track.style.opacity = '1'; // Ensure items remain visible
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        gameState.inventory.push({
+            name: item.name,
+            img: item.img,
+            rarity: item.rarity,
+            value: item.value || 0,
+            quantity: 1
+        });
+    }
+    
+    // Sort inventory by rarity (mythic -> legendary -> epic -> uncommon -> common)
+    gameState.inventory.sort((a, b) => {
+        const rarityOrder = ['mythic', 'legendary', 'epic', 'uncommon', 'common'];
+        return rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
+    });
+    
+    // Update inventory display if we're currently viewing it
+    if (gameState.currentGame === 'inventory') {
+        updateInventoryDisplay();
     }
 }
 
-function startLootboxGame() {
-    if (!gameState.userId) {
-        showLoginScreen();
+function updateInventoryDisplay() {
+    if (!elements.inventoryItems) return;
+    
+    elements.inventoryItems.innerHTML = '';
+    
+    if (gameState.inventory.length === 0) {
+        elements.inventoryItems.innerHTML = '<div class="inventory-empty">Your inventory is empty</div>';
+        elements.inventoryTotalItems.textContent = '0 items';
         return;
     }
-    gameState.currentGame = 'lootbox';
-    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
-    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
-    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
-    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
-    if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'block';
     
-    // Initialize lootbox items
-    initializeLootboxItems();
+    elements.inventoryTotalItems.textContent = `${gameState.inventory.length} items`;
     
-    if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = false;
+    gameState.inventory.forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.className = `inventory-item ${item.rarity}`;
+        itemElement.innerHTML = `
+            <img src="${item.img}" alt="${item.name}" class="inventory-item-img">
+            <div class="inventory-item-name">${item.name}</div>
+            <div class="inventory-item-rarity">${item.rarity}</div>
+            <div class="inventory-item-count">${item.quantity}</div>
+        `;
+        
+        itemElement.addEventListener('click', () => showSellPanel(item));
+        elements.inventoryItems.appendChild(itemElement);
+    });
+}
+
+function showSellPanel(item) {
+    if (!elements.inventorySellPanel) return;
+    
+    currentSellingItem = item;
+    
+    elements.inventorySellImg.src = item.img;
+    elements.inventorySellImg.alt = item.name;
+    elements.inventorySellName.textContent = item.name;
+    elements.inventorySellValue.textContent = `Value: ${item.value} chips each`;
+    elements.inventorySellInput.value = 1;
+    elements.inventorySellInput.max = item.quantity;
+    elements.inventorySellMax.textContent = `/ ${item.quantity}`;
+    elements.inventorySellTotal.textContent = `Total: ${item.value} chips`;
+    
+    elements.inventorySellPanel.style.display = 'block';
+}
+
+function updateSellTotal() {
+    if (!currentSellingItem || !elements.inventorySellInput) return;
+    
+    const quantity = parseInt(elements.inventorySellInput.value) || 0;
+    const maxQuantity = currentSellingItem.quantity;
+    const value = currentSellingItem.value;
+    
+    // Validate input
+    if (quantity < 1) {
+        elements.inventorySellInput.value = 1;
+    } else if (quantity > maxQuantity) {
+        elements.inventorySellInput.value = maxQuantity;
+    }
+    
+    const validQuantity = parseInt(elements.inventorySellInput.value);
+    const total = validQuantity * value;
+    
+    if (elements.inventorySellTotal) {
+        elements.inventorySellTotal.textContent = `Total: ${total} chips`;
+    }
+}
+
+async function sellInventoryItem() {
+    if (!currentSellingItem || !elements.inventorySellInput) return;
+    
+    const quantity = parseInt(elements.inventorySellInput.value) || 0;
+    const maxQuantity = currentSellingItem.quantity;
+    const value = currentSellingItem.value;
+    
+    if (quantity < 1 || quantity > maxQuantity) {
+        showNotification('Invalid quantity', false);
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/inventory/sell`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                itemName: currentSellingItem.name,
+                quantity: quantity,
+                totalValue: quantity * value
+            }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) throw new Error('Failed to sell item');
+        
+        const data = await response.json();
+        gameState.chips = data.newBalance;
+        updateCurrencyDisplay();
+        
+        // Update inventory
+        const itemIndex = gameState.inventory.findIndex(i => i.name === currentSellingItem.name);
+        if (itemIndex !== -1) {
+            gameState.inventory[itemIndex].quantity -= quantity;
+            
+            // Remove item if quantity reaches 0
+            if (gameState.inventory[itemIndex].quantity <= 0) {
+                gameState.inventory.splice(itemIndex, 1);
+            }
+        }
+        
+        showNotification(`Sold ${quantity} ${currentSellingItem.name} for ${quantity * value} chips`, true);
+        
+        // Update inventory display
+        updateInventoryDisplay();
+        closeSellPanel();
+    } catch (error) {
+        console.error('Sell error:', error);
+        showNotification('Failed to sell item', false);
+    }
+}
+
+function closeSellPanel() {
+    if (elements.inventorySellPanel) {
+        elements.inventorySellPanel.style.display = 'none';
+    }
+    currentSellingItem = null;
 }
 
 // Mines Game Functions
@@ -839,6 +1002,7 @@ function showGameSelectScreen() {
     if (elements.gameScreen) elements.gameScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
     if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
+    if (elements.inventoryScreen) elements.inventoryScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'block';
     updateCurrencyDisplay();
 }
@@ -853,6 +1017,7 @@ function startSlotMachineGame() {
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
     if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
+    if (elements.inventoryScreen) elements.inventoryScreen.style.display = 'none';
     if (elements.gameScreen) elements.gameScreen.style.display = 'block';
 }
 
@@ -866,8 +1031,62 @@ function startMinesGame() {
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
     if (elements.gameScreen) elements.gameScreen.style.display = 'none';
     if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
+    if (elements.inventoryScreen) elements.inventoryScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'block';
     setupMinesGameUI();
+}
+
+function startLootboxGame() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
+    gameState.currentGame = 'lootbox';
+    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
+    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
+    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
+    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
+    if (elements.inventoryScreen) elements.inventoryScreen.style.display = 'none';
+    if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'block';
+    
+    // Initialize lootbox items
+    initializeLootboxItems();
+    
+    if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = false;
+}
+
+function startInventoryScreen() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
+    gameState.currentGame = 'inventory';
+    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
+    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
+    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
+    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
+    if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
+    if (elements.inventoryScreen) elements.inventoryScreen.style.display = 'block';
+    
+    // Load inventory from server
+    loadInventory();
+}
+
+async function loadInventory() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/inventory?userId=${gameState.userId}`, {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            gameState.inventory = data.items || [];
+            updateInventoryDisplay();
+        }
+    } catch (error) {
+        console.error('Failed to load inventory:', error);
+        showNotification('Failed to load inventory', false);
+    }
 }
 
 async function setupMinesGameUI() {
@@ -1237,6 +1456,7 @@ function handleSuccessfulLogin(user) {
     gameState.userId = user.id;
     gameState.chips = user.chips;
     gameState.dice = user.dice;
+    gameState.inventory = user.inventory || [];
     
     if (elements.usernameDisplay) elements.usernameDisplay.textContent = user.username;
     if (elements.userAvatar) elements.userAvatar.src = user.avatar || 'assets/default-avatar.png';
@@ -1244,6 +1464,8 @@ function handleSuccessfulLogin(user) {
     if (elements.minesAvatar) elements.minesAvatar.src = user.avatar || 'assets/default-avatar.png';
     if (elements.lootboxUsername) elements.lootboxUsername.textContent = user.username;
     if (elements.lootboxAvatar) elements.lootboxAvatar.src = user.avatar || 'assets/default-avatar.png';
+    if (elements.inventoryUsername) elements.inventoryUsername.textContent = user.username;
+    if (elements.inventoryAvatar) elements.inventoryAvatar.src = user.avatar || 'assets/default-avatar.png';
     
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     showGameSelectScreen();
@@ -1260,6 +1482,8 @@ function handleSuccessfulLogin(user) {
         setupMinesGameUI();
     } else if (gameState.currentGame === 'lootbox') {
         startLootboxGame();
+    } else if (gameState.currentGame === 'inventory') {
+        startInventoryScreen();
     }
 }
 
@@ -1269,6 +1493,7 @@ function showLoginScreen() {
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
     if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
+    if (elements.inventoryScreen) elements.inventoryScreen.style.display = 'none';
     gameState.userId = null;
     if (elements.tokenInput) elements.tokenInput.value = '';
 }
@@ -1320,6 +1545,7 @@ if (elements.loginBtn) {
 if (elements.logoutBtn) elements.logoutBtn.addEventListener('click', logout);
 if (elements.minesLogoutBtn) elements.minesLogoutBtn.addEventListener('click', logout);
 if (elements.lootboxLogoutBtn) elements.lootboxLogoutBtn.addEventListener('click', logout);
+if (elements.inventoryLogoutBtn) elements.inventoryLogoutBtn.addEventListener('click', logout);
 if (elements.spinBtn) elements.spinBtn.addEventListener('click', startSpin);
 if (elements.claimBtn) elements.claimBtn.addEventListener('click', claimWin);
 if (elements.lootboxClaimBtn) elements.lootboxClaimBtn.addEventListener('click', claimLootboxWin);
@@ -1327,6 +1553,7 @@ if (elements.lootboxClaimBtn) elements.lootboxClaimBtn.addEventListener('click',
 if (elements.slotMachineBtn) elements.slotMachineBtn.addEventListener('click', startSlotMachineGame);
 if (elements.minesGameBtn) elements.minesGameBtn.addEventListener('click', startMinesGame);
 if (elements.lootboxBtn) elements.lootboxBtn.addEventListener('click', startLootboxGame);
+if (elements.inventoryBtn) elements.inventoryBtn.addEventListener('click', startInventoryScreen);
 if (elements.minesStartBtn) elements.minesStartBtn.addEventListener('click', startNewMinesGame);
 if (elements.minesCashoutBtn) elements.minesCashoutBtn.addEventListener('click', cashoutMinesGame);
 if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.addEventListener('click', startLootboxSpin);
@@ -1336,6 +1563,20 @@ if (document.getElementById('mines-game-over-close')) {
 if (elements.backToMenuBtn) elements.backToMenuBtn.addEventListener('click', showGameSelectScreen);
 if (elements.minesBackToMenuBtn) elements.minesBackToMenuBtn.addEventListener('click', showGameSelectScreen);
 if (elements.lootboxBackToMenuBtn) elements.lootboxBackToMenuBtn.addEventListener('click', showGameSelectScreen);
+if (elements.inventoryBackToMenuBtn) elements.inventoryBackToMenuBtn.addEventListener('click', showGameSelectScreen);
+
+// Inventory event listeners
+if (elements.inventorySellInput) {
+    elements.inventorySellInput.addEventListener('input', updateSellTotal);
+}
+
+if (elements.inventorySellBtn) {
+    elements.inventorySellBtn.addEventListener('click', sellInventoryItem);
+}
+
+if (elements.inventorySellClose) {
+    elements.inventorySellClose.addEventListener('click', closeSellPanel);
+}
 
 // Initialize Game
 async function initGame() {
