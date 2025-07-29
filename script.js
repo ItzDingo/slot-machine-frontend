@@ -20,7 +20,7 @@ const CONFIG = {
         { name: 'clover', img: 'assets/clover.png' }
     ],
     lootboxItems: [
-        { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png.png', rarity: 'legendary', chance: 0.1 },
+        { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 0.1 },
         { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 0.11 },
         { name: 'M4A1-S Night Terror', img: 'spins/M4A1-S-Night-Terror.png', rarity: 'uncommon', chance: 0.032 },
         { name: 'P2000 Lifted Spirits', img: 'spins/P2000-Lifted-Spirits.png', rarity: 'common', chance: 0.11 },
