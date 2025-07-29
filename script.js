@@ -607,6 +607,7 @@ async function claimWin() {
     if (elements.winPopup) elements.winPopup.style.display = 'none';
 }
 
+// Replace the startLootboxSpin function with this new version
 async function startLootboxSpin() {
     if (isLootboxSpinning || gameState.chips < CONFIG.lootboxCost) {
         if (gameState.chips < CONFIG.lootboxCost) {
@@ -646,16 +647,65 @@ async function startLootboxSpin() {
     const track = document.getElementById('lootbox-items-track');
     const container = track.parentElement;
     
+    // First determine the result item based on probabilities
     const resultItem = getRandomLootboxItem();
     console.log('Target item:', resultItem.name, 'Rarity:', resultItem.rarity);
     
+    // Clear and rebuild the track with new random items for this spin
+    track.innerHTML = '';
+    
+    // Create a pool of items based on their weights
+    const itemsPool = [];
+    CONFIG.lootboxItems.forEach(item => {
+        // Add more copies of common items to maintain probability
+        const count = Math.max(1, Math.floor(item.chance * 10));
+        for (let i = 0; i < count; i++) {
+            itemsPool.push(item);
+        }
+    });
+    
+    // Shuffle the items pool
+    for (let i = itemsPool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [itemsPool[i], itemsPool[j]] = [itemsPool[j], itemsPool[i]];
+    }
+    
+    // Create 3 loops of items (start, middle, end) with the target in the middle
+    const singleLoop = itemsPool.slice(0, 50); // Take first 50 items for variety
+    
+    // Ensure the target item is in the middle section
+    if (!singleLoop.some(item => item.name === resultItem.name)) {
+        // If target not in first 50, replace a random item
+        const replaceIndex = Math.floor(Math.random() * singleLoop.length);
+        singleLoop[replaceIndex] = resultItem;
+    }
+    
+    // Build the track with 3 loops (start, middle, end)
+    for (let loop = 0; loop < 3; loop++) {
+        singleLoop.forEach(item => {
+            const itemElement = document.createElement('div');
+            itemElement.className = `lootbox-item ${item.rarity}`;
+            itemElement.innerHTML = `<img src="${item.img}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain;">`;
+            itemElement.dataset.itemName = item.name;
+            itemElement.style.minWidth = '120px';
+            itemElement.style.minHeight = '120px';
+            track.appendChild(itemElement);
+        });
+    }
+    
+    // Reset track position
+    track.style.transform = 'translateX(0px)';
+    track.style.transition = 'none';
+    track.style.opacity = '1';
+    
+    // Find all item elements after building the track
     const allItems = track.querySelectorAll('.lootbox-item');
     const itemsPerLoop = allItems.length / 3;
     const middleStart = Math.floor(itemsPerLoop);
     const middleEnd = Math.floor(itemsPerLoop * 2);
     
+    // Find the target item in the middle section
     let targetIndex = -1;
-    
     for (let i = middleStart; i < middleEnd; i++) {
         const item = allItems[i];
         const itemName = item.dataset.itemName || item.querySelector('img').alt;
@@ -665,17 +715,19 @@ async function startLootboxSpin() {
         }
     }
     
+    // If not found in middle section, look in first section and adjust index
     if (targetIndex === -1) {
         for (let i = 0; i < middleStart; i++) {
             const item = allItems[i];
             const itemName = item.dataset.itemName || item.querySelector('img').alt;
             if (itemName === resultItem.name) {
-                targetIndex = i + itemsPerLoop;
+                targetIndex = i + itemsPerLoop; // Add one loop length to position it in middle
                 break;
             }
         }
     }
     
+    // Fallback if still not found (shouldn't happen)
     if (targetIndex === -1) {
         console.error('Target item not found, using fallback');
         targetIndex = middleStart + Math.floor(Math.random() * (middleEnd - middleStart));
@@ -685,6 +737,7 @@ async function startLootboxSpin() {
     const containerCenter = container.offsetWidth / 2;
     const loopWidth = (allItems.length / 3) * itemWidth;
     
+    // Start with a random position within one loop
     const randomOffset = Math.random() * loopWidth;
     let currentPosition = randomOffset;
     
