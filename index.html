@@ -29,6 +29,7 @@
         <button id="slot-machine-btn" class="game-select-btn">Slot Machine</button>
         <button id="mines-game-btn" class="game-select-btn">Mines Game</button>
         <button id="lootbox-btn" class="game-select-btn">Loot Box</button>
+        <button id="inventory-btn" class="game-select-btn">Inventory</button>
     </div>
 
     <!-- Slot Machine Game Screen -->
@@ -180,6 +181,68 @@
         </div>
 
         <button id="lootbox-back-to-menu-btn" class="mines-start-btn" style="margin-top: 10px;">Back to Menu</button>
+    </div>
+
+    <!-- Inventory Screen -->
+    <div id="inventory-screen" class="game-container">
+        <div class="user-panel">
+            <div class="user-info">
+                <img id="inventory-avatar" src="assets/default-avatar.png" alt="User Avatar">
+                <div class="user-details">
+                    <span id="inventory-username">Guest</span>
+                    <button id="inventory-logout-btn">Logout</button>
+                </div>
+            </div>
+            <div class="currency-display">
+                <div class="currency">
+                    <img src="assets/chip.png" alt="Chips">
+                    <span id="inventory-chips">0</span>
+                </div>
+                <div class="currency">
+                    <img src="assets/dice.png" alt="Dice">
+                    <span id="inventory-dice">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="inventory-container">
+            <div class="inventory-header">
+                <h2>Your Inventory</h2>
+                <span id="inventory-total-items">0 items</span>
+            </div>
+
+            <div id="inventory-items" class="inventory-items">
+                <!-- Items will be populated here -->
+                <div class="inventory-empty">Your inventory is empty</div>
+            </div>
+
+            <div id="inventory-sell-panel" class="inventory-sell-panel">
+                <div class="inventory-sell-header">
+                    <div class="inventory-sell-title">Sell Items</div>
+                    <button class="inventory-sell-close">&times;</button>
+                </div>
+                <div class="inventory-sell-content">
+                    <div class="inventory-sell-item">
+                        <img id="inventory-sell-img" src="" alt="" class="inventory-sell-img">
+                        <div class="inventory-sell-info">
+                            <div id="inventory-sell-name" class="inventory-sell-name"></div>
+                            <div id="inventory-sell-value" class="inventory-sell-value"></div>
+                        </div>
+                    </div>
+                    <div class="inventory-sell-controls">
+                        <div class="inventory-sell-quantity">
+                            <span>Quantity:</span>
+                            <input type="number" id="inventory-sell-input" class="inventory-sell-input" min="1" value="1">
+                            <span id="inventory-sell-max">/ 1</span>
+                        </div>
+                        <button id="inventory-sell-btn" class="inventory-sell-btn">Sell</button>
+                    </div>
+                    <div id="inventory-sell-total" class="inventory-sell-total">Total: 0 chips</div>
+                </div>
+            </div>
+        </div>
+
+        <button id="inventory-back-to-menu-btn" class="mines-start-btn" style="margin-top: 10px;">Back to Menu</button>
     </div>
 
     <!-- Slot Machine Win Popup -->
