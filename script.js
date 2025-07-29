@@ -654,7 +654,7 @@ async function startLootboxSpin() {
         if (spinTime >= targetSpinTime && velocity <= minVelocity) {
             // Calculate which item is in the center highlight box
             // The center position relative to the track (adjusted slightly left)
-            const centerPosition = currentPosition + containerCenter - 15; // Move 15px to the left
+            const centerPosition = currentPosition + containerCenter - 50; // Move 15px to the left
             
             // Find the item that's closest to this center position
             const nearestItemIndex = Math.round(centerPosition / itemWidth);
