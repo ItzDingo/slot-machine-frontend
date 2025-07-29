@@ -36,7 +36,7 @@ const CONFIG = {
         { name: 'FAMAS Rapid Eye Movement', img: 'spins/FAMAS-Rapid-Eye-Movement-Skin.png', rarity: 'legendary', chance: 1.07, value: 500 },
         { name: 'MAC-10 Ensnared', img: 'spins/MAC-10-Ensnared-Skin.png', rarity: 'common', chance: 14.28, value: 50 },
         { name: 'MP5-SD Necro Jr', img: 'spins/MP5-SD-Necro-Jr-Skin.png', rarity: 'common', chance: 14.28, value: 50 },
-        { name: 'Knife', img: 'spins/gold.png', rarity: 'mythic', chance: 0.3, value: 0 }
+        { name: 'Knife', img: 'spins/gold.png', rarity: 'mythic', chance: 100, value: 0 }
     ],
     knifes: [
         { name: 'Butterfly Knife Black Laminate', img: 'spins/Butterfly-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
