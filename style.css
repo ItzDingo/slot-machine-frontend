@@ -1047,6 +1047,94 @@ body {
     100% { box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 0, 0, 0.8); }
 }
 
+/* ENHANCED LOOTBOX CLAIM BUTTON - NEW STYLING */
+#lootbox-claim-btn {
+    background: linear-gradient(135deg, #ff0000 0%, #cc0000 50%, #990000 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 18px 40px;
+    font-size: 1.4rem;
+    font-weight: bold;
+    cursor: pointer;
+    width: 85%;
+    max-width: 300px;
+    margin: 25px auto 0;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 
+        0 8px 20px rgba(255, 0, 0, 0.4),
+        inset 0 2px 0 rgba(255, 255, 255, 0.2),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    animation: claimButtonPulse 2s ease-in-out infinite alternate;
+}
+
+#lootbox-claim-btn::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 70%
+    );
+    transform: rotate(45deg);
+    transition: all 0.5s ease;
+    animation: claimButtonShine 3s ease-in-out infinite;
+}
+
+#lootbox-claim-btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 
+        0 12px 30px rgba(255, 0, 0, 0.6),
+        inset 0 2px 0 rgba(255, 255, 255, 0.3),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, #ff1a1a 0%, #e60000 50%, #b30000 100%);
+}
+
+#lootbox-claim-btn:hover::before {
+    transform: rotate(45deg) translateX(20%) translateY(20%);
+}
+
+#lootbox-claim-btn:active {
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 
+        0 6px 16px rgba(255, 0, 0, 0.5),
+        inset 0 2px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -2px 0 rgba(0, 0, 0, 0.4);
+}
+
+@keyframes claimButtonPulse {
+    0% { 
+        box-shadow: 
+            0 8px 20px rgba(255, 0, 0, 0.4),
+            inset 0 2px 0 rgba(255, 255, 255, 0.2),
+            inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+    }
+    100% { 
+        box-shadow: 
+            0 8px 20px rgba(255, 0, 0, 0.7),
+            inset 0 2px 0 rgba(255, 255, 255, 0.3),
+            inset 0 -2px 0 rgba(0, 0, 0, 0.2),
+            0 0 25px rgba(255, 0, 0, 0.5);
+    }
+}
+
+@keyframes claimButtonShine {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    20% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
 /* Back to Menu Button */
 #back-to-menu-btn, #mines-back-to-menu-btn, #lootbox-back-to-menu-btn {
     background: #444;
@@ -1219,8 +1307,6 @@ body {
     100% { transform: rotate(360deg) scale(0.95); }
 }
 
-/* Loot Box Animations - REMOVED CONFLICTING ANIMATIONS */
-
 /* Responsive */
 @media (max-width: 768px) {
     .lootbox-container {
@@ -1249,6 +1335,12 @@ body {
     .lootbox-spin-button {
         width: 100%;
     }
+    
+    #lootbox-claim-btn {
+        width: 95%;
+        font-size: 1.2rem;
+        padding: 16px 35px;
+    }
 }
 
 @media (max-width: 600px) {
@@ -1276,6 +1368,13 @@ body {
         width: 80px;
         height: 80px;
         font-size: 1.2rem;
+    }
+    
+    #lootbox-claim-btn {
+        width: 100%;
+        font-size: 1.1rem;
+        padding: 14px 30px;
+        letter-spacing: 1px;
     }
 }
 
@@ -1315,5 +1414,12 @@ body {
     .lootbox-item-won {
         width: 160px;
         height: 160px;
+    }
+    
+    #lootbox-claim-btn {
+        width: 100%;
+        font-size: 1rem;
+        padding: 12px 25px;
+        letter-spacing: 1px;
     }
 }
