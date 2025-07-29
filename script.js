@@ -4,7 +4,7 @@ const API_BASE_URL = 'https://slot-machine-backend-34lg.onrender.com';
 // Game Configuration
 const CONFIG = {
     spinCost: 10,
-    lootboxCost: 50,
+    lootboxCost: 2,
     symbols: [
         { name: '7', img: 'assets/7.png' },
         { name: 'dollar', img: 'assets/dollar.png' },
@@ -36,10 +36,8 @@ const CONFIG = {
         { name: 'FAMAS Rapid Eye Movement', img: 'spins/FAMAS-Rapid-Eye-Movement-Skin.png', rarity: 'legendary', chance: 1.07, value: 500 },
         { name: 'MAC-10 Ensnared', img: 'spins/MAC-10-Ensnared-Skin.png', rarity: 'common', chance: 14.28, value: 50 },
         { name: 'MP5-SD Necro Jr', img: 'spins/MP5-SD-Necro-Jr-Skin.png', rarity: 'common', chance: 14.28, value: 50 },
-        { name: 'Sawed-Off Spirit Board', img: 'spins/Sawed-Off-Spirit-Board-Skin.png', rarity: 'common', chance: 14.28, value: 15 },
         { name: 'Knife', img: 'spins/gold.png', rarity: 'mythic', chance: 0.3, value: 0 }
     ],
-    // New knife system for mythic rewards
     knifes: [
         { name: 'Butterfly Knife Black Laminate', img: 'spins/Butterfly-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
         { name: 'Huntsman Knife Black Laminate', img: 'spins/Huntsman-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867, value: 5000 },
@@ -74,7 +72,7 @@ const CONFIG = {
     },
     mines: {
         minBet: 0.1,
-        maxBet: 10000000000000000000000000000000,
+        maxBet: 1000,
         minMines: 1,
         maxMines: 10,
         getGridSize: function(minesCount) {
@@ -249,12 +247,8 @@ function getRandomSymbol() {
     return CONFIG.symbols[Math.floor(Math.random() * CONFIG.symbols.length)];
 }
 
-// Updated lootbox item selection with new chance system
 function getRandomLootboxItem() {
-    // Calculate total weight (sum of all chances)
     const totalWeight = CONFIG.lootboxItems.reduce((sum, item) => sum + item.chance, 0);
-    
-    // Generate random number between 0 and total weight
     const random = Math.random() * totalWeight;
     let cumulativeWeight = 0;
     
@@ -265,21 +259,15 @@ function getRandomLootboxItem() {
         }
     }
     
-    // Fallback to first item if no item was selected
     return CONFIG.lootboxItems[0];
 }
 
-// New function to get random knife for mythic items
 function getRandomKnife() {
     if (CONFIG.knifes.length === 0) {
-        // If no knives configured, return a default knife
         return { name: 'Default Knife', img: 'spins/default-knife.png', rarity: 'legendary', value: 1000 };
     }
     
-    // Calculate total weight for knives
     const totalWeight = CONFIG.knifes.reduce((sum, knife) => sum + knife.chance, 0);
-    
-    // Generate random number between 0 and total weight
     const random = Math.random() * totalWeight;
     let cumulativeWeight = 0;
     
@@ -290,11 +278,8 @@ function getRandomKnife() {
         }
     }
     
-    // Fallback to first knife if no knife was selected
     return CONFIG.knifes[0];
 }
-
-// Modified Loot Box functions
 
 function initializeLootboxItems() {
     const track = document.getElementById('lootbox-items-track');
@@ -302,57 +287,72 @@ function initializeLootboxItems() {
     
     track.innerHTML = '';
     
-    // Create a more balanced item pool based on new chance system
     const itemsPool = [];
     CONFIG.lootboxItems.forEach(item => {
-        // Add items based on their chance (higher chance = more copies)
-        // Scale the chance to get reasonable number of copies
         const count = Math.max(1, Math.floor(item.chance * 10));
         for (let i = 0; i < count; i++) {
             itemsPool.push(item);
         }
     });
     
-    // Shuffle the items properly
     for (let i = itemsPool.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [itemsPool[i], itemsPool[j]] = [itemsPool[j], itemsPool[i]];
     }
     
-    // Create exactly 3 copies for seamless looping
-    const singleLoop = itemsPool.slice(0, 50); // Use 50 items per loop for good variety
+    const singleLoop = itemsPool.slice(0, 50);
     for (let loop = 0; loop < 3; loop++) {
         singleLoop.forEach(item => {
             const itemElement = document.createElement('div');
             itemElement.className = `lootbox-item ${item.rarity}`;
             itemElement.innerHTML = `<img src="${item.img}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain;">`;
             itemElement.dataset.itemName = item.name;
-            itemElement.style.minWidth = '120px'; // Ensure consistent sizing
+            itemElement.style.minWidth = '120px';
             itemElement.style.minHeight = '120px';
             track.appendChild(itemElement);
         });
     }
     
-    // Reset position and ensure no transitions
     track.style.transform = 'translateX(0px)';
     track.style.transition = 'none';
-    track.style.opacity = '1'; // Ensure visibility
+    track.style.opacity = '1';
 }
 
-// Update the claimLootboxWin function to prevent items from disappearing
 async function claimLootboxWin() {
     if (elements.lootboxPopup) elements.lootboxPopup.style.display = 'none';
     
-    // Don't reinitialize items immediately - keep them visible
-    // Only reinitialize if needed for the next spin
     const track = document.getElementById('lootbox-items-track');
     if (track) {
-        track.style.opacity = '1'; // Ensure items remain visible
+        track.style.opacity = '1';
     }
     
-    // Add the won item to inventory
     if (gameState.lootboxGame.currentItem) {
-        addItemToInventory(gameState.lootboxGame.currentItem);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/inventory/add`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: gameState.userId,
+                    item: gameState.lootboxGame.currentItem
+                }),
+                credentials: 'include'
+            });
+
+            if (!response.ok) throw new Error('Failed to add item to inventory');
+            
+            const data = await response.json();
+            gameState.inventory = data.inventory;
+            
+            if (gameState.currentGame === 'inventory') {
+                updateInventoryDisplay();
+            }
+        } catch (error) {
+            console.error('Error adding item to inventory:', error);
+            showNotification('Failed to save item to inventory', false);
+        }
     }
 }
 
@@ -618,7 +618,6 @@ async function startLootboxSpin() {
     isLootboxSpinning = true;
     if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = true;
     
-    // Deduct chips first
     try {
         const response = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
@@ -647,11 +646,9 @@ async function startLootboxSpin() {
     const track = document.getElementById('lootbox-items-track');
     const container = track.parentElement;
     
-    // Get the winning item first
     const resultItem = getRandomLootboxItem();
     console.log('Target item:', resultItem.name, 'Rarity:', resultItem.rarity);
     
-    // Find a suitable target item in the middle section (second loop)
     const allItems = track.querySelectorAll('.lootbox-item');
     const itemsPerLoop = allItems.length / 3;
     const middleStart = Math.floor(itemsPerLoop);
@@ -659,7 +656,6 @@ async function startLootboxSpin() {
     
     let targetIndex = -1;
     
-    // Look for the target item in the middle section first
     for (let i = middleStart; i < middleEnd; i++) {
         const item = allItems[i];
         const itemName = item.dataset.itemName || item.querySelector('img').alt;
@@ -669,92 +665,75 @@ async function startLootboxSpin() {
         }
     }
     
-    // If not found in middle, look in first section and map to middle
     if (targetIndex === -1) {
         for (let i = 0; i < middleStart; i++) {
             const item = allItems[i];
             const itemName = item.dataset.itemName || item.querySelector('img').alt;
             if (itemName === resultItem.name) {
-                targetIndex = i + itemsPerLoop; // Use the equivalent in the middle section
+                targetIndex = i + itemsPerLoop;
                 break;
             }
         }
     }
     
-    // Final fallback - use any item in middle section
     if (targetIndex === -1) {
         console.error('Target item not found, using fallback');
         targetIndex = middleStart + Math.floor(Math.random() * (middleEnd - middleStart));
     }
     
-    // Animation variables  
-    const itemWidth = 140; // 120px width + 20px gap
+    const itemWidth = 140;
     const containerCenter = container.offsetWidth / 2;
     const loopWidth = (allItems.length / 3) * itemWidth;
     
-    // Generate random stopping position for variety
-    const randomOffset = Math.random() * loopWidth; // Random position within one loop
-    let currentPosition = randomOffset; // Start from random position
+    const randomOffset = Math.random() * loopWidth;
+    let currentPosition = randomOffset;
     
-    let velocity = 8; // Start velocity
-    const maxVelocity = 25; // Max speed
+    let velocity = 8;
+    const maxVelocity = 25;
     const acceleration = 1.1;
-    const minVelocity = 0.3; // When to stop
+    const minVelocity = 0.3;
     
     let phase = 'accelerating';
     let spinTime = 0;
-    const minSpinTime = 4500; // 4.5 seconds minimum
-    const maxSpinTime = 5500; // 5.5 seconds maximum  
+    const minSpinTime = 4500;
+    const maxSpinTime = 5500;  
     const targetSpinTime = minSpinTime + Math.random() * (maxSpinTime - minSpinTime);
     
     function animate() {
-        spinTime += 16; // Approximate 60fps
+        spinTime += 16;
         
-        // Phase management
         if (phase === 'accelerating' && spinTime > targetSpinTime * 0.3) {
             phase = 'decelerating';
         }
         
-        // Velocity control
         if (phase === 'accelerating') {
             velocity = Math.min(velocity * acceleration, maxVelocity);
         } else if (phase === 'decelerating') {
-            // Gradual deceleration
             velocity *= 0.985;
         }
         
-        // Position update
         currentPosition += velocity;
         
-        // Seamless looping - keep track position within bounds
         while (currentPosition >= loopWidth) {
             currentPosition -= loopWidth;
         }
         
-        // Apply transform - move left (negative direction)
         track.style.transform = `translateX(${-currentPosition}px)`;
-        track.style.transition = 'none'; // Ensure no CSS transitions interfere
+        track.style.transition = 'none';
         
-        // Check if we should stop (no more repositioning!)
         if (spinTime >= targetSpinTime && velocity <= minVelocity) {
-            // Calculate which item is in the center highlight box
-            // The center position relative to the track (adjusted slightly left)
-            const centerPosition = currentPosition + containerCenter - 50; // Move 15px to the left
+            const centerPosition = currentPosition + containerCenter - 50;
             
-            // Find the item that's closest to this center position
             const nearestItemIndex = Math.round(centerPosition / itemWidth);
             
-            // Make sure we get a valid item from the middle section
             const itemsPerLoop = allItems.length / 3;
             const middleStart = Math.floor(itemsPerLoop);
             let finalItemIndex = (nearestItemIndex % itemsPerLoop) + middleStart;
             
-            // Ensure the index is within bounds
             if (finalItemIndex >= allItems.length) {
                 finalItemIndex = middleStart + (finalItemIndex - middleStart) % itemsPerLoop;
             }
             
-            // Get the centered item
             const centeredItem = allItems[finalItemIndex];
             
             if (centeredItem) {
@@ -763,7 +742,6 @@ async function startLootboxSpin() {
                 
                 console.log('Stopped at position:', currentPosition, 'Center position:', centerPosition, 'Item:', wonItem.name);
                 
-                // Check if the item is mythic and should get a knife instead
                 let finalReward = wonItem;
                 if (wonItem.rarity === 'mythic') {
                     const randomKnife = getRandomKnife();
@@ -771,13 +749,11 @@ async function startLootboxSpin() {
                     finalReward = randomKnife;
                 }
                 
-                // Show result immediately - no more animations!
                 setTimeout(() => {
                     showLootboxPopup(finalReward);
                     resetLootboxSpinState();
                 }, 200);
             } else {
-                // Fallback to original result
                 let finalReward = resultItem;
                 if (resultItem.rarity === 'mythic') {
                     const randomKnife = getRandomKnife();
@@ -790,16 +766,14 @@ async function startLootboxSpin() {
                     resetLootboxSpinState();
                 }, 200);
             }
-            return; // Stop the animation completely
+            return;
         }
         
-        // Continue animation
         if (isLootboxSpinning) {
             requestAnimationFrame(animate);
         }
     }
     
-    // Start the animation
     requestAnimationFrame(animate);
 }
 
@@ -822,47 +796,22 @@ function showLootboxPopup(item) {
     elements.lootboxItemName.textContent = item.name;
     elements.lootboxRarity.textContent = item.rarity.toUpperCase();
     
-    // Set rarity class
     elements.lootboxItemWon.className = 'lootbox-item-won';
     elements.lootboxItemWon.classList.add(item.rarity);
     elements.lootboxRarity.className = 'lootbox-rarity';
     elements.lootboxRarity.classList.add(item.rarity);
     
-    // Store the current item
-    gameState.lootboxGame.currentItem = item;
+    gameState.lootboxGame.currentItem = {
+        name: item.name,
+        img: item.img,
+        rarity: item.rarity,
+        value: item.value || 0
+    };
     
     elements.lootboxPopup.style.display = 'flex';
 }
 
 // Inventory Functions
-function addItemToInventory(item) {
-    // Check if item already exists in inventory
-    const existingItem = gameState.inventory.find(i => i.name === item.name);
-    
-    if (existingItem) {
-        existingItem.quantity += 1;
-    } else {
-        gameState.inventory.push({
-            name: item.name,
-            img: item.img,
-            rarity: item.rarity,
-            value: item.value || 0,
-            quantity: 1
-        });
-    }
-    
-    // Sort inventory by rarity (mythic -> legendary -> epic -> uncommon -> common)
-    gameState.inventory.sort((a, b) => {
-        const rarityOrder = ['mythic', 'legendary', 'epic', 'uncommon', 'common'];
-        return rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
-    });
-    
-    // Update inventory display if we're currently viewing it
-    if (gameState.currentGame === 'inventory') {
-        updateInventoryDisplay();
-    }
-}
-
 function updateInventoryDisplay() {
     if (!elements.inventoryItems) return;
     
@@ -915,7 +864,6 @@ function updateSellTotal() {
     const maxQuantity = currentSellingItem.quantity;
     const value = currentSellingItem.value;
     
-    // Validate input
     if (quantity < 1) {
         elements.inventorySellInput.value = 1;
     } else if (quantity > maxQuantity) {
@@ -962,22 +910,11 @@ async function sellInventoryItem() {
         
         const data = await response.json();
         gameState.chips = data.newBalance;
+        gameState.inventory = data.inventory;
         updateCurrencyDisplay();
-        
-        // Update inventory
-        const itemIndex = gameState.inventory.findIndex(i => i.name === currentSellingItem.name);
-        if (itemIndex !== -1) {
-            gameState.inventory[itemIndex].quantity -= quantity;
-            
-            // Remove item if quantity reaches 0
-            if (gameState.inventory[itemIndex].quantity <= 0) {
-                gameState.inventory.splice(itemIndex, 1);
-            }
-        }
         
         showNotification(`Sold ${quantity} ${currentSellingItem.name} for ${quantity * value} chips`, true);
         
-        // Update inventory display
         updateInventoryDisplay();
         closeSellPanel();
     } catch (error) {
@@ -991,6 +928,25 @@ function closeSellPanel() {
         elements.inventorySellPanel.style.display = 'none';
     }
     currentSellingItem = null;
+}
+
+async function loadInventory() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/inventory?userId=${gameState.userId}`, {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            gameState.inventory = data.items || [];
+            updateInventoryDisplay();
+        } else {
+            throw new Error('Failed to load inventory');
+        }
+    } catch (error) {
+        console.error('Failed to load inventory:', error);
+        showNotification('Failed to load inventory', false);
+    }
 }
 
 // Mines Game Functions
@@ -1050,7 +1006,6 @@ function startLootboxGame() {
     if (elements.inventoryScreen) elements.inventoryScreen.style.display = 'none';
     if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'block';
     
-    // Initialize lootbox items
     initializeLootboxItems();
     
     if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = false;
@@ -1069,25 +1024,7 @@ function startInventoryScreen() {
     if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
     if (elements.inventoryScreen) elements.inventoryScreen.style.display = 'block';
     
-    // Load inventory from server
     loadInventory();
-}
-
-async function loadInventory() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/inventory?userId=${gameState.userId}`, {
-            credentials: 'include'
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            gameState.inventory = data.items || [];
-            updateInventoryDisplay();
-        }
-    } catch (error) {
-        console.error('Failed to load inventory:', error);
-        showNotification('Failed to load inventory', false);
-    }
 }
 
 async function setupMinesGameUI() {
@@ -1132,7 +1069,7 @@ async function setupMinesGameUI() {
             gameState.minesStats.totalWins = data.totalWins || 0;
             gameState.minesStats.totalGamesPlayed = data.totalGamesPlayed || 0;
         }
-        } catch (error) {
+    } catch (error) {
         console.error('Failed to load mines stats:', error);
     }
     
