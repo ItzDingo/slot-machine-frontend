@@ -20,15 +20,24 @@ const CONFIG = {
         { name: 'clover', img: 'assets/clover.png' }
     ],
     lootboxItems: [
-        { name: 'AK-47', img: 'assets/spins/ak.png', rarity: 'mythic', chance: 0.01 },
-        { name: 'Golden Sword', img: 'assets/spins/golden_sword.png', rarity: 'legendary', chance: 0.05 },
-        { name: 'Diamond Ring', img: 'assets/spins/diamond_ring.png', rarity: 'legendary', chance: 0.05 },
-        { name: 'Magic Staff', img: 'assets/spins/magic_staff.png', rarity: 'epic', chance: 0.15 },
-        { name: 'MP5', img: 'assets/spins/mp5.png', rarity: 'epic', chance: 0.15 },
-        { name: 'Pistol', img: 'assets/spins/pistol.png', rarity: 'uncommon', chance: 0.30 },
-        { name: 'Health Potion', img: 'assets/spins/health_potion.png', rarity: 'uncommon', chance: 0.30 },
-        { name: 'Wooden Shield', img: 'assets/spins/wooden_shield.png', rarity: 'common', chance: 0.49 },
-        { name: 'Rusty Knife', img: 'assets/spins/rusty_knife.png', rarity: 'common', chance: 0.49 }
+        { name: 'AK-47', img: 'spins/MP7-Abyssal-Apparition.png.png', rarity: 'legendary', chance: 0.1 },
+        { name: 'Golden Sword', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 0.11 },
+        { name: 'Diamond Ring', img: 'spins/M4A1-S-Night-Terror.png', rarity: 'uncommon', chance: 0.032 },
+        { name: 'Magic Staff', img: 'spins/P2000-Lifted-Spirits.png', rarity: 'common', chance: 0.11 },
+        { name: 'MP5', img: 'spins/USP-Ticket-to-Hell-Skin.png', rarity: 'epic', chance: 0.032 },
+        { name: 'Pistol', img: 'spins/MAG-7-Foresight-Skin.png', rarity: 'common', chance: 0.11 },
+        { name: 'Health Potion', img: 'spins/G3SG1-Dream-Glade-Skin.png', rarity: 'uncommon', chance: 0.032 },
+        { name: 'Wooden Shield', img: 'spins/AK-47-Nightwish-Skin.png', rarity: 'mythic', chance: 0.003 },
+        { name: 'Rusty Knife', img: 'spins/XM1014-Zombie-Offensive-Skin.png', rarity: 'uncommon', chance: 0.032 },
+        { name: 'Golden Sword', img: 'spins/MP9-Starlight-Protector-Skin.png', rarity: 'mythic', chance: 0.003 },
+        { name: 'Diamond Ring', img: 'spins/PP-Bizon-Space-Cat-Skin.png', rarity: 'uncommon', chance: 0.032 },
+        { name: 'Magic Staff', img: 'spins/Dual-Berettas-Melondrama-Skin.png', rarity: 'legendary', chance: 0.1 },
+        { name: 'MP5', img: 'spins/Five-SeveN-Scrawl-Skin.png', rarity: 'common', chance: 0.11 },
+        { name: 'Pistol', img: 'spins/FAMAS-Rapid-Eye-Movement-Skin.png', rarity: 'legendary', chance: 0.01 },
+        { name: 'Health Potion', img: 'spins/MAC-10-Ensnared-Skin.png', rarity: 'common', chance: 0.11 },
+        { name: 'Wooden Shield', img: 'spins/MP5-SD-Necro-Jr-Skin.png', rarity: 'common', chance: 0.11 },
+        { name: 'Knife', img: 'spins/gold.png', rarity: 'mythic', chance: 0.003 }
+        
     ],
     payouts: {
         '7-7-7': 500,
