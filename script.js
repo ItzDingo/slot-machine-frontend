@@ -222,30 +222,37 @@ function initializeLootboxItems() {
     const track = document.getElementById('lootbox-items-track');
     track.innerHTML = '';
     
-    // Create items based on their actual drop chance
+    // Create a more balanced item pool
     const itemsPool = [];
     CONFIG.lootboxItems.forEach(item => {
-        const count = Math.max(1, Math.floor(item.chance * 100));
+        // Add items based on their rarity (more common = more copies)
+        const count = Math.max(3, Math.floor(item.chance * 200)); // Increased multiplier for better distribution
         for (let i = 0; i < count; i++) {
             itemsPool.push(item);
         }
     });
     
-    // Shuffle the items
+    // Shuffle the items properly
     for (let i = itemsPool.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [itemsPool[i], itemsPool[j]] = [itemsPool[j], itemsPool[i]];
     }
     
-    // Add multiple copies to ensure smooth looping
-    for (let i = 0; i < 3; i++) {
-        itemsPool.forEach(item => {
+    // Create exactly 3 copies for seamless looping (this prevents repositioning issues)
+    const singleLoop = itemsPool.slice(0, 50); // Use 50 items per loop for good variety
+    for (let loop = 0; loop < 3; loop++) {
+        singleLoop.forEach(item => {
             const itemElement = document.createElement('div');
             itemElement.className = `lootbox-item ${item.rarity}`;
             itemElement.innerHTML = `<img src="${item.img}" alt="${item.name}">`;
+            itemElement.dataset.itemName = item.name; // Add data attribute for identification
             track.appendChild(itemElement);
         });
     }
+    
+    // Reset position
+    track.style.transform = 'translateX(0px)';
+    track.style.transition = 'none';
 }
 
 function resetReel(reel, centerSymbol) {
@@ -536,98 +543,141 @@ async function startLootboxSpin() {
 
     const track = document.getElementById('lootbox-items-track');
     const container = track.parentElement;
-    const itemWidth = 140; // Width of each item including margin
-
-    // 1. Get random item based on actual drop chances
-    const resultItem = getRandomLootboxItem();
     
-    // 2. Find this item in the track
-    const items = track.querySelectorAll('.lootbox-item');
+    // Get the winning item first
+    const resultItem = getRandomLootboxItem();
+    console.log('Target item:', resultItem.name); // Debug log
+    
+    // Find a suitable target item in the middle section (second loop)
+    const allItems = track.querySelectorAll('.lootbox-item');
+    const itemsPerLoop = allItems.length / 3;
+    const middleStart = Math.floor(itemsPerLoop);
+    const middleEnd = Math.floor(itemsPerLoop * 2);
+    
     let targetIndex = -1;
-    for (let i = 0; i < items.length; i++) {
-        if (items[i].querySelector('img').src.includes(resultItem.img.split('/').pop())) {
+    
+    // Look for the target item in the middle section first
+    for (let i = middleStart; i < middleEnd; i++) {
+        const item = allItems[i];
+        const itemName = item.dataset.itemName || item.querySelector('img').alt;
+        if (itemName === resultItem.name) {
             targetIndex = i;
             break;
         }
     }
     
-    // 3. Calculate exact stopping position (center the item)
-    const containerCenterX = container.offsetWidth / 2;
-    const targetPosition = containerCenterX - (targetIndex * itemWidth + itemWidth / 2);
-
-    // 4. Animate the spin with proper stopping
-    let currentPos = 0;
-    let speed = 30;
-    const decel = 0.995;
-    let lastTime = 0;
-    let spinDuration = 0;
-    const minDuration = 3000; // Minimum spin time (ms)
-    const maxDuration = 5000; // Maximum spin time (ms)
-    const duration = minDuration + Math.random() * (maxDuration - minDuration);
-
-    function animate(time) {
-        if (!lastTime) lastTime = time;
-        const delta = time - lastTime;
-        lastTime = time;
-        spinDuration += delta;
-
-        // Continue spinning until we reach minimum duration AND speed is low enough
-        if (spinDuration < duration || speed > 1) {
-            // Accelerate then decelerate
-            if (spinDuration < duration * 0.3) {
-                speed *= 1.02; // Speed up initially
-            } else {
-                speed *= decel; // Slow down
+    // If not found in middle, look in first section
+    if (targetIndex === -1) {
+        for (let i = 0; i < middleStart; i++) {
+            const item = allItems[i];
+            const itemName = item.dataset.itemName || item.querySelector('img').alt;
+            if (itemName === resultItem.name) {
+                targetIndex = i + itemsPerLoop; // Use the equivalent in the middle section
+                break;
+            }
+        }
+    }
+    
+    if (targetIndex === -1) {
+        console.error('Target item not found, using fallback');
+        targetIndex = middleStart + Math.floor(Math.random() * (middleEnd - middleStart));
+    }
+    
+    // Calculate positions
+    const itemWidth = 140; // 120px width + 20px gap
+    const containerCenter = container.offsetWidth / 2;
+    const targetPosition = containerCenter - (targetIndex * itemWidth + 60); // 60 = half item width
+    
+    console.log('Target index:', targetIndex, 'Target position:', targetPosition); // Debug log
+    
+    // Reset any existing transforms and start animation
+    let currentPosition = 0;
+    let velocity = 8; // Start slower
+    const maxVelocity = 25; // Reduced max speed
+    const acceleration = 1.1;
+    const deceleration = 0.985; // Slower deceleration
+    
+    let phase = 'accelerating';
+    let spinTime = 0;
+    const minSpinTime = 2000; // Reduced from 3000
+    const maxSpinTime = 3500; // Reduced from 5000
+    const targetSpinTime = minSpinTime + Math.random() * (maxSpinTime - minSpinTime);
+    
+    function animate() {
+        spinTime += 16; // Approximate 60fps
+        
+        // Phase management
+        if (phase === 'accelerating' && spinTime > targetSpinTime * 0.3) {
+            phase = 'decelerating';
+        }
+        
+        // Velocity control
+        if (phase === 'accelerating') {
+            velocity = Math.min(velocity * acceleration, maxVelocity);
+        } else if (phase === 'decelerating') {
+            velocity *= deceleration;
+        }
+        
+        // Position update
+        currentPosition += velocity;
+        
+        // Seamless looping
+        const loopWidth = (allItems.length / 3) * itemWidth;
+        if (currentPosition >= loopWidth) {
+            currentPosition -= loopWidth;
+        }
+        
+        // Apply transform
+        track.style.transform = `translateX(${-currentPosition}px)`;
+        
+        // Check stopping condition
+        if (spinTime >= targetSpinTime && velocity < 2) {
+            // Final positioning phase
+            const finalTargetPos = -targetPosition;
+            let finalCurrentPos = -currentPosition;
+            
+            // Ensure we're in the right "loop" for the target
+            while (finalCurrentPos > finalTargetPos + loopWidth) {
+                finalCurrentPos -= loopWidth;
+            }
+            while (finalCurrentPos < finalTargetPos - loopWidth) {
+                finalCurrentPos += loopWidth;
             }
             
-            currentPos += speed;
+            // Smooth final adjustment
+            const adjustmentDistance = finalTargetPos - finalCurrentPos;
+            let adjustmentProgress = 0;
+            const adjustmentDuration = 60; // frames for smooth stop
             
-            // Loop the track seamlessly
-            const trackWidth = track.scrollWidth / 3; // Since we have 3 copies
-            if (currentPos > trackWidth) {
-                currentPos -= trackWidth;
-            }
-            
-            track.style.transform = `translateX(${-currentPos}px)`;
-            track.style.transition = 'none';
-            
-            requestAnimationFrame(animate);
-        } else {
-            // Spin is ending - smoothly move to exact target position
-            const finalAdjustmentDuration = 800; // Time for final positioning
-            const startPos = currentPos;
-            const startTime = performance.now();
-            
-            function finalPosition(time) {
-                const elapsed = time - startTime;
-                const progress = Math.min(elapsed / finalAdjustmentDuration, 1);
+            function finalAdjustment() {
+                adjustmentProgress++;
+                const progress = adjustmentProgress / adjustmentDuration;
+                const easedProgress = 1 - Math.pow(1 - progress, 3); // Ease out
                 
-                // Ease out animation for smooth stop
-                const easedProgress = 1 - Math.pow(1 - progress, 3);
+                const currentFinalPos = finalCurrentPos + (adjustmentDistance * easedProgress);
+                track.style.transform = `translateX(${currentFinalPos}px)`;
                 
-                const finalPos = -targetPosition;
-                const currentFinalPos = startPos + (finalPos - startPos) * easedProgress;
-                
-                track.style.transform = `translateX(${-currentFinalPos}px)`;
-                
-                if (progress < 1) {
-                    requestAnimationFrame(finalPosition);
+                if (adjustmentProgress < adjustmentDuration) {
+                    requestAnimationFrame(finalAdjustment);
                 } else {
-                    // Animation complete - show result
-                    track.style.transform = `translateX(${-targetPosition}px)`;
+                    // Ensure exact final position
+                    track.style.transform = `translateX(${finalTargetPos}px)`;
                     
-                    // Wait a moment then show the popup
+                    // Show result after a brief pause
                     setTimeout(() => {
                         showLootboxPopup(resultItem);
                         resetLootboxSpinState();
-                    }, 300);
+                    }, 200);
                 }
             }
             
-            requestAnimationFrame(finalPosition);
+            requestAnimationFrame(finalAdjustment);
+            return;
         }
+        
+        requestAnimationFrame(animate);
     }
-
+    
     requestAnimationFrame(animate);
 }
 
@@ -659,10 +709,10 @@ function showLootboxPopup(item) {
 async function claimLootboxWin() {
     if (elements.lootboxPopup) elements.lootboxPopup.style.display = 'none';
     
-    // Reset for next spin
-    initializeLootboxItems();
-    
-    if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = false;
+    // Reset for next spin - reinitialize items to prevent any positioning issues
+    setTimeout(() => {
+        initializeLootboxItems();
+    }, 100);
 }
 
 function startLootboxGame() {
