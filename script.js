@@ -640,22 +640,31 @@ async function startLootboxSpin() {
         
         // Check if we should stop (no more repositioning!)
         if (spinTime >= targetSpinTime && velocity <= minVelocity) {
-            // Simply stop where we are and find the nearest item
-            const nearestItemIndex = Math.round(currentPosition / itemWidth);
+            // Calculate which item is in the center highlight box
+            // The center position relative to the track
+            const centerPosition = currentPosition + containerCenter;
+            
+            // Find the item that's closest to this center position
+            const nearestItemIndex = Math.round(centerPosition / itemWidth);
             
             // Make sure we get a valid item from the middle section
             const itemsPerLoop = allItems.length / 3;
             const middleStart = Math.floor(itemsPerLoop);
             let finalItemIndex = (nearestItemIndex % itemsPerLoop) + middleStart;
             
-            // Get the centered item without any repositioning
+            // Ensure the index is within bounds
+            if (finalItemIndex >= allItems.length) {
+                finalItemIndex = middleStart + (finalItemIndex - middleStart) % itemsPerLoop;
+            }
+            
+            // Get the centered item
             const centeredItem = allItems[finalItemIndex];
             
             if (centeredItem) {
                 const itemName = centeredItem.dataset.itemName || centeredItem.querySelector('img').alt;
                 const wonItem = CONFIG.lootboxItems.find(item => item.name === itemName) || resultItem;
                 
-                console.log('Stopped at position:', currentPosition, 'Item:', wonItem.name);
+                console.log('Stopped at position:', currentPosition, 'Center position:', centerPosition, 'Item:', wonItem.name);
                 
                 // Show result immediately - no more animations!
                 setTimeout(() => {
@@ -677,8 +686,8 @@ async function startLootboxSpin() {
             requestAnimationFrame(animate);
         }
     }
-
-        // Start the animation
+    
+    // Start the animation
     requestAnimationFrame(animate);
 }
 
@@ -693,6 +702,7 @@ function resetLootboxSpinState() {
     }
     console.log('Lootbox spin state reset - can spin again');
 }
+
 
 function showLootboxPopup(item) {
     if (!elements.lootboxPopup || !elements.lootboxItemWon || !elements.lootboxItemName || !elements.lootboxRarity) return;
