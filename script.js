@@ -248,108 +248,6 @@ function initializeLootboxItems() {
     }
 }
 
-async function startLootboxSpin() {
-    if (isLootboxSpinning || gameState.chips < CONFIG.lootboxCost) {
-        if (gameState.chips < CONFIG.lootboxCost) {
-            showNotification("Not enough chips!", false);
-        }
-        return;
-    }
-
-    isLootboxSpinning = true;
-    if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = true;
-    
-    // Deduct chips first
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/spin`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                userId: gameState.userId,
-                cost: CONFIG.lootboxCost
-            }),
-            credentials: 'include'
-        });
-
-        if (!response.ok) throw new Error('Lootbox spin failed');
-        const data = await response.json();
-        gameState.chips = data.newBalance;
-        updateCurrencyDisplay();
-    } catch (error) {
-        console.error('Lootbox spin error:', error);
-        showNotification('Failed to process lootbox spin. Please try again.', false);
-        resetLootboxSpinState();
-        return;
-    }
-
-    const track = document.getElementById('lootbox-items-track');
-    const container = track.parentElement;
-    const itemWidth = 140; // Width of each item including margin
-
-    // 1. Get random item based on actual drop chances
-    const resultItem = getRandomLootboxItem();
-    
-    // 2. Find this item in the track
-    const items = track.querySelectorAll('.lootbox-item');
-    let targetIndex = -1;
-    for (let i = 0; i < items.length; i++) {
-        if (items[i].querySelector('img').src.includes(resultItem.img.split('/').pop())) {
-            targetIndex = i;
-            break;
-        }
-    }
-    
-    // 3. Calculate exact stopping position
-    const targetPosition = container.offsetWidth / 2 - (targetIndex * itemWidth + itemWidth / 2);
-
-    // 4. Animate the spin
-    let currentPos = 0;
-    let speed = 30;
-    const decel = 0.995;
-    let lastTime = 0;
-    let spinDuration = 0;
-    const minDuration = 3000; // Minimum spin time (ms)
-    const maxDuration = 5000; // Maximum spin time (ms)
-    const duration = minDuration + Math.random() * (maxDuration - minDuration);
-
-    function animate(time) {
-        if (!lastTime) lastTime = time;
-        const delta = time - lastTime;
-        lastTime = time;
-        spinDuration += delta;
-
-        if (spinDuration < duration || speed > 1) {
-            // Accelerate then decelerate
-            if (spinDuration < duration/2) {
-                speed *= 1.01; // Speed up initially
-            } else {
-                speed *= decel; // Slow down
-            }
-            
-            currentPos += speed;
-            // Loop the track seamlessly
-            if (currentPos > track.scrollWidth/3) {
-                currentPos -= track.scrollWidth/3;
-            }
-            track.style.transform = `translateX(${-currentPos}px)`;
-            requestAnimationFrame(animate);
-        } else {
-            // Snap exactly to target position
-            track.style.transform = `translateX(${-targetPosition}px)`;
-            track.style.transition = 'none'; // Prevent any smoothing
-            
-            // Immediately show the result
-            showLootboxPopup(resultItem);
-            resetLootboxSpinState();
-        }
-    }
-
-    requestAnimationFrame(animate);
-}
-
 function resetReel(reel, centerSymbol) {
     if (!reel) return;
     
@@ -599,7 +497,6 @@ async function claimWin() {
     if (elements.winPopup) elements.winPopup.style.display = 'none';
 }
 
-// Loot Box Game Functions - CS:GO Style
 async function startLootboxSpin() {
     if (isLootboxSpinning || gameState.chips < CONFIG.lootboxCost) {
         if (gameState.chips < CONFIG.lootboxCost) {
@@ -611,7 +508,7 @@ async function startLootboxSpin() {
     isLootboxSpinning = true;
     if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = true;
     
-    // Deduct chips
+    // Deduct chips first
     try {
         const response = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
@@ -627,7 +524,6 @@ async function startLootboxSpin() {
         });
 
         if (!response.ok) throw new Error('Lootbox spin failed');
-
         const data = await response.json();
         gameState.chips = data.newBalance;
         updateCurrencyDisplay();
@@ -638,83 +534,101 @@ async function startLootboxSpin() {
         return;
     }
 
-    // Get random item (this will be our target)
-    const targetItem = getRandomLootboxItem();
-    gameState.lootboxGame.currentItem = targetItem;
+    const track = document.getElementById('lootbox-items-track');
+    const container = track.parentElement;
+    const itemWidth = 140; // Width of each item including margin
+
+    // 1. Get random item based on actual drop chances
+    const resultItem = getRandomLootboxItem();
     
-    // Find the position of this item in our track
-    const items = document.querySelectorAll('.lootbox-item');
+    // 2. Find this item in the track
+    const items = track.querySelectorAll('.lootbox-item');
     let targetIndex = -1;
     for (let i = 0; i < items.length; i++) {
-        if (items[i].querySelector('img').src.includes(targetItem.img.split('/').pop())) {
+        if (items[i].querySelector('img').src.includes(resultItem.img.split('/').pop())) {
             targetIndex = i;
             break;
         }
     }
     
-    if (targetIndex === -1) {
-        console.error('Target item not found in track');
-        resetLootboxSpinState();
-        return;
-    }
-    
-    // Calculate target position (center of the screen)
-    const track = document.getElementById('lootbox-items-track');
-    const trackWidth = track.scrollWidth;
-    const containerWidth = track.parentElement.offsetWidth;
-    const targetPosition = (containerWidth / 2) - (targetIndex * 140) - 70;
-    
-    // Start spinning animation
-    let currentPosition = 0;
+    // 3. Calculate exact stopping position (center the item)
+    const containerCenterX = container.offsetWidth / 2;
+    const targetPosition = containerCenterX - (targetIndex * itemWidth + itemWidth / 2);
+
+    // 4. Animate the spin with proper stopping
+    let currentPos = 0;
     let speed = 30;
-    const deceleration = 0.995;
+    const decel = 0.995;
     let lastTime = 0;
-    
-    function animateSpin(time) {
+    let spinDuration = 0;
+    const minDuration = 3000; // Minimum spin time (ms)
+    const maxDuration = 5000; // Maximum spin time (ms)
+    const duration = minDuration + Math.random() * (maxDuration - minDuration);
+
+    function animate(time) {
         if (!lastTime) lastTime = time;
-        const deltaTime = time - lastTime;
+        const delta = time - lastTime;
         lastTime = time;
-        
-        if (speed > 0.5) {
-            currentPosition -= speed;
-            speed *= deceleration;
-            
-            // Loop the track
-            if (-currentPosition > trackWidth / 3) {
-                currentPosition += trackWidth / 3;
+        spinDuration += delta;
+
+        // Continue spinning until we reach minimum duration AND speed is low enough
+        if (spinDuration < duration || speed > 1) {
+            // Accelerate then decelerate
+            if (spinDuration < duration * 0.3) {
+                speed *= 1.02; // Speed up initially
+            } else {
+                speed *= decel; // Slow down
             }
             
-            track.style.transform = `translateX(${currentPosition}px)`;
-            spinAnimation = requestAnimationFrame(animateSpin);
+            currentPos += speed;
+            
+            // Loop the track seamlessly
+            const trackWidth = track.scrollWidth / 3; // Since we have 3 copies
+            if (currentPos > trackWidth) {
+                currentPos -= trackWidth;
+            }
+            
+            track.style.transform = `translateX(${-currentPos}px)`;
+            track.style.transition = 'none';
+            
+            requestAnimationFrame(animate);
         } else {
-            // Final adjustment to center the target item
-            const finalPosition = targetPosition;
-            const duration = 1000; // 1 second for final adjustment
+            // Spin is ending - smoothly move to exact target position
+            const finalAdjustmentDuration = 800; // Time for final positioning
+            const startPos = currentPos;
             const startTime = performance.now();
             
-            function finalAdjustment(time) {
+            function finalPosition(time) {
                 const elapsed = time - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                const easedProgress = 0.5 * (1 - Math.cos(Math.PI * progress));
+                const progress = Math.min(elapsed / finalAdjustmentDuration, 1);
                 
-                track.style.transform = `translateX(${currentPosition + (finalPosition - currentPosition) * easedProgress}px)`;
+                // Ease out animation for smooth stop
+                const easedProgress = 1 - Math.pow(1 - progress, 3);
+                
+                const finalPos = -targetPosition;
+                const currentFinalPos = startPos + (finalPos - startPos) * easedProgress;
+                
+                track.style.transform = `translateX(${-currentFinalPos}px)`;
                 
                 if (progress < 1) {
-                    spinAnimation = requestAnimationFrame(finalAdjustment);
+                    requestAnimationFrame(finalPosition);
                 } else {
-                    // Spin complete
+                    // Animation complete - show result
+                    track.style.transform = `translateX(${-targetPosition}px)`;
+                    
+                    // Wait a moment then show the popup
                     setTimeout(() => {
-                        showLootboxPopup(targetItem);
+                        showLootboxPopup(resultItem);
                         resetLootboxSpinState();
-                    }, 500);
+                    }, 300);
                 }
             }
             
-            spinAnimation = requestAnimationFrame(finalAdjustment);
+            requestAnimationFrame(finalPosition);
         }
     }
-    
-    spinAnimation = requestAnimationFrame(animateSpin);
+
+    requestAnimationFrame(animate);
 }
 
 function resetLootboxSpinState() {
