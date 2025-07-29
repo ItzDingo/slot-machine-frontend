@@ -686,16 +686,19 @@ body {
     border: 3px solid var(--primary);
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center; /* Center vertically */
 }
 
 .lootbox-items-track {
     display: flex;
     position: absolute;
     height: 100%;
-    align-items: center;
+    align-items: center; /* Center items vertically */
     gap: 20px;
     padding: 0 50px;
     transition: transform 0.1s linear;
+    left: 0;
 }
 
 .lootbox-item {
@@ -722,7 +725,8 @@ body {
 .lootbox-highlight {
     position: absolute;
     left: 50%;
-    transform: translateX(-50%);
+    top: 50%;
+    transform: translate(-50%, -50%);
     width: 140px;
     height: 140px;
     border: 3px solid var(--primary);
