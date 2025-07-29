@@ -20,7 +20,7 @@ const CONFIG = {
         { name: 'clover', img: 'assets/clover.png' }
     ],
     lootboxItems: [
-        { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 0.1 },
+        { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png.png', rarity: 'legendary', chance: 0.1 },
         { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 0.11 },
         { name: 'M4A1-S Night Terror', img: 'spins/M4A1-S-Night-Terror.png', rarity: 'uncommon', chance: 0.032 },
         { name: 'P2000 Lifted Spirits', img: 'spins/P2000-Lifted-Spirits.png', rarity: 'common', chance: 0.11 },
@@ -259,7 +259,7 @@ async function startLootboxSpin() {
     isLootboxSpinning = true;
     if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = true;
     
-    // Deduct chips
+    // Deduct chips first
     try {
         const response = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
@@ -275,7 +275,6 @@ async function startLootboxSpin() {
         });
 
         if (!response.ok) throw new Error('Lootbox spin failed');
-
         const data = await response.json();
         gameState.chips = data.newBalance;
         updateCurrencyDisplay();
@@ -286,74 +285,69 @@ async function startLootboxSpin() {
         return;
     }
 
-    // Start spinning animation
-    let currentPosition = 0;
-    let speed = 30;
-    const deceleration = 0.995;
-    let lastTime = 0;
-    let finalItem = null;
+    const track = document.getElementById('lootbox-items-track');
+    const container = track.parentElement;
+    const itemWidth = 140; // Width of each item including margin
+
+    // 1. Get random item based on actual drop chances
+    const resultItem = getRandomLootboxItem();
     
-    function animateSpin(time) {
-        if (!lastTime) lastTime = time;
-        const deltaTime = time - lastTime;
-        lastTime = time;
-        
-        if (speed > 0.5) {
-            currentPosition += speed; // Left-to-right movement
-            speed *= deceleration;
-            
-            // Loop the track
-            if (currentPosition > track.scrollWidth / 3) {
-                currentPosition -= track.scrollWidth / 3;
-            }
-            
-            track.style.transform = `translateX(${-currentPosition}px)`;
-            spinAnimation = requestAnimationFrame(animateSpin);
-        } else {
-            // Determine which item is centered when spin stops
-            const container = track.parentElement;
-            const containerWidth = container.offsetWidth;
-            const centerPosition = containerWidth / 2;
-            
-            // Find which item is at the center
-            const items = track.querySelectorAll('.lootbox-item');
-            let centerItem = null;
-            let minDistance = Infinity;
-            
-            items.forEach(item => {
-                const rect = item.getBoundingClientRect();
-                const itemCenter = rect.left + rect.width / 2;
-                const distance = Math.abs(itemCenter - centerPosition);
-                
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    centerItem = item;
-                }
-            });
-            
-            // Get the item data
-            if (centerItem) {
-                const imgSrc = centerItem.querySelector('img').src;
-                finalItem = CONFIG.lootboxItems.find(item => 
-                    imgSrc.includes(item.img.split('/').pop())
-                );
-            }
-            
-            // Small delay before showing the popup
-            setTimeout(() => {
-                if (finalItem) {
-                    showLootboxPopup(finalItem);
-                } else {
-                    // Fallback - get random item based on drop chance
-                    showLootboxPopup(getRandomLootboxItem());
-                }
-                resetLootboxSpinState();
-            }, 300);
+    // 2. Find this item in the track
+    const items = track.querySelectorAll('.lootbox-item');
+    let targetIndex = -1;
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].querySelector('img').src.includes(resultItem.img.split('/').pop())) {
+            targetIndex = i;
+            break;
         }
     }
     
-    const track = document.getElementById('lootbox-items-track');
-    spinAnimation = requestAnimationFrame(animateSpin);
+    // 3. Calculate exact stopping position
+    const targetPosition = container.offsetWidth / 2 - (targetIndex * itemWidth + itemWidth / 2);
+
+    // 4. Animate the spin
+    let currentPos = 0;
+    let speed = 30;
+    const decel = 0.995;
+    let lastTime = 0;
+    let spinDuration = 0;
+    const minDuration = 3000; // Minimum spin time (ms)
+    const maxDuration = 5000; // Maximum spin time (ms)
+    const duration = minDuration + Math.random() * (maxDuration - minDuration);
+
+    function animate(time) {
+        if (!lastTime) lastTime = time;
+        const delta = time - lastTime;
+        lastTime = time;
+        spinDuration += delta;
+
+        if (spinDuration < duration || speed > 1) {
+            // Accelerate then decelerate
+            if (spinDuration < duration/2) {
+                speed *= 1.01; // Speed up initially
+            } else {
+                speed *= decel; // Slow down
+            }
+            
+            currentPos += speed;
+            // Loop the track seamlessly
+            if (currentPos > track.scrollWidth/3) {
+                currentPos -= track.scrollWidth/3;
+            }
+            track.style.transform = `translateX(${-currentPos}px)`;
+            requestAnimationFrame(animate);
+        } else {
+            // Snap exactly to target position
+            track.style.transform = `translateX(${-targetPosition}px)`;
+            track.style.transition = 'none'; // Prevent any smoothing
+            
+            // Immediately show the result
+            showLootboxPopup(resultItem);
+            resetLootboxSpinState();
+        }
+    }
+
+    requestAnimationFrame(animate);
 }
 
 function resetReel(reel, centerSymbol) {
