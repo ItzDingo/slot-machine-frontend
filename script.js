@@ -210,28 +210,27 @@ function getRandomLootboxItem() {
 
 // Modified Loot Box functions
 function initializeLootboxItems() {
-    lootboxItems = [];
-    // Create a pool of items based on their rarity and chance
+    const track = document.getElementById('lootbox-items-track');
+    track.innerHTML = '';
+    
+    // Create items based on their actual drop chance
+    const itemsPool = [];
     CONFIG.lootboxItems.forEach(item => {
-        const count = Math.ceil(item.chance * 100);
+        const count = Math.max(1, Math.floor(item.chance * 100));
         for (let i = 0; i < count; i++) {
-            lootboxItems.push(item);
+            itemsPool.push(item);
         }
     });
     
     // Shuffle the items
-    for (let i = lootboxItems.length - 1; i > 0; i--) {
+    for (let i = itemsPool.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [lootboxItems[i], lootboxItems[j]] = [lootboxItems[j], lootboxItems[i]];
+        [itemsPool[i], itemsPool[j]] = [itemsPool[j], itemsPool[i]];
     }
-    
-    // Add items to the track (duplicate to create infinite loop effect)
-    const track = document.getElementById('lootbox-items-track');
-    track.innerHTML = '';
     
     // Add multiple copies to ensure smooth looping
     for (let i = 0; i < 3; i++) {
-        lootboxItems.forEach(item => {
+        itemsPool.forEach(item => {
             const itemElement = document.createElement('div');
             itemElement.className = `lootbox-item ${item.rarity}`;
             itemElement.innerHTML = `<img src="${item.img}" alt="${item.name}">`;
@@ -278,40 +277,12 @@ async function startLootboxSpin() {
         return;
     }
 
-    // Get random item (this will be our target)
-    const targetItem = getRandomLootboxItem();
-    gameState.lootboxGame.currentItem = targetItem;
-    
-    // Find the position of this item in our track
-    const items = document.querySelectorAll('.lootbox-item');
-    let targetIndex = -1;
-    for (let i = 0; i < items.length; i++) {
-        if (items[i].querySelector('img').src.includes(targetItem.img.split('/').pop())) {
-            targetIndex = i;
-            break;
-        }
-    }
-    
-    if (targetIndex === -1) {
-        console.error('Target item not found in track');
-        resetLootboxSpinState();
-        return;
-    }
-    
-    // Calculate target position (center of the screen)
-    const track = document.getElementById('lootbox-items-track');
-    const container = track.parentElement;
-    const containerWidth = container.offsetWidth;
-    const itemWidth = 140; // Width of each item including margin
-    const targetPosition = containerWidth / 2 - (targetIndex * itemWidth + itemWidth / 2);
-    
     // Start spinning animation
     let currentPosition = 0;
     let speed = 30;
-    const initialDeceleration = 0.995;
-    let deceleration = initialDeceleration;
+    const deceleration = 0.995;
     let lastTime = 0;
-    let passedCenter = false;
+    let finalItem = null;
     
     function animateSpin(time) {
         if (!lastTime) lastTime = time;
@@ -322,13 +293,6 @@ async function startLootboxSpin() {
             currentPosition += speed; // Left-to-right movement
             speed *= deceleration;
             
-            // Check if we've passed the center point
-            if (!passedCenter && currentPosition >= Math.abs(targetPosition)) {
-                passedCenter = true;
-                // When we pass center, slow down more aggressively
-                deceleration = 0.98;
-            }
-            
             // Loop the track
             if (currentPosition > track.scrollWidth / 3) {
                 currentPosition -= track.scrollWidth / 3;
@@ -337,17 +301,49 @@ async function startLootboxSpin() {
             track.style.transform = `translateX(${-currentPosition}px)`;
             spinAnimation = requestAnimationFrame(animateSpin);
         } else {
-            // Immediately snap to the target position without animation
-            track.style.transform = `translateX(${-targetPosition}px)`;
+            // Determine which item is centered when spin stops
+            const container = track.parentElement;
+            const containerWidth = container.offsetWidth;
+            const centerPosition = containerWidth / 2;
+            
+            // Find which item is at the center
+            const items = track.querySelectorAll('.lootbox-item');
+            let centerItem = null;
+            let minDistance = Infinity;
+            
+            items.forEach(item => {
+                const rect = item.getBoundingClientRect();
+                const itemCenter = rect.left + rect.width / 2;
+                const distance = Math.abs(itemCenter - centerPosition);
+                
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    centerItem = item;
+                }
+            });
+            
+            // Get the item data
+            if (centerItem) {
+                const imgSrc = centerItem.querySelector('img').src;
+                finalItem = CONFIG.lootboxItems.find(item => 
+                    imgSrc.includes(item.img.split('/').pop())
+                );
+            }
             
             // Small delay before showing the popup
             setTimeout(() => {
-                showLootboxPopup(targetItem);
+                if (finalItem) {
+                    showLootboxPopup(finalItem);
+                } else {
+                    // Fallback - get random item based on drop chance
+                    showLootboxPopup(getRandomLootboxItem());
+                }
                 resetLootboxSpinState();
             }, 300);
         }
     }
     
+    const track = document.getElementById('lootbox-items-track');
     spinAnimation = requestAnimationFrame(animateSpin);
 }
 
