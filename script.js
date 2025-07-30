@@ -318,6 +318,11 @@ const elements = {
 const spinSound = new Audio('spins/spin.mp3');
 const openSound = new Audio('spins/open.mp3');
 
+function setLootboxButtonsDisabled(disabled) {
+    if (elements.lootboxBtn) elements.lootboxBtn.disabled = disabled;
+    if (elements.lootboxBackToMenuBtn) elements.lootboxBackToMenuBtn.disabled = disabled;
+}
+
 function getRandomSymbol() {
     return CONFIG.symbols[Math.floor(Math.random() * CONFIG.symbols.length)];
 }
@@ -736,6 +741,8 @@ async function startLootboxSpin() {
         return;
     }
 
+    setLootboxButtonsDisabled(true);
+
     if (spinSound) {
         spinSound.currentTime = 0;
         spinSound.play().catch(e => console.warn('Spin sound error:', e));
@@ -762,6 +769,7 @@ async function startLootboxSpin() {
         const data = await response.json();
         gameState.chips = data.newBalance;
         updateCurrencyDisplay();
+        
     } catch (error) {
         console.error('Lootbox spin error:', error);
         showNotification('Failed to process lootbox spin. Please try again.', false);
@@ -964,6 +972,9 @@ function resetLootboxSpinState() {
         cancelAnimationFrame(spinAnimation);
         spinAnimation = null;
     }
+
+    setLootboxButtonsDisabled(false);
+
     console.log('Lootbox spin state reset - can spin again');
 }
 
