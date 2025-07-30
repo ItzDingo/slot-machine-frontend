@@ -208,7 +208,7 @@ body {
     gap: 15px;
 }
 
-#user-avatar, #mines-avatar, #lootbox-avatar, #inventory-avatar {
+#user-avatar, #mines-avatar, #lootbox-avatar, #inventory-avatar, #lootbox-select-avatar {
     width: 60px;
     height: 60px;
     border-radius: 50%;
@@ -217,7 +217,7 @@ body {
     transition: transform 0.3s;
 }
 
-#user-avatar:hover, #mines-avatar:hover, #lootbox-avatar:hover, #inventory-avatar:hover {
+#user-avatar:hover, #mines-avatar:hover, #lootbox-avatar:hover, #inventory-avatar:hover, #lootbox-select-avatar:hover {
     transform: scale(1.05);
 }
 
@@ -227,13 +227,13 @@ body {
     gap: 5px;
 }
 
-#username, #mines-username, #lootbox-username, #inventory-username {
+#username, #mines-username, #lootbox-username, #inventory-username, #lootbox-select-username {
     font-weight: bold;
     color: white;
     font-size: 1.1rem;
 }
 
-#logout-btn, #mines-logout-btn, #lootbox-logout-btn, #inventory-logout-btn {
+#logout-btn, #mines-logout-btn, #lootbox-logout-btn, #inventory-logout-btn, #lootbox-select-logout-btn {
     background: #333;
     color: white;
     border: none;
@@ -244,7 +244,7 @@ body {
     font-size: 0.8rem;
 }
 
-#logout-btn:hover, #mines-logout-btn:hover, #lootbox-logout-btn:hover, #inventory-logout-btn:hover {
+#logout-btn:hover, #mines-logout-btn:hover, #lootbox-logout-btn:hover, #inventory-logout-btn:hover, #lootbox-select-logout-btn:hover {
     background: #555;
     transform: translateY(-1px);
 }
@@ -875,6 +875,15 @@ body {
     display: none;
 }
 
+#lootbox-change-case-btn {
+    background: #444 !important;
+    margin-top: 10px;
+}
+
+#lootbox-change-case-btn:hover {
+    background: #555 !important;
+}
+
 .lootbox-sidebar {
     flex: 1;
     background: rgba(0, 0, 0, 0.4);
@@ -1151,8 +1160,18 @@ body {
     100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
 }
 
+/* Loot Box Case Selection Screen */
+#lootbox-case-select-screen {
+    display: none;
+    max-width: 800px;
+    width: 100%;
+    background: rgba(20, 20, 20, 0.9);
+    border-radius: 15px;
+    padding: 2rem;
+    border: 3px solid var(--primary);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+}
 
-/* Loot Box Case Selection */
 .lootbox-cases-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -1196,16 +1215,6 @@ body {
 .lootbox-case-price {
     color: var(--primary);
     font-weight: bold;
-}
-
-/* Loot Box Change Case Button */
-#lootbox-change-case-btn {
-    background: #444 !important;
-    margin-top: 10px;
-}
-
-#lootbox-change-case-btn:hover {
-    background: #555 !important;
 }
 
 /* Inventory Screen */
@@ -1466,7 +1475,7 @@ body {
 }
 
 /* Back to Menu Button */
-#back-to-menu-btn, #mines-back-to-menu-btn, #lootbox-back-to-menu-btn, #inventory-back-to-menu-btn {
+#back-to-menu-btn, #mines-back-to-menu-btn, #lootbox-back-to-menu-btn, #inventory-back-to-menu-btn, #lootbox-case-select-back-btn {
     background: #444;
     color: white;
     border: none;
@@ -1479,7 +1488,7 @@ body {
     margin-top: 10px;
 }
 
-#back-to-menu-btn:hover, #mines-back-to-menu-btn:hover, #lootbox-back-to-menu-btn:hover, #inventory-back-to-menu-btn:hover {
+#back-to-menu-btn:hover, #mines-back-to-menu-btn:hover, #lootbox-back-to-menu-btn:hover, #inventory-back-to-menu-btn:hover, #lootbox-case-select-back-btn:hover {
     background: #555;
     transform: translateY(-2px);
 }
@@ -1677,6 +1686,15 @@ body {
     .inventory-items {
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     }
+
+    .lootbox-cases-container {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+
+    .lootbox-case-img {
+        width: 80px;
+        height: 80px;
+    }
 }
 
 @media (max-width: 600px) {
@@ -1696,7 +1714,7 @@ body {
         padding: 15px;
     }
 
-    .login-box, .game-container, #game-select-screen, #mines-game-screen, #lootbox-screen, #inventory-screen {
+    .login-box, .game-container, #game-select-screen, #mines-game-screen, #lootbox-screen, #inventory-screen, #lootbox-case-select-screen {
         padding: 1.5rem;
     }
 
@@ -1711,6 +1729,21 @@ body {
         font-size: 1.1rem;
         padding: 14px 30px;
         letter-spacing: 1px;
+    }
+
+    .lootbox-cases-container {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 15px;
+        padding: 10px;
+    }
+
+    .lootbox-case {
+        padding: 10px;
+    }
+
+    .lootbox-case-img {
+        width: 60px;
+        height: 60px;
     }
 }
 
@@ -1771,6 +1804,24 @@ body {
     }
 
     .inventory-item-name {
+        font-size: 0.8rem;
+    }
+
+    .lootbox-cases-container {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 10px;
+    }
+
+    .lootbox-case {
+        padding: 8px;
+    }
+
+    .lootbox-case-img {
+        width: 50px;
+        height: 50px;
+    }
+
+    .lootbox-case-name {
         font-size: 0.8rem;
     }
 }
