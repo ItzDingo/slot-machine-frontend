@@ -27,7 +27,7 @@ const CONFIG = {
         { name: 'USP-S Ticket to Hell', img: 'spins/USP-Ticket-to-Hell-Skin.png', rarity: 'epic', chance: 2.55, value: 285 },
         { name: 'MAG-7 Foresight', img: 'spins/MAG-7-Foresight-Skin.png', rarity: 'common', chance: 14.28, value: 45 },
         { name: 'G3SG1 Dream Glade', img: 'spins/G3SG1-Dream-Glade-Skin.png', rarity: 'uncommon', chance: 11.28, value: 55 },
-        { name: 'AK-47 Nightwish', img: 'spins/AK-47-Nightwish-Skin.png', rarity: 'legendary', chance: 0.32, value: 9000 },
+        { name: 'AK-47 Nightwish', img: 'spins/AK-47-Nightwish-Skin.png', rarity: 'legendary', chance: 0.32, value: 15000 },
         { name: 'XM1014 Zombie Offensive', img: 'spins/XM1014-Zombie-Offensive-Skin.png', rarity: 'uncommon', chance: 11.28, value: 100 },
         { name: 'MP9 Starlight Protector', img: 'spins/MP9-Starlight-Protector-Skin.png', rarity: 'legendary', chance: 0.32, value: 3001 },
         { name: 'PP-Bizon Space Cat', img: 'spins/PP-Bizon-Space-Cat-Skin.png', rarity: 'uncommon', chance: 14.28, value: 47 },
@@ -44,7 +44,7 @@ const CONFIG = {
         { name: 'Bowie Knife Bright Water', img: 'spins/Bowie-Knife-Bright-Water-Skin.png', rarity: 'mythic', chance: 0.00867, value: 14000 },
         { name: 'Butterfly Knife Lore', img: 'spins/Butterfly-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867, value: 35000 },
         { name: 'Huntsman Knife Freehand', img: 'spins/Huntsman-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867, value: 20000 },
-        { name: 'Huntsman Knife Lore', img: 'spins/Huntsman-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867, value: 15000 },
+        { name: 'Huntsman Knife Lore', img: 'spins/Huntsman-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867, value: 21000 },
         { name: 'Butterfly Knife Autotronic', img: 'spins/Butterfly-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867, value: 17000 },
         { name: 'Huntsman Knife Bright Water', img: 'spins/Huntsman-Knife-Bright-Water-Skin.png', rarity: 'mythic', chance: 0.00867, value: 9998 },
         { name: 'Butterfly Knife Freehand', img: 'spins/Butterfly-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867, value: 21000 },
@@ -56,7 +56,7 @@ const CONFIG = {
         { name: 'Falchion Knife Gamma Doppler', img: 'spins/Falchion-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867, value: 24000 },
         { name: 'Bowie Knife Lore', img: 'spins/Bowie-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867, value: 15555 },
         { name: 'Bowie Knife Black Laminate', img: 'spins/Bowie-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867, value: 8000 },
-        { name: 'Falchion Knife Autotronic', img: 'spins/Falchion-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867, value: 14000 },
+        { name: 'Falchion Knife Autotronic', img: 'spins/Falchion-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867, value: 15000 },
         { name: 'Bowie Knife Autotronic', img: 'spins/Bowie-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867, value: 9000 },
         { name: 'Bowie Knife Freehand', img: 'spins/Bowie-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867, value: 7898 },
         { name: 'Falchion Knife Black Laminate', img: 'spins/Falchion-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867, value: 11000 }
@@ -78,7 +78,7 @@ const CONFIG = {
         getGridSize: function(minesCount) {
             if (minesCount <= 6) return 5;
             if (minesCount <= 9) return 6;
-            return 6;
+            return 7;
         },
         getMultiplier: function(minesCount, revealedCells) {
             const baseMultipliers = {
@@ -243,6 +243,9 @@ const elements = {
 };
 
 // Helper Functions
+const spinSound = new Audio('spins/spin.mp3');
+const openSound = new Audio('spins/open.mp3');
+
 function getRandomSymbol() {
     return CONFIG.symbols[Math.floor(Math.random() * CONFIG.symbols.length)];
 }
@@ -616,6 +619,12 @@ async function startLootboxSpin() {
         return;
     }
 
+    
+    if (spinSound) {
+        spinSound.currentTime = 0;
+        spinSound.play().catch(e => console.warn('Spin sound error:', e));
+    }
+
     isLootboxSpinning = true;
     if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = true;
     
@@ -775,7 +784,7 @@ async function startLootboxSpin() {
         track.style.transition = 'none';
         
         if (spinTime >= targetSpinTime && velocity <= minVelocity) {
-            const centerPosition = currentPosition + containerCenter - 70;
+            const centerPosition = currentPosition + containerCenter - 50;
             
             const nearestItemIndex = Math.round(centerPosition / itemWidth);
             
@@ -861,6 +870,16 @@ function showLootboxPopup(item) {
         value: item.value || 0
     };
     
+    
+    if (spinSound && !spinSound.paused) {
+        spinSound.pause();
+        spinSound.currentTime = 0;
+    }
+    if (openSound) {
+        openSound.currentTime = 0;
+        openSound.play().catch(e => console.warn('Open sound error:', e));
+    }
+
     elements.lootboxPopup.style.display = 'flex';
 }
 
