@@ -785,7 +785,7 @@ async function startLootboxSpin() {
         track.style.transition = 'none';
         
         if (spinTime >= targetSpinTime && velocity <= minVelocity) {
-            const centerPosition = currentPosition + containerCenter - 69;
+            const centerPosition = currentPosition + containerCenter - 66;
             
             const nearestItemIndex = Math.round(centerPosition / itemWidth);
             
