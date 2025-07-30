@@ -36,6 +36,7 @@ const CONFIG = {
         { name: 'FAMAS Rapid Eye Movement', img: 'spins/FAMAS-Rapid-Eye-Movement-Skin.png', rarity: 'legendary', chance: 1.07, value: 6000 },
         { name: 'MAC-10 Ensnared', img: 'spins/MAC-10-Ensnared-Skin.png', rarity: 'common', chance: 14.28, value: 1 },
         { name: 'MP5-SD Necro Jr', img: 'spins/MP5-SD-Necro-Jr-Skin.png', rarity: 'common', chance: 14.28, value: 3 },
+        { name: 'Sawed Off Spirit Board', img: 'spins/Sawed-Off-Spirit-Board-Skin.png', rarity: 'uncommon', chance: 10, value: 75 },
         { name: 'Knife', img: 'spins/gold.png', rarity: 'mythic', chance: 0.3, value: 0 }
     ],
     knifes: [
@@ -784,7 +785,7 @@ async function startLootboxSpin() {
         track.style.transition = 'none';
         
         if (spinTime >= targetSpinTime && velocity <= minVelocity) {
-            const centerPosition = currentPosition + containerCenter - 70;
+            const centerPosition = currentPosition + containerCenter - 50;
             
             const nearestItemIndex = Math.round(centerPosition / itemWidth);
             
