@@ -310,7 +310,7 @@ function initializeLootboxItems() {
             itemElement.className = `lootbox-item ${item.rarity}`;
             itemElement.innerHTML = `<img src="${item.img}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain;">`;
             itemElement.dataset.itemName = item.name;
-            itemElement.style.minWidth = '90px';
+            itemElement.style.minWidth = '120px';
             itemElement.style.minHeight = '120px';
             track.appendChild(itemElement);
         });
@@ -742,7 +742,7 @@ async function startLootboxSpin() {
         targetIndex = middleStart + Math.floor(Math.random() * (middleEnd - middleStart));
     }
     
-    const itemWidth = 90;
+    const itemWidth = 140;
     const containerCenter = container.offsetWidth / 2;
     const loopWidth = (allItems.length / 3) * itemWidth;
     
