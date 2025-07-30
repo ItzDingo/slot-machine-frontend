@@ -78,7 +78,7 @@ const CONFIG = {
         getGridSize: function(minesCount) {
             if (minesCount <= 6) return 5;
             if (minesCount <= 9) return 6;
-            return 6;
+            return 7;
         },
         getMultiplier: function(minesCount, revealedCells) {
             const baseMultipliers = {
@@ -310,7 +310,7 @@ function initializeLootboxItems() {
             itemElement.className = `lootbox-item ${item.rarity}`;
             itemElement.innerHTML = `<img src="${item.img}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain;">`;
             itemElement.dataset.itemName = item.name;
-            itemElement.style.minWidth = '120px';
+            itemElement.style.minWidth = '90px';
             itemElement.style.minHeight = '120px';
             track.appendChild(itemElement);
         });
@@ -742,7 +742,7 @@ async function startLootboxSpin() {
         targetIndex = middleStart + Math.floor(Math.random() * (middleEnd - middleStart));
     }
     
-    const itemWidth = 140;
+    const itemWidth = 90;
     const containerCenter = container.offsetWidth / 2;
     const loopWidth = (allItems.length / 3) * itemWidth;
     
@@ -784,7 +784,7 @@ async function startLootboxSpin() {
         track.style.transition = 'none';
         
         if (spinTime >= targetSpinTime && velocity <= minVelocity) {
-            const centerPosition = currentPosition + containerCenter - 50;
+            const centerPosition = currentPosition + containerCenter - 70;
             
             const nearestItemIndex = Math.round(centerPosition / itemWidth);
             
