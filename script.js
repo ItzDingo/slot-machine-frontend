@@ -19,56 +19,117 @@ const CONFIG = {
         { name: 'star', img: 'assets/star.png' },
         { name: 'clover', img: 'assets/clover.png' }
     ],
-    lootboxItems: [
-        { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 1.07, value: 5000 },
-        { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 14.28, value: 15 },
-        { name: 'M4A1-S Night Terror', img: 'spins/M4A1-S-Night-Terror.png', rarity: 'epic', chance: 3.2, value: 700 },
-        { name: 'P2000 Lifted Spirits', img: 'spins/P2000-Lifted-Spirits.png', rarity: 'common', chance: 14.28, value: 5 },
-        { name: 'USP-S Ticket to Hell', img: 'spins/USP-Ticket-to-Hell-Skin.png', rarity: 'epic', chance: 2.55, value: 285 },
-        { name: 'MAG-7 Foresight', img: 'spins/MAG-7-Foresight-Skin.png', rarity: 'common', chance: 14.28, value: 45 },
-        { name: 'G3SG1 Dream Glade', img: 'spins/G3SG1-Dream-Glade-Skin.png', rarity: 'uncommon', chance: 11.28, value: 55 },
-        { name: 'AK-47 Nightwish', img: 'spins/AK-47-Nightwish-Skin.png', rarity: 'legendary', chance: 0.32, value: 15000 },
-        { name: 'XM1014 Zombie Offensive', img: 'spins/XM1014-Zombie-Offensive-Skin.png', rarity: 'uncommon', chance: 11.28, value: 100 },
-        { name: 'MP9 Starlight Protector', img: 'spins/MP9-Starlight-Protector-Skin.png', rarity: 'legendary', chance: 0.32, value: 3001 },
-        { name: 'PP-Bizon Space Cat', img: 'spins/PP-Bizon-Space-Cat-Skin.png', rarity: 'uncommon', chance: 14.28, value: 47 },
-        { name: 'Dual Berettas Melondrama', img: 'spins/Dual-Berettas-Melondrama-Skin.png', rarity: 'legendary', chance: 1.07, value: 7000 },
-        { name: 'Five SeveN Scrawl', img: 'spins/Five-SeveN-Scrawl-Skin.png', rarity: 'common', chance: 11.28, value: 50 },
-        { name: 'FAMAS Rapid Eye Movement', img: 'spins/FAMAS-Rapid-Eye-Movement-Skin.png', rarity: 'legendary', chance: 1.07, value: 6000 },
-        { name: 'MAC-10 Ensnared', img: 'spins/MAC-10-Ensnared-Skin.png', rarity: 'common', chance: 14.28, value: 1 },
-        { name: 'MP5-SD Necro Jr', img: 'spins/MP5-SD-Necro-Jr-Skin.png', rarity: 'common', chance: 14.28, value: 3 },
-        { name: 'Sawed Off Spirit Board', img: 'spins/Sawed-Off-Spirit-Board-Skin.png', rarity: 'uncommon', chance: 10, value: 75 },
-        { name: 'Knife', img: 'spins/gold.png', rarity: 'mythic', chance: 0.3, value: 0 }
-    ],
-    knifes: [
-        { name: 'Butterfly Knife Black Laminate', img: 'spins/Butterfly-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867, value: 10000 },
-        { name: 'Huntsman Knife Black Laminate', img: 'spins/Huntsman-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867, value: 17000 },
-        { name: 'Bowie Knife Bright Water', img: 'spins/Bowie-Knife-Bright-Water-Skin.png', rarity: 'mythic', chance: 0.00867, value: 14000 },
-        { name: 'Butterfly Knife Lore', img: 'spins/Butterfly-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867, value: 35000 },
-        { name: 'Huntsman Knife Freehand', img: 'spins/Huntsman-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867, value: 20000 },
-        { name: 'Huntsman Knife Lore', img: 'spins/Huntsman-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867, value: 21000 },
-        { name: 'Butterfly Knife Autotronic', img: 'spins/Butterfly-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867, value: 17000 },
-        { name: 'Huntsman Knife Bright Water', img: 'spins/Huntsman-Knife-Bright-Water-Skin.png', rarity: 'mythic', chance: 0.00867, value: 9998 },
-        { name: 'Butterfly Knife Freehand', img: 'spins/Butterfly-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867, value: 21000 },
-        { name: 'Shadow Daggers Freehand', img: 'spins/Shadow-Daggers-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867, value: 45000 },
-        { name: 'Huntsman Knife Gamma Doppler', img: 'spins/Huntsman-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867, value: 19000 },
-        { name: 'Butterfly Knife Gamma Doppler', img: 'spins/Butterfly-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867, value: 70000 },
-        { name: 'Bowie Knife Gamma Doppler', img: 'spins/Bowie-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867, value: 35000 },
-        { name: 'Shadow Daggers Gamma Doppler', img: 'spins/Shadow-Daggers-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867, value: 55555 },
-        { name: 'Falchion Knife Gamma Doppler', img: 'spins/Falchion-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867, value: 24000 },
-        { name: 'Bowie Knife Lore', img: 'spins/Bowie-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867, value: 15555 },
-        { name: 'Bowie Knife Black Laminate', img: 'spins/Bowie-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867, value: 8000 },
-        { name: 'Falchion Knife Autotronic', img: 'spins/Falchion-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867, value: 15000 },
-        { name: 'Bowie Knife Autotronic', img: 'spins/Bowie-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867, value: 9000 },
-        { name: 'Bowie Knife Freehand', img: 'spins/Bowie-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867, value: 7898 },
-        { name: 'Falchion Knife Black Laminate', img: 'spins/Falchion-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867, value: 11000 }
+    lootboxCases: [
+        {
+            id: 'case1',
+            name: 'Halloween Case',
+            img: 'assets/case1.png',
+            cost: 50,
+            items: [
+                { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 1.07, value: 5000 },
+                { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 14.28, value: 15 },
+                { name: 'M4A1-S Night Terror', img: 'spins/M4A1-S-Night-Terror.png', rarity: 'epic', chance: 3.2, value: 700 },
+                { name: 'P2000 Lifted Spirits', img: 'spins/P2000-Lifted-Spirits.png', rarity: 'common', chance: 14.28, value: 5 },
+                { name: 'USP-S Ticket to Hell', img: 'spins/USP-Ticket-to-Hell-Skin.png', rarity: 'epic', chance: 2.55, value: 285 },
+                { name: 'MAG-7 Foresight', img: 'spins/MAG-7-Foresight-Skin.png', rarity: 'common', chance: 14.28, value: 45 },
+                { name: 'G3SG1 Dream Glade', img: 'spins/G3SG1-Dream-Glade-Skin.png', rarity: 'uncommon', chance: 11.28, value: 55 },
+                { name: 'AK-47 Nightwish', img: 'spins/AK-47-Nightwish-Skin.png', rarity: 'legendary', chance: 0.32, value: 9000 },
+                { name: 'XM1014 Zombie Offensive', img: 'spins/XM1014-Zombie-Offensive-Skin.png', rarity: 'uncommon', chance: 11.28, value: 100 },
+                { name: 'MP9 Starlight Protector', img: 'spins/MP9-Starlight-Protector-Skin.png', rarity: 'legendary', chance: 0.32, value: 3001 },
+                { name: 'PP-Bizon Space Cat', img: 'spins/PP-Bizon-Space-Cat-Skin.png', rarity: 'uncommon', chance: 14.28, value: 47 },
+                { name: 'Dual Berettas Melondrama', img: 'spins/Dual-Berettas-Melondrama-Skin.png', rarity: 'legendary', chance: 1.07, value: 7000 },
+                { name: 'Five SeveN Scrawl', img: 'spins/Five-SeveN-Scrawl-Skin.png', rarity: 'common', chance: 11.28, value: 50 },
+                { name: 'FAMAS Rapid Eye Movement', img: 'spins/FAMAS-Rapid-Eye-Movement-Skin.png', rarity: 'legendary', chance: 1.07, value: 6000 },
+                { name: 'MAC-10 Ensnared', img: 'spins/MAC-10-Ensnared-Skin.png', rarity: 'common', chance: 14.28, value: 1 },
+                { name: 'MP5-SD Necro Jr', img: 'spins/MP5-SD-Necro-Jr-Skin.png', rarity: 'common', chance: 14.28, value: 3 },
+                { name: 'Sawed Off Spirit Board', img: 'spins/Sawed-Off-Spirit-Board-Skin.png', rarity: 'uncommon', chance: 10, value: 75 },
+                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.3, value: 0 }
+            ],
+            knifes: [
+                { name: 'Butterfly Knife Black Laminate', img: 'spins/Butterfly-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867, value: 10000 },
+                { name: 'Huntsman Knife Black Laminate', img: 'spins/Huntsman-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867, value: 17000 },
+                { name: 'Bowie Knife Bright Water', img: 'spins/Bowie-Knife-Bright-Water-Skin.png', rarity: 'mythic', chance: 0.00867, value: 14000 },
+                { name: 'Butterfly Knife Lore', img: 'spins/Butterfly-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867, value: 35000 },
+                { name: 'Huntsman Knife Freehand', img: 'spins/Huntsman-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867, value: 20000 },
+                { name: 'Huntsman Knife Lore', img: 'spins/Huntsman-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867, value: 21000 },
+                { name: 'Butterfly Knife Autotronic', img: 'spins/Butterfly-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867, value: 17000 },
+                { name: 'Huntsman Knife Bright Water', img: 'spins/Huntsman-Knife-Bright-Water-Skin.png', rarity: 'mythic', chance: 0.00867, value: 16000 },
+                { name: 'Butterfly Knife Freehand', img: 'spins/Butterfly-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867, value: 21000 },
+                { name: 'Shadow Daggers Freehand', img: 'spins/Shadow-Daggers-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867, value: 45000 },
+                { name: 'Huntsman Knife Gamma Doppler', img: 'spins/Huntsman-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867, value: 19000 },
+                { name: 'Butterfly Knife Gamma Doppler', img: 'spins/Butterfly-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867, value: 70000 },
+                { name: 'Bowie Knife Gamma Doppler', img: 'spins/Bowie-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867, value: 35000 },
+                { name: 'Shadow Daggers Gamma Doppler', img: 'spins/Shadow-Daggers-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867, value: 55555 },
+                { name: 'Falchion Knife Gamma Doppler', img: 'spins/Falchion-Knife-Gamma-Doppler-Skin.png', rarity: 'mythic', chance: 0.00867, value: 24000 },
+                { name: 'Bowie Knife Lore', img: 'spins/Bowie-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.00867, value: 15555 },
+                { name: 'Bowie Knife Black Laminate', img: 'spins/Bowie-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867, value: 8000 },
+                { name: 'Falchion Knife Autotronic', img: 'spins/Falchion-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867, value: 15000 },
+                { name: 'Bowie Knife Autotronic', img: 'spins/Bowie-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.00867, value: 9000 },
+                { name: 'Bowie Knife Freehand', img: 'spins/Bowie-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.00867, value: 10000 },
+                { name: 'Falchion Knife Black Laminate', img: 'spins/Falchion-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.00867, value: 11000 }
+            ]
+        },
+        {
+            id: 'case2',
+            name: 'Dragon Case',
+            img: 'assets/case2.png',
+            cost: 75,
+            items: [
+                { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 3.5, value: 800 },
+                { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 3, value: 340 },
+                { name: 'UMP-45 Roadblock', img: 'spins/UMP-45-Roadblock.png', rarity: 'common', chance: 14.0, value: 0.5 },
+                { name: 'R8 Revolver Crazy 8', img: 'spins/R8-Revolver-Crazy-8.png', rarity: 'epic', chance: 4, value: 650 },
+                { name: 'M249 Downtown', img: 'spins/M249-Downtown.png', rarity: 'uncommon', chance: 10, value: 80 },
+                { name: 'Dual Berettas Flora Carnivora', img: 'spins/Dual-Berettas-Flora-Carnivora.png', rarity: 'epic', chance: 3, value: 595 },
+                { name: 'USP-S Printstream', img: 'spins/USP-S-Printstream.png', rarity: 'legendary', chance: 1.08, value: 8600 },
+                { name: 'M4A4 Poly Mag', img: 'spins/M4A4-Poly-Mag.png', rarity: 'uncommon', chance: 10.0, value: 75 },
+                { name: 'Negev Drop Me', img: 'spins/Negev-Drop-Me.png', rarity: 'common', chance: 15.0, value: 50 },
+                { name: 'AWP Chromatic Aberration', img: 'spins/AWP-Chromatic-Aberration.png', rarity: 'legendary', chance: 1, value: 14000 },
+                { name: 'Glock-18 Winterized', img: 'spins/Glock-18-Winterized.png', rarity: 'uncommon', chance: 10, value: 80 },
+                { name: 'FAMAS Meow-36', img: 'spins/FAMAS-Meow-36.png', rarity: 'uncommon', chance: 11, value: 43 },
+                { name: 'AK-47 Ice Coaled', img: 'spins/AK-47-Ice-Coaled.png', rarity: 'epic', chance: 4, value: 120 },
+                { name: 'Galil AR Destroyer', img: 'spins/Galil-AR-Destroyer.png', rarity: 'common', chance: 14.0, value: 7 },
+                { name: 'MAC-10 Monkeyflage', img: 'spins/MAC-10-Monkeyflage.png', rarity: 'common', chance: 13, value: 20 },
+                { name: 'Sawed Off Kiss♥Love', img: 'spins/Sawed-Off-Kiss-Love.png', rarity: 'epic', chance: 3.8, value: 240 },
+                { name: 'P250 Visions', img: 'spins/P250-Visions.png', rarity: 'epic', chance: 3, value: 400 },
+                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.2, value: 0 }
+            ],
+            knifes: [
+                { name: 'Dragon Lore Karambit', img: 'spins/dragon-karambit.png', rarity: 'mythic', chance: 0.005, value: 50000 },
+                { name: 'Dragon Butterfly', img: 'spins/dragon-butterfly.png', rarity: 'mythic', chance: 0.005, value: 45000 },
+                { name: 'Dragon Bayonet', img: 'spins/dragon-bayonet.png', rarity: 'mythic', chance: 0.005, value: 30000 },
+                { name: 'Dragon Bayonet', img: 'spins/dragon-bayonet.png', rarity: 'mythic', chance: 0.005, value: 30000 },
+                { name: 'Dragon Lore Karambit', img: 'spins/dragon-karambit.png', rarity: 'mythic', chance: 0.005, value: 50000 },
+                { name: 'Dragon Butterfly', img: 'spins/dragon-butterfly.png', rarity: 'mythic', chance: 0.005, value: 45000 },
+                { name: 'Dragon Bayonet', img: 'spins/dragon-bayonet.png', rarity: 'mythic', chance: 0.005, value: 30000 },
+                { name: 'Dragon Bayonet', img: 'spins/dragon-bayonet.png', rarity: 'mythic', chance: 0.005, value: 30000 },
+                { name: 'Dragon Lore Karambit', img: 'spins/dragon-karambit.png', rarity: 'mythic', chance: 0.005, value: 50000 },
+                { name: 'Dragon Butterfly', img: 'spins/dragon-butterfly.png', rarity: 'mythic', chance: 0.005, value: 45000 },
+                { name: 'Dragon Bayonet', img: 'spins/dragon-bayonet.png', rarity: 'mythic', chance: 0.005, value: 30000 },
+                { name: 'Dragon Bayonet', img: 'spins/dragon-bayonet.png', rarity: 'mythic', chance: 0.005, value: 30000 },
+                { name: 'Dragon Lore Karambit', img: 'spins/dragon-karambit.png', rarity: 'mythic', chance: 0.005, value: 50000 },
+                { name: 'Dragon Butterfly', img: 'spins/dragon-butterfly.png', rarity: 'mythic', chance: 0.005, value: 45000 },
+                { name: 'Dragon Bayonet', img: 'spins/dragon-bayonet.png', rarity: 'mythic', chance: 0.005, value: 30000 },
+                { name: 'Dragon Bayonet', img: 'spins/dragon-bayonet.png', rarity: 'mythic', chance: 0.005, value: 30000 },
+                { name: 'Dragon Lore Karambit', img: 'spins/dragon-karambit.png', rarity: 'mythic', chance: 0.005, value: 50000 },
+                { name: 'Dragon Butterfly', img: 'spins/dragon-butterfly.png', rarity: 'mythic', chance: 0.005, value: 45000 },
+                { name: 'Dragon Bayonet', img: 'spins/dragon-bayonet.png', rarity: 'mythic', chance: 0.005, value: 30000 },
+                { name: 'Dragon Bayonet', img: 'spins/dragon-bayonet.png', rarity: 'mythic', chance: 0.005, value: 30000 },
+                { name: 'Dragon Lore Karambit', img: 'spins/dragon-karambit.png', rarity: 'mythic', chance: 0.005, value: 50000 },
+                { name: 'Dragon Butterfly', img: 'spins/dragon-butterfly.png', rarity: 'mythic', chance: 0.005, value: 45000 },
+                { name: 'Dragon Bayonet', img: 'spins/dragon-bayonet.png', rarity: 'mythic', chance: 0.005, value: 30000 },
+                { name: 'Dragon Bayonet', img: 'spins/dragon-bayonet.png', rarity: 'mythic', chance: 0.005, value: 30000 }
+            ]
+        }
     ],
     payouts: {
-        '7-7-7': 500,
+        '7-7-7': 100000,
         'diamond-diamond-diamond': 50000,
-        'bell-bell-bell': 30000,
+        'coin-coin-coin': 30000,
+        'bell-bell-bell': 15000,
         'cherry-cherry-cherry': 10000,
         'card-card-card': 3000,
-        'clover-clover-clover': 500,
+        'clover-clover-clover': 1000,
         'ANY_TWO_MATCH': 100
     },
     mines: {
@@ -150,7 +211,8 @@ let gameState = {
     },
     lootboxGame: {
         isSpinning: false,
-        currentItem: null
+        currentItem: null,
+        currentCase: CONFIG.lootboxCases[0] // Default to first case
     },
     inventory: []
 };
@@ -240,7 +302,11 @@ const elements = {
     inventorySellMax: document.getElementById('inventory-sell-max'),
     inventorySellBtn: document.getElementById('inventory-sell-btn'),
     inventorySellTotal: document.getElementById('inventory-sell-total'),
-    inventorySellClose: document.querySelector('.inventory-sell-close')
+    inventorySellClose: document.querySelector('.inventory-sell-close'),
+    lootboxCaseSelectScreen: document.getElementById('lootbox-case-select-screen'),
+    lootboxCasesContainer: document.getElementById('lootbox-cases-container'),
+    lootboxCaseSelectBackBtn: document.getElementById('lootbox-case-select-back-btn'),
+    lootboxChangeCaseBtn: document.getElementById('lootbox-change-case-btn')
 };
 
 // Helper Functions
@@ -251,38 +317,38 @@ function getRandomSymbol() {
     return CONFIG.symbols[Math.floor(Math.random() * CONFIG.symbols.length)];
 }
 
-function getRandomLootboxItem() {
-    const totalWeight = CONFIG.lootboxItems.reduce((sum, item) => sum + item.chance, 0);
+function getRandomLootboxItem(caseItems) {
+    const totalWeight = caseItems.reduce((sum, item) => sum + item.chance, 0);
     const random = Math.random() * totalWeight;
     let cumulativeWeight = 0;
     
-    for (const item of CONFIG.lootboxItems) {
+    for (const item of caseItems) {
         cumulativeWeight += item.chance;
         if (random <= cumulativeWeight) {
             return item;
         }
     }
     
-    return CONFIG.lootboxItems[0];
+    return caseItems[0];
 }
 
-function getRandomKnife() {
-    if (CONFIG.knifes.length === 0) {
+function getRandomKnife(knives) {
+    if (!knives || knives.length === 0) {
         return { name: 'Default Knife', img: 'spins/default-knife.png', rarity: 'legendary', value: 1000 };
     }
     
-    const totalWeight = CONFIG.knifes.reduce((sum, knife) => sum + knife.chance, 0);
+    const totalWeight = knives.reduce((sum, knife) => sum + knife.chance, 0);
     const random = Math.random() * totalWeight;
     let cumulativeWeight = 0;
     
-    for (const knife of CONFIG.knifes) {
+    for (const knife of knives) {
         cumulativeWeight += knife.chance;
         if (random <= cumulativeWeight) {
             return knife;
         }
     }
     
-    return CONFIG.knifes[0];
+    return knives[0];
 }
 
 function initializeLootboxItems() {
@@ -291,8 +357,10 @@ function initializeLootboxItems() {
     
     track.innerHTML = '';
     
+    const caseItems = gameState.lootboxGame.currentCase.items;
     const itemsPool = [];
-    CONFIG.lootboxItems.forEach(item => {
+    
+    caseItems.forEach(item => {
         const count = Math.max(1, Math.floor(item.chance * 10));
         for (let i = 0; i < count; i++) {
             itemsPool.push(item);
@@ -611,16 +679,56 @@ async function claimWin() {
     if (elements.winPopup) elements.winPopup.style.display = 'none';
 }
 
-// Replace the startLootboxSpin function with this new version
+// Loot Box Functions
+function showLootboxCaseSelectScreen() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
+    
+    if (elements.lootboxCaseSelectScreen) elements.lootboxCaseSelectScreen.style.display = 'block';
+    if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
+    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
+    
+    populateLootboxCases();
+}
+
+function populateLootboxCases() {
+    if (!elements.lootboxCasesContainer) return;
+    
+    elements.lootboxCasesContainer.innerHTML = '';
+    
+    CONFIG.lootboxCases.forEach(lootboxCase => {
+        const caseElement = document.createElement('div');
+        caseElement.className = 'lootbox-case';
+        caseElement.innerHTML = `
+            <img src="${lootboxCase.img}" alt="${lootboxCase.name}" class="lootbox-case-img">
+            <div class="lootbox-case-name">${lootboxCase.name}</div>
+            <div class="lootbox-case-price">${lootboxCase.cost} chips</div>
+        `;
+        
+        caseElement.addEventListener('click', () => selectLootboxCase(lootboxCase));
+        elements.lootboxCasesContainer.appendChild(caseElement);
+    });
+}
+
+function selectLootboxCase(selectedCase) {
+    gameState.lootboxGame.currentCase = selectedCase;
+    
+    if (elements.lootboxCaseSelectScreen) elements.lootboxCaseSelectScreen.style.display = 'none';
+    if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'block';
+    
+    initializeLootboxItems();
+}
+
 async function startLootboxSpin() {
-    if (isLootboxSpinning || gameState.chips < CONFIG.lootboxCost) {
-        if (gameState.chips < CONFIG.lootboxCost) {
+    if (isLootboxSpinning || gameState.chips < gameState.lootboxGame.currentCase.cost) {
+        if (gameState.chips < gameState.lootboxGame.currentCase.cost) {
             showNotification("Not enough chips!", false);
         }
         return;
     }
 
-    
     if (spinSound) {
         spinSound.currentTime = 0;
         spinSound.play().catch(e => console.warn('Spin sound error:', e));
@@ -638,7 +746,7 @@ async function startLootboxSpin() {
             },
             body: JSON.stringify({
                 userId: gameState.userId,
-                cost: CONFIG.lootboxCost
+                cost: gameState.lootboxGame.currentCase.cost
             }),
             credentials: 'include'
         });
@@ -658,7 +766,7 @@ async function startLootboxSpin() {
     const container = track.parentElement;
     
     // First determine the result item based on probabilities
-    const resultItem = getRandomLootboxItem();
+    const resultItem = getRandomLootboxItem(gameState.lootboxGame.currentCase.items);
     console.log('Target item:', resultItem.name, 'Rarity:', resultItem.rarity);
     
     // Clear and rebuild the track with new random items for this spin
@@ -666,7 +774,7 @@ async function startLootboxSpin() {
     
     // Create a pool of items based on their weights
     const itemsPool = [];
-    CONFIG.lootboxItems.forEach(item => {
+    gameState.lootboxGame.currentCase.items.forEach(item => {
         // Add more copies of common items to maintain probability
         const count = Math.max(1, Math.floor(item.chance * 10));
         for (let i = 0; i < count; i++) {
@@ -801,13 +909,13 @@ async function startLootboxSpin() {
             
             if (centeredItem) {
                 const itemName = centeredItem.dataset.itemName || centeredItem.querySelector('img').alt;
-                const wonItem = CONFIG.lootboxItems.find(item => item.name === itemName) || resultItem;
+                const wonItem = gameState.lootboxGame.currentCase.items.find(item => item.name === itemName) || resultItem;
                 
                 console.log('Stopped at position:', currentPosition, 'Center position:', centerPosition, 'Item:', wonItem.name);
                 
                 let finalReward = wonItem;
                 if (wonItem.rarity === 'mythic') {
-                    const randomKnife = getRandomKnife();
+                    const randomKnife = getRandomKnife(gameState.lootboxGame.currentCase.knifes);
                     console.log('Mythic item won! Giving random knife:', randomKnife.name, 'Knife rarity:', randomKnife.rarity);
                     finalReward = randomKnife;
                 }
@@ -819,7 +927,7 @@ async function startLootboxSpin() {
             } else {
                 let finalReward = resultItem;
                 if (resultItem.rarity === 'mythic') {
-                    const randomKnife = getRandomKnife();
+                    const randomKnife = getRandomKnife(gameState.lootboxGame.currentCase.knifes);
                     console.log('Fallback mythic item! Giving random knife:', randomKnife.name);
                     finalReward = randomKnife;
                 }
@@ -1033,6 +1141,7 @@ function showGameSelectScreen() {
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
     if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
     if (elements.inventoryScreen) elements.inventoryScreen.style.display = 'none';
+    if (elements.lootboxCaseSelectScreen) elements.lootboxCaseSelectScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'block';
     updateCurrencyDisplay();
 }
@@ -1048,6 +1157,7 @@ function startSlotMachineGame() {
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
     if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
     if (elements.inventoryScreen) elements.inventoryScreen.style.display = 'none';
+    if (elements.lootboxCaseSelectScreen) elements.lootboxCaseSelectScreen.style.display = 'none';
     if (elements.gameScreen) elements.gameScreen.style.display = 'block';
 }
 
@@ -1062,6 +1172,7 @@ function startMinesGame() {
     if (elements.gameScreen) elements.gameScreen.style.display = 'none';
     if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
     if (elements.inventoryScreen) elements.inventoryScreen.style.display = 'none';
+    if (elements.lootboxCaseSelectScreen) elements.lootboxCaseSelectScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'block';
     setupMinesGameUI();
 }
@@ -1072,16 +1183,7 @@ function startLootboxGame() {
         return;
     }
     gameState.currentGame = 'lootbox';
-    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
-    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
-    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
-    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
-    if (elements.inventoryScreen) elements.inventoryScreen.style.display = 'none';
-    if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'block';
-    
-    initializeLootboxItems();
-    
-    if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = false;
+    showLootboxCaseSelectScreen();
 }
 
 function startInventoryScreen() {
@@ -1095,6 +1197,7 @@ function startInventoryScreen() {
     if (elements.gameScreen) elements.gameScreen.style.display = 'none';
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
     if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
+    if (elements.lootboxCaseSelectScreen) elements.lootboxCaseSelectScreen.style.display = 'none';
     if (elements.inventoryScreen) elements.inventoryScreen.style.display = 'block';
     
     loadInventory();
@@ -1505,6 +1608,7 @@ function showLoginScreen() {
     if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
     if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
     if (elements.inventoryScreen) elements.inventoryScreen.style.display = 'none';
+    if (elements.lootboxCaseSelectScreen) elements.lootboxCaseSelectScreen.style.display = 'none';
     gameState.userId = null;
     if (elements.tokenInput) elements.tokenInput.value = '';
 }
@@ -1575,6 +1679,8 @@ if (elements.backToMenuBtn) elements.backToMenuBtn.addEventListener('click', sho
 if (elements.minesBackToMenuBtn) elements.minesBackToMenuBtn.addEventListener('click', showGameSelectScreen);
 if (elements.lootboxBackToMenuBtn) elements.lootboxBackToMenuBtn.addEventListener('click', showGameSelectScreen);
 if (elements.inventoryBackToMenuBtn) elements.inventoryBackToMenuBtn.addEventListener('click', showGameSelectScreen);
+if (elements.lootboxCaseSelectBackBtn) elements.lootboxCaseSelectBackBtn.addEventListener('click', showGameSelectScreen);
+if (elements.lootboxChangeCaseBtn) elements.lootboxChangeCaseBtn.addEventListener('click', showLootboxCaseSelectScreen);
 
 // Inventory event listeners
 if (elements.inventorySellInput) {
