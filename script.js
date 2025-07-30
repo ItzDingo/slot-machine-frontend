@@ -305,6 +305,11 @@ const elements = {
     inventorySellClose: document.querySelector('.inventory-sell-close'),
     lootboxCaseSelectScreen: document.getElementById('lootbox-case-select-screen'),
     lootboxCasesContainer: document.getElementById('lootbox-cases-container'),
+    lootboxSelectAvatar: document.getElementById('lootbox-select-avatar'),
+    lootboxSelectUsername: document.getElementById('lootbox-select-username'),
+    lootboxSelectChips: document.getElementById('lootbox-select-chips'),
+    lootboxSelectDice: document.getElementById('lootbox-select-dice'),
+    lootboxSelectLogoutBtn: document.getElementById('lootbox-select-logout-btn'),
     lootboxCaseSelectBackBtn: document.getElementById('lootbox-case-select-back-btn'),
     lootboxChangeCaseBtn: document.getElementById('lootbox-change-case-btn')
 };
@@ -451,6 +456,8 @@ function updateCurrencyDisplay() {
     if (elements.lootboxDice) elements.lootboxDice.textContent = gameState.dice;
     if (elements.inventoryChips) elements.inventoryChips.textContent = gameState.chips.toFixed(2);
     if (elements.inventoryDice) elements.inventoryDice.textContent = gameState.dice;
+    if (elements.lootboxSelectChips) elements.lootboxSelectChips.textContent = gameState.chips.toFixed(2);
+    if (elements.lootboxSelectDice) elements.lootboxSelectDice.textContent = gameState.dice;
 }
 
 function showNotification(message, isSuccess) {
@@ -1580,6 +1587,7 @@ function handleSuccessfulLogin(user) {
     if (elements.lootboxAvatar) elements.lootboxAvatar.src = user.avatar || 'assets/default-avatar.png';
     if (elements.inventoryUsername) elements.inventoryUsername.textContent = user.username;
     if (elements.inventoryAvatar) elements.inventoryAvatar.src = user.avatar || 'assets/default-avatar.png';
+    if (elements.lootboxSelectUsername) elements.lootboxSelectUsername.textContent = user.username;
     
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     showGameSelectScreen();
