@@ -319,7 +319,7 @@ const spinSound = new Audio('spins/spin.mp3');
 const openSound = new Audio('spins/open.mp3');
 
 function setLootboxButtonsDisabled(disabled) {
-    if (elements.lootboxBtn) elements.lootboxBtn.disabled = disabled;
+    if (elements.lootboxChangeCaseBtn) elements.lootboxChangeCaseBtn.disabled = disabled;
     if (elements.lootboxBackToMenuBtn) elements.lootboxBackToMenuBtn.disabled = disabled;
 }
 
