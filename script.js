@@ -78,7 +78,7 @@ const CONFIG = {
         getGridSize: function(minesCount) {
             if (minesCount <= 6) return 5;
             if (minesCount <= 9) return 6;
-            return 7;
+            return 6;
         },
         getMultiplier: function(minesCount, revealedCells) {
             const baseMultipliers = {
