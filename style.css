@@ -20,6 +20,21 @@
     padding: 0;
 }
 
+.disclaimer-banner {
+    background-color: #fff0f0;
+    border: 2px solid red;
+    color: #a30000;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 9999;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
 body {
     font-family: 'Arial', sans-serif;
     background: url('assets/casino-bg.png') no-repeat center/cover fixed;
