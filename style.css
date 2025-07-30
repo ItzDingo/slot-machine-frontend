@@ -662,7 +662,7 @@ body {
     pointer-events: none;
 }
 
-/* FIXED LOOT BOX GAME SCREEN */
+/* LOOT BOX GAME SCREEN */
 #lootbox-screen {
     display: none;
     max-width: 800px;
@@ -705,7 +705,6 @@ body {
     padding: 0;
     left: 0;
     top: 0;
-    /* CRITICAL: Remove any transition to prevent conflicts */
     transition: none !important;
     will-change: transform;
 }
@@ -721,7 +720,6 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     flex-shrink: 0;
     position: relative;
-    /* CRITICAL: Remove transitions that might interfere */
     transition: none !important;
 }
 
@@ -733,26 +731,31 @@ body {
     user-select: none;
 }
 
-/* Center highlight - make it more visible */
+/* Changed square indicator to top-centered arrow */
 .lootbox-spin-area::before {
     content: '';
     position: absolute;
     left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 130px;
-    height: 130px;
-    border: 4px solid var(--primary);
-    border-radius: 10px;
+    top: 10px;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 30px solid var(--primary);
     pointer-events: none;
     z-index: 10;
-    box-shadow: 
-        0 0 20px var(--primary),
-        inset 0 0 20px rgba(255, 215, 0, 0.1);
-    background: rgba(255, 215, 0, 0.05);
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7));
+    animation: arrowPulse 1.5s ease-in-out infinite;
 }
 
-/* Enhanced Rarity Styles with better contrast */
+@keyframes arrowPulse {
+    0% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.2); }
+    100% { transform: translateX(-50%) scale(1); }
+}
+
+/* Enhanced Rarity Styles */
 .lootbox-item.common {
     border: 3px solid var(--common);
     background: linear-gradient(135deg, 
@@ -926,7 +929,7 @@ body {
     color: #ff5050;
 }
 
-/* Loot Box Win Popup - Enhanced */
+/* Loot Box Win Popup */
 .lootbox-win-content {
     background: linear-gradient(135deg, var(--dark) 0%, #2a2a2a 100%);
     border: 3px solid var(--primary);
@@ -1014,7 +1017,6 @@ body {
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
 }
 
-/* Enhanced rarity colors for popup */
 .lootbox-rarity.common {
     background: linear-gradient(135deg, var(--common), #808080);
     color: white;
@@ -1047,7 +1049,6 @@ body {
     100% { box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 0, 0, 0.8); }
 }
 
-/* ENHANCED LOOTBOX CLAIM BUTTON - NEW STYLING */
 #lootbox-claim-btn {
     background: linear-gradient(135deg, #ff0000 0%, #cc0000 50%, #990000 100%);
     color: white;
@@ -1584,9 +1585,11 @@ body {
         height: 100px;
     }
     
+    /* Updated arrow size for medium screens */
     .lootbox-spin-area::before {
-        width: 110px;
-        height: 110px;
+        border-left: 15px solid transparent;
+        border-right: 15px solid transparent;
+        border-top: 25px solid var(--primary);
     }
     
     .lootbox-spin-button {
@@ -1663,9 +1666,11 @@ body {
         height: 80px;
     }
     
+    /* Updated arrow size for small screens */
     .lootbox-spin-area::before {
-        width: 90px;
-        height: 90px;
+        border-left: 12px solid transparent;
+        border-right: 12px solid transparent;
+        border-top: 20px solid var(--primary);
     }
     
     .lootbox-spin-button {
