@@ -1578,6 +1578,7 @@ function handleSuccessfulLogin(user) {
     gameState.chips = user.chips;
     gameState.dice = user.dice;
     gameState.inventory = user.inventory || [];
+    const avatarSrc = user.avatar || 'assets/default-avatar.png';
     
     if (elements.usernameDisplay) elements.usernameDisplay.textContent = user.username;
     if (elements.userAvatar) elements.userAvatar.src = user.avatar || 'assets/default-avatar.png';
@@ -1588,6 +1589,7 @@ function handleSuccessfulLogin(user) {
     if (elements.inventoryUsername) elements.inventoryUsername.textContent = user.username;
     if (elements.inventoryAvatar) elements.inventoryAvatar.src = user.avatar || 'assets/default-avatar.png';
     if (elements.lootboxSelectUsername) elements.lootboxSelectUsername.textContent = user.username;
+    if (elements.lootboxSelectAvatar) elements.lootboxSelectAvatar.src = avatarSrc;
     
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     showGameSelectScreen();
