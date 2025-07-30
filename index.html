@@ -126,6 +126,37 @@
         <button id="mines-cashout-btn" class="mines-cashout-btn disabled" disabled>Cash Out</button>
     </div>
 
+    <!-- Loot Box Case Selection Screen -->
+    <div id="lootbox-case-select-screen" class="game-container" style="display: none;">
+        <div class="user-panel">
+            <div class="user-info">
+                <img id="lootbox-select-avatar" src="assets/default-avatar.png" alt="User Avatar">
+                <div class="user-details">
+                    <span id="lootbox-select-username">Guest</span>
+                    <button id="lootbox-select-logout-btn">Logout</button>
+                </div>
+            </div>
+            <div class="currency-display">
+                <div class="currency">
+                    <img src="assets/chip.png" alt="Chips">
+                    <span id="lootbox-select-chips">0</span>
+                </div>
+                <div class="currency">
+                    <img src="assets/dice.png" alt="Dice">
+                    <span id="lootbox-select-dice">0</span>
+                </div>
+            </div>
+        </div>
+
+        <h2 style="text-align: center; margin-bottom: 20px; color: var(--primary);">Select a Case</h2>
+        
+        <div id="lootbox-cases-container" class="lootbox-cases-container">
+            <!-- Cases will be populated here -->
+        </div>
+        
+        <button id="lootbox-case-select-back-btn" class="mines-start-btn" style="margin-top: 10px;">Back to Menu</button>
+    </div>
+
     <!-- Loot Box Game Screen -->
     <div id="lootbox-screen" class="game-container">
         <div class="user-panel">
@@ -183,6 +214,7 @@
 
         <div class="lootbox-controls">
             <button id="lootbox-spin-btn" class="lootbox-spin-button">OPEN</button>
+            <button id="lootbox-change-case-btn" class="lootbox-spin-button" style="background: #444; margin-top: 10px;">Change Case</button>
         </div>
 
         <button id="lootbox-back-to-menu-btn" class="mines-start-btn" style="margin-top: 10px;">Back to Menu</button>
