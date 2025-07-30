@@ -1151,6 +1151,63 @@ body {
     100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
 }
 
+
+/* Loot Box Case Selection */
+.lootbox-cases-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.lootbox-case {
+    background: rgba(30, 30, 30, 0.8);
+    border-radius: 10px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid var(--primary);
+}
+
+.lootbox-case:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+}
+
+.lootbox-case-img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    border-radius: 5px;
+}
+
+.lootbox-case-name {
+    font-weight: bold;
+    color: white;
+    text-align: center;
+}
+
+.lootbox-case-price {
+    color: var(--primary);
+    font-weight: bold;
+}
+
+/* Loot Box Change Case Button */
+#lootbox-change-case-btn {
+    background: #444 !important;
+    margin-top: 10px;
+}
+
+#lootbox-change-case-btn:hover {
+    background: #555 !important;
+}
+
 /* Inventory Screen */
 #inventory-screen {
     display: none;
