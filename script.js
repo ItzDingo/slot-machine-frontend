@@ -22,8 +22,8 @@ const CONFIG = {
     lootboxCases: [
         {
             id: 'case1',
-            name: 'Halloween Case',
-            img: 'assets/case1.png',
+            name: 'Dreams & Nightmares Case',
+            img: 'spins/case1.png',
             cost: 50,
             items: [
                 { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 1.07, value: 5000 },
@@ -71,8 +71,8 @@ const CONFIG = {
         },
         {
             id: 'case2',
-            name: 'Dragon Case',
-            img: 'assets/case2.png',
+            name: 'Recoil Case',
+            img: 'spins/case2.png',
             cost: 75,
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 3, value: 800 },
