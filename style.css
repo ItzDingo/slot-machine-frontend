@@ -1021,9 +1021,12 @@ body {
 }
 
 .rarity-item.common {
-    background: rgba(125, 185, 232, 0.3);
+    border: 3px solid #888888;
     border-left: 4px solid var(--common);
-    color: #888888;
+    background: linear-gradient(135deg,
+        rgba(136, 136, 136, 0.4) 0%,
+        rgba(100, 100, 100, 0.4) 100%);
+    color: #ddd;
 }
 
 .rarity-item.uncommon {
