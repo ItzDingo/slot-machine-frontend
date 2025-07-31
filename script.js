@@ -78,7 +78,7 @@ const CONFIG = {
             img: 'spins/case2.png',
             cost: 75,
             limitedTime: true, // Add this
-            startTime: '2025-08-02T00:00:00', // Add start time (optional)
+            startTime: '2025-07-30T00:00:00', // Add start time (optional)
             endTime: '2025-08-15T23:59:59', // Add end time
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
