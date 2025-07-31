@@ -416,6 +416,47 @@ body {
     transform: scale(0.95);
 }
 
+
+/* Refill Popup Styles */
+#refill-popup {
+    display: none;
+}
+
+.popup-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+    justify-content: center;
+}
+
+.popup-btn {
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+}
+
+.popup-btn.confirm {
+    background: var(--success);
+    color: white;
+}
+
+.popup-btn.confirm:hover {
+    background: #3d8b40;
+}
+
+.popup-btn.cancel {
+    background: var(--error);
+    color: white;
+}
+
+.popup-btn.cancel:hover {
+    background: #d32f2f;
+}
+
+
 /* Win Popup */
 .win-popup {
     display: none;
