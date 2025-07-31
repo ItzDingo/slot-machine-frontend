@@ -78,8 +78,8 @@ const CONFIG = {
             img: 'spins/case2.png',
             cost: 75,
             limitedTime: true, // Add this
-            startTime: '2025-07-31T05:00:00', // Add start time (optional)
-            endTime: '2025-08-2T23:59:59', // Add end time
+            startTime: '2025-08-02T00:00:00', // Add start time (optional)
+            endTime: '2025-08-15T23:59:59', // Add end time
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
                 { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 3, value: 340 },
@@ -349,45 +349,60 @@ function getTimeRemaining(caseItem) {
     const now = new Date();
     const startTime = caseItem.startTime ? new Date(caseItem.startTime) : new Date(0);
     const endTime = new Date(caseItem.endTime);
+
+    // Return null if the case is currently active (no countdown needed)
+    if (now >= startTime && now < endTime) return null;
     
-    if (now < startTime) {
-        const diff = startTime - now;
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        return `Starts in ${days}d ${hours}h ${minutes}m`;
-    }
+    const targetTime = now < startTime ? startTime : endTime;
+    const diff = targetTime - now;
     
-    if (now >= endTime) return "Expired";
+    // If time has passed (shouldn't happen due to isCaseAvailable check)
+    if (diff <= 0) return "Expired";
     
-    const diff = endTime - now;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
     
-    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    return now < startTime 
+        ? `Starts in ${days}d ${hours}h ${minutes}m ${seconds}s`
+        : `Ends in ${days}d ${hours}h ${minutes}m ${seconds}s`;
 }
 
 
 function updateCaseTimers() {
     if (!elements.lootboxCasesContainer) return;
     
+    const now = new Date();
     const caseElements = elements.lootboxCasesContainer.querySelectorAll('.lootbox-case');
+    
     caseElements.forEach((caseElement, index) => {
         const caseData = CONFIG.lootboxCases[index];
-        if (caseData.limitedTime) {
-            const timerElement = caseElement.querySelector('.case-timer');
-            if (timerElement) {
-                const timeRemaining = getTimeRemaining(caseData);
-                timerElement.textContent = timeRemaining === "Expired" ? "EXPIRED" : timeRemaining;
-                
-                if (timeRemaining === "Expired") {
-                    caseElement.classList.add('disabled-case');
-                    caseElement.style.opacity = '0.6';
-                    caseElement.style.cursor = 'not-allowed';
-                    timerElement.classList.add('expired');
-                }
+        if (!caseData.limitedTime) return;
+
+        const timerElement = caseElement.querySelector('.case-timer');
+        if (!timerElement) return;
+
+        const isAvailable = isCaseAvailable(caseData);
+        const timeRemaining = getTimeRemaining(caseData);
+
+        // Update case availability
+        if (isAvailable) {
+            caseElement.classList.remove('disabled-case');
+            caseElement.style.opacity = '1';
+            caseElement.style.cursor = 'pointer';
+            timerElement.textContent = 'Available Now';
+            timerElement.className = 'case-timer active';
+        } else {
+            caseElement.classList.add('disabled-case');
+            caseElement.style.opacity = '0.6';
+            caseElement.style.cursor = 'not-allowed';
+            
+            if (timeRemaining) {
+                timerElement.textContent = timeRemaining;
+                timerElement.className = now < new Date(caseData.startTime) 
+                    ? 'case-timer not-started' 
+                    : 'case-timer expired';
             }
         }
     });
@@ -862,35 +877,31 @@ function populateLootboxCases() {
     
     CONFIG.lootboxCases.forEach(lootboxCase => {
         const isAvailable = isCaseAvailable(lootboxCase);
-        const timeRemaining = lootboxCase.limitedTime ? getTimeRemaining(lootboxCase) : null;
+        const timeRemaining = getTimeRemaining(lootboxCase);
+        const now = new Date();
+        const startTime = lootboxCase.startTime ? new Date(lootboxCase.startTime) : new Date(0);
         
         const caseElement = document.createElement('div');
         caseElement.className = `lootbox-case ${!isAvailable ? 'disabled-case' : ''}`;
         
-        let statusHtml = '';
+        let timerHtml = '';
         if (lootboxCase.limitedTime) {
-            const now = new Date();
-            const startTime = lootboxCase.startTime ? new Date(lootboxCase.startTime) : new Date(0);
+            let timerClass = 'active';
+            let timerText = 'Available Now';
             
-            let statusClass = '';
-            if (now < startTime) {
-                statusClass = 'not-started';
-            } else if (!isAvailable) {
-                statusClass = 'expired';
+            if (!isAvailable) {
+                timerClass = now < startTime ? 'not-started' : 'expired';
+                timerText = timeRemaining || 'Expired';
             }
             
-            statusHtml = `
-                <div class="case-timer ${statusClass}">
-                    ${timeRemaining}
-                </div>
-            `;
+            timerHtml = `<div class="case-timer ${timerClass}">${timerText}</div>`;
         }
         
         caseElement.innerHTML = `
             <img src="${lootboxCase.img}" alt="${lootboxCase.name}" class="lootbox-case-img">
             <div class="lootbox-case-name">${lootboxCase.name}</div>
             <div class="lootbox-case-price">${lootboxCase.cost} chips</div>
-            ${statusHtml}
+            ${timerHtml}
         `;
         
         if (isAvailable) {
