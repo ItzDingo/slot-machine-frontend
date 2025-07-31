@@ -1369,6 +1369,17 @@ body {
     position: relative;
 }
 
+.inventory-group {
+    margin-bottom: 20px;
+}
+
+.inventory-group .inventory-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    border-radius: 6px;
+}
+
+
 .inventory-item:hover {
     transform: translateY(-5px);
     box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2);
