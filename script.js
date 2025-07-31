@@ -78,7 +78,7 @@ const CONFIG = {
             img: 'spins/case2.png',
             cost: 75,
             limitedTime: true, // Add this
-            startTime: '2025-07-30T00:00:00', // Add start time (optional)
+            startTime: '2025-08-02T00:00:00', // Add start time (optional)
             endTime: '2025-08-15T23:59:59', // Add end time
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
@@ -350,23 +350,25 @@ function getTimeRemaining(caseItem) {
     const startTime = caseItem.startTime ? new Date(caseItem.startTime) : new Date(0);
     const endTime = new Date(caseItem.endTime);
 
-    // Return null if the case is currently active (no countdown needed)
-    if (now >= startTime && now < endTime) return null;
+    // Always return the end time countdown if case is active
+    if (now >= startTime) {
+        const diff = endTime - now;
+        if (diff <= 0) return "Expired";
+        
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        return `Ends in ${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }
     
-    const targetTime = now < startTime ? startTime : endTime;
-    const diff = targetTime - now;
-    
-    // If time has passed (shouldn't happen due to isCaseAvailable check)
-    if (diff <= 0) return "Expired";
-    
+    // Before start time
+    const diff = startTime - now;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    
-    return now < startTime 
-        ? `Starts in ${days}d ${hours}h ${minutes}m ${seconds}s`
-        : `Ends in ${days}d ${hours}h ${minutes}m ${seconds}s`;
+    return `Starts in ${days}d ${hours}h ${minutes}m`;
 }
 
 
@@ -385,28 +387,29 @@ function updateCaseTimers() {
 
         const isAvailable = isCaseAvailable(caseData);
         const timeRemaining = getTimeRemaining(caseData);
+        const startTime = caseData.startTime ? new Date(caseData.startTime) : new Date(0);
 
-        // Update case availability
         if (isAvailable) {
             caseElement.classList.remove('disabled-case');
             caseElement.style.opacity = '1';
             caseElement.style.cursor = 'pointer';
-            timerElement.textContent = 'Available Now';
             timerElement.className = 'case-timer active';
+            timerElement.innerHTML = `
+                <div>Available Now</div>
+                <div class="end-countdown">${timeRemaining}</div>
+            `;
         } else {
             caseElement.classList.add('disabled-case');
             caseElement.style.opacity = '0.6';
             caseElement.style.cursor = 'not-allowed';
-            
-            if (timeRemaining) {
-                timerElement.textContent = timeRemaining;
-                timerElement.className = now < new Date(caseData.startTime) 
-                    ? 'case-timer not-started' 
-                    : 'case-timer expired';
-            }
+            timerElement.className = now < startTime 
+                ? 'case-timer not-started' 
+                : 'case-timer expired';
+            timerElement.textContent = timeRemaining;
         }
     });
 }
+
 
 // ----------------------------------
 function loadAutoSellPreferences() {
@@ -886,15 +889,17 @@ function populateLootboxCases() {
         
         let timerHtml = '';
         if (lootboxCase.limitedTime) {
-            let timerClass = 'active';
-            let timerText = 'Available Now';
-            
-            if (!isAvailable) {
-                timerClass = now < startTime ? 'not-started' : 'expired';
-                timerText = timeRemaining || 'Expired';
+            if (isAvailable) {
+                timerHtml = `
+                    <div class="case-timer active">
+                        <div>Available Now</div>
+                        <div class="end-countdown">${timeRemaining}</div>
+                    </div>
+                `;
+            } else {
+                const timerClass = now < startTime ? 'not-started' : 'expired';
+                timerHtml = `<div class="case-timer ${timerClass}">${timeRemaining}</div>`;
             }
-            
-            timerHtml = `<div class="case-timer ${timerClass}">${timerText}</div>`;
         }
         
         caseElement.innerHTML = `
