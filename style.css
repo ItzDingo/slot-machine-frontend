@@ -833,7 +833,16 @@ body {
 }
 
 .case-timer.active {
-    color: var(--success); /* Green for active cases */
+    color: var(--success);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.case-timer.active .end-countdown {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .case-timer.not-started {
