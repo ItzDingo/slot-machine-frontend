@@ -1023,7 +1023,7 @@ body {
 .rarity-item.common {
     background: rgba(125, 185, 232, 0.3);
     border-left: 4px solid var(--common);
-    color: #7db9e8;
+    color: #888888;
 }
 
 .rarity-item.uncommon {
