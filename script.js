@@ -183,6 +183,7 @@ const CONFIG = {
 
 // Game State
 let gameState = {
+    autoSellEnabled: false,
     chips: 0,
     dice: 0,
     isSpinning: false,
@@ -215,6 +216,7 @@ let gameState = {
         currentCase: CONFIG.lootboxCases[0] // Default to first case
     },
     inventory: []
+
 };
 
 // Loot Box Variables
@@ -311,7 +313,6 @@ const elements = {
     lootboxSelectDice: document.getElementById('lootbox-select-dice'),
     lootboxSelectLogoutBtn: document.getElementById('lootbox-select-logout-btn'),
     lootboxCaseSelectBackBtn: document.getElementById('lootbox-case-select-back-btn'),
-    lootboxInstantSpinBtn: document.getElementById('lootbox-instant-spin-btn'),
     lootboxChangeCaseBtn: document.getElementById('lootbox-change-case-btn')
 };
 
@@ -321,6 +322,12 @@ const openSound = new Audio('spins/open.mp3');
 
 
 function checkAutoSell(rarity) {
+    if (!gameState.autoSellEnabled) {
+        // Disable instant spin button if auto-sell is disabled
+        const instantSpinBtn = document.getElementById('lootbox-instant-spin-btn');
+        if (instantSpinBtn) instantSpinBtn.disabled = true;
+        return false;
+    }
     const checkbox = document.getElementById(`auto-sell-${rarity}`);
     return checkbox ? checkbox.checked : false;
 }
@@ -350,6 +357,27 @@ function setupAutoSellListeners() {
         }
     });
 }
+
+function setAutoSellEnabled(enabled) {
+    gameState.autoSellEnabled = enabled;
+    const container = document.getElementById('auto-sell-container');
+    const overlay = document.getElementById('auto-sell-overlay');
+    const instantSpinBtn = document.getElementById('lootbox-instant-spin-btn');
+    
+    if (container && overlay) {
+        if (enabled) {
+            container.classList.remove('broken');
+            overlay.classList.add('hidden');
+            if (instantSpinBtn) instantSpinBtn.disabled = false;
+        } else {
+            container.classList.add('broken');
+            overlay.classList.remove('hidden');
+            if (instantSpinBtn) instantSpinBtn.disabled = true;
+        }
+    }
+}
+
+
 // ----------------------------------
 
 function setLootboxButtonsDisabled(disabled) {
@@ -784,7 +812,6 @@ async function startLootboxSpin() {
     }
 
     setLootboxButtonsDisabled(true);
-    if (elements.lootboxInstantSpinBtn) elements.lootboxInstantSpinBtn.disabled = true;
 
     if (spinSound) {
         spinSound.currentTime = 0;
@@ -1028,8 +1055,10 @@ async function startLootboxSpin() {
 
 // Add this function to your script.js
 async function instantLootboxSpin() {
-    if (isLootboxSpinning || gameState.chips < gameState.lootboxGame.currentCase.cost) {
-        if (gameState.chips < gameState.lootboxGame.currentCase.cost) {
+    if (!gameState.autoSellEnabled || isLootboxSpinning || gameState.chips < gameState.lootboxGame.currentCase.cost) {
+        if (!gameState.autoSellEnabled) {
+            showNotification("Auto-sell is disabled - instant spin unavailable", false);
+        } else if (gameState.chips < gameState.lootboxGame.currentCase.cost) {
             showNotification("Not enough chips!", false);
         } else if (isLootboxSpinning) {
             showNotification("Please wait for current spin to finish", false);
@@ -1123,15 +1152,13 @@ function resetLootboxSpinState() {
     if (elements.lootboxSpinBtn) {
         elements.lootboxSpinBtn.disabled = false;
     }
-    if (elements.lootboxInstantSpinBtn) {
-        elements.lootboxInstantSpinBtn.disabled = false;
-    }
     if (spinAnimation) {
         cancelAnimationFrame(spinAnimation);
         spinAnimation = null;
     }
 
     setLootboxButtonsDisabled(false);
+
     console.log('Lootbox spin state reset - can spin again');
 }
 
@@ -1758,6 +1785,8 @@ function handleSuccessfulLogin(user) {
     if (elements.inventoryAvatar) elements.inventoryAvatar.src = user.avatar || 'assets/default-avatar.png';
     if (elements.lootboxSelectUsername) elements.lootboxSelectUsername.textContent = user.username;
     if (elements.lootboxSelectAvatar) elements.lootboxSelectAvatar.src = avatarSrc;
+
+    setAutoSellEnabled(gameState.autoSellEnabled);
     
     if (elements.loginScreen) elements.loginScreen.style.display = 'none';
     showGameSelectScreen();
@@ -1884,6 +1913,10 @@ async function initGame() {
         if (authCheck && !gameState.authChecked) {
             gameState.authChecked = true;
         }
+        
+        // Add this line to initialize auto-sell state
+        setAutoSellEnabled(gameState.autoSellEnabled);
+        
     } catch (error) {
         console.error('Initialization error:', error);
     }
