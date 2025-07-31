@@ -311,6 +311,7 @@ const elements = {
     lootboxSelectDice: document.getElementById('lootbox-select-dice'),
     lootboxSelectLogoutBtn: document.getElementById('lootbox-select-logout-btn'),
     lootboxCaseSelectBackBtn: document.getElementById('lootbox-case-select-back-btn'),
+    lootboxInstantSpinBtn: document.getElementById('lootbox-instant-spin-btn'),
     lootboxChangeCaseBtn: document.getElementById('lootbox-change-case-btn')
 };
 
@@ -783,6 +784,7 @@ async function startLootboxSpin() {
     }
 
     setLootboxButtonsDisabled(true);
+    if (elements.lootboxInstantSpinBtn) elements.lootboxInstantSpinBtn.disabled = true;
 
     if (spinSound) {
         spinSound.currentTime = 0;
@@ -1026,8 +1028,12 @@ async function startLootboxSpin() {
 
 // Add this function to your script.js
 async function instantLootboxSpin() {
-    if (gameState.chips < gameState.lootboxGame.currentCase.cost) {
-        showNotification("Not enough chips!", false);
+    if (isLootboxSpinning || gameState.chips < gameState.lootboxGame.currentCase.cost) {
+        if (gameState.chips < gameState.lootboxGame.currentCase.cost) {
+            showNotification("Not enough chips!", false);
+        } else if (isLootboxSpinning) {
+            showNotification("Please wait for current spin to finish", false);
+        }
         return;
     }
 
@@ -1117,13 +1123,15 @@ function resetLootboxSpinState() {
     if (elements.lootboxSpinBtn) {
         elements.lootboxSpinBtn.disabled = false;
     }
+    if (elements.lootboxInstantSpinBtn) {
+        elements.lootboxInstantSpinBtn.disabled = false;
+    }
     if (spinAnimation) {
         cancelAnimationFrame(spinAnimation);
         spinAnimation = null;
     }
 
     setLootboxButtonsDisabled(false);
-
     console.log('Lootbox spin state reset - can spin again');
 }
 
