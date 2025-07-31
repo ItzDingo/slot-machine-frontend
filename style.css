@@ -15,6 +15,9 @@
     --exclusive: #ff0357;
     --limited: #00ff6adc;
     --garbage: #A9A9A9;
+    --success: #4CAF50; /* Green */
+    --secondary: #FF5733; /* Orange */
+    --error: #f44336; /* Red */
 }
 
 * {
@@ -827,6 +830,10 @@ body {
     border-radius: 4px;
     margin-top: 5px;
     font-weight: bold;
+}
+
+.case-timer.active {
+    color: var(--success); /* Green for active cases */
 }
 
 .case-timer.not-started {
