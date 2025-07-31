@@ -25,6 +25,9 @@ const CONFIG = {
             name: 'Dreams & Nightmares Case',
             img: 'spins/case1.png',
             cost: 50,
+            limitedTime: false, // Add this
+            startTime: '2025-08-01T00:00:00', // Add start time (optional)
+            endTime: '2025-08-15T23:59:59', // Add end time
             items: [
                 { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 1.07, value: 5000 },
                 { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 14.28, value: 15 },
@@ -74,6 +77,9 @@ const CONFIG = {
             name: 'Recoil Case',
             img: 'spins/case2.png',
             cost: 75,
+            limitedTime: true, // Add this
+            startTime: '2025-08-02T00:00:00', // Add start time (optional)
+            endTime: '2025-08-15T23:59:59', // Add end time
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
                 { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 3, value: 340 },
@@ -327,6 +333,55 @@ function checkAutoSell(rarity) {
     return checkbox ? checkbox.checked : false;
 }
 
+function isCaseAvailable(caseItem) {
+    if (!caseItem.limitedTime) return true;
+    
+    const now = new Date();
+    const endTime = new Date(caseItem.endTime);
+    return now < endTime;
+}
+
+function getTimeRemaining(caseItem) {
+    if (!caseItem.limitedTime) return null;
+    
+    const now = new Date();
+    const endTime = new Date(caseItem.endTime);
+    const diff = endTime - now;
+    
+    if (diff <= 0) return "Expired";
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    
+    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+}
+
+
+function updateCaseTimers() {
+    if (!elements.lootboxCasesContainer) return;
+    
+    const caseElements = elements.lootboxCasesContainer.querySelectorAll('.lootbox-case');
+    caseElements.forEach((caseElement, index) => {
+        const caseData = CONFIG.lootboxCases[index];
+        if (caseData.limitedTime) {
+            const timerElement = caseElement.querySelector('.case-timer');
+            if (timerElement) {
+                const timeRemaining = getTimeRemaining(caseData);
+                timerElement.textContent = timeRemaining === "Expired" ? "EXPIRED" : timeRemaining;
+                
+                if (timeRemaining === "Expired") {
+                    caseElement.classList.add('disabled-case');
+                    caseElement.style.opacity = '0.6';
+                    caseElement.style.cursor = 'not-allowed';
+                    timerElement.classList.add('expired');
+                }
+            }
+        }
+    });
+}
+
 // ----------------------------------
 function loadAutoSellPreferences() {
     const rarities = ['common', 'uncommon', 'epic', 'legendary', 'mythic'];
@@ -508,7 +563,10 @@ async function claimLootboxWin() {
             legendary: 'Covert',
             epic: 'Classified',
             uncommon: 'Restricted',
-            common: 'Mil-Spec'
+            common: 'Mil-Spec',
+            exclusive: 'Exclusive', // New
+            limited: 'Limited', // New
+            garbage: 'Garbage' // New
         };
 
         if (elements.lootboxRarity) {
@@ -792,15 +850,35 @@ function populateLootboxCases() {
     elements.lootboxCasesContainer.innerHTML = '';
     
     CONFIG.lootboxCases.forEach(lootboxCase => {
+        const isAvailable = isCaseAvailable(lootboxCase);
+        const timeRemaining = lootboxCase.limitedTime ? getTimeRemaining(lootboxCase) : null;
+        
         const caseElement = document.createElement('div');
-        caseElement.className = 'lootbox-case';
+        caseElement.className = `lootbox-case ${!isAvailable ? 'disabled-case' : ''}`;
+        
+        let timerHtml = '';
+        if (lootboxCase.limitedTime) {
+            timerHtml = `
+                <div class="case-timer ${!isAvailable ? 'expired' : ''}">
+                    ${isAvailable ? timeRemaining : 'EXPIRED'}
+                </div>
+            `;
+        }
+        
         caseElement.innerHTML = `
             <img src="${lootboxCase.img}" alt="${lootboxCase.name}" class="lootbox-case-img">
             <div class="lootbox-case-name">${lootboxCase.name}</div>
             <div class="lootbox-case-price">${lootboxCase.cost} chips</div>
+            ${timerHtml}
         `;
         
-        caseElement.addEventListener('click', () => selectLootboxCase(lootboxCase));
+        if (isAvailable) {
+            caseElement.addEventListener('click', () => selectLootboxCase(lootboxCase));
+        } else {
+            caseElement.style.opacity = '0.6';
+            caseElement.style.cursor = 'not-allowed';
+        }
+        
         elements.lootboxCasesContainer.appendChild(caseElement);
     });
 }
@@ -815,10 +893,9 @@ function selectLootboxCase(selectedCase) {
 }
 
 async function startLootboxSpin() {
-    if (isLootboxSpinning || gameState.chips < gameState.lootboxGame.currentCase.cost) {
-        if (gameState.chips < gameState.lootboxGame.currentCase.cost) {
-            showNotification("Not enough chips!", false);
-        }
+    if (!isCaseAvailable(gameState.lootboxGame.currentCase)) {
+        showNotification("This case is no longer available!", false);
+        showLootboxCaseSelectScreen();
         return;
     }
 
@@ -1224,24 +1301,26 @@ function updateInventoryDisplay() {
         return;
     }
 
-    elements.inventoryTotalItems.textContent = `${gameState.inventory.length} items`;
+    // Filter out garbage items from display
+    const filteredInventory = gameState.inventory.filter(item => item.rarity !== 'garbage');
+    elements.inventoryTotalItems.textContent = `${filteredInventory.length} items`;
 
-    const rarityOrder = ['mythic', 'legendary', 'epic', 'uncommon', 'common'];
+    const rarityOrder = ['mythic', 'legendary', 'epic', 'uncommon', 'common', 'exclusive', 'limited'];
 
     const rarityNames = {
         mythic: 'Special item',
         legendary: 'Covert',
         epic: 'Classified',
         uncommon: 'Restricted',
-        common: 'Mil-Spec'
+        common: 'Mil-Spec',
+        exclusive: 'exclusive',
+        limited: 'limited'
     };
 
-    // ✅ Sort inventory by rarity first
-    const sortedInventory = [...gameState.inventory].sort((a, b) => {
+    const sortedInventory = [...filteredInventory].sort((a, b) => {
         return rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
     });
 
-    // ✅ Now render sorted items in a flat grid
     sortedInventory.forEach(item => {
         const itemElement = document.createElement('div');
         itemElement.className = `inventory-item ${item.rarity}`;
@@ -1951,6 +2030,9 @@ async function initGame() {
         
         // Add this line to initialize auto-sell state
         setAutoSellEnabled(gameState.autoSellEnabled);
+        
+        // Start the case timers updater
+        setInterval(updateCaseTimers, 1000);
         
     } catch (error) {
         console.error('Initialization error:', error);
