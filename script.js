@@ -368,11 +368,9 @@ function setAutoSellEnabled(enabled) {
         if (enabled) {
             container.classList.remove('broken');
             overlay.classList.add('hidden');
-            if (instantSpinBtn) instantSpinBtn.disabled = false;
         } else {
             container.classList.add('broken');
             overlay.classList.remove('hidden');
-            if (instantSpinBtn) instantSpinBtn.disabled = true;
         }
     }
 }
