@@ -7,7 +7,7 @@
     --success: #4CAF50;
     --error: #f44336;
     --shadow-gold: 0 0 5px rgba(255, 215, 0, 0.5);
-    --common: #7db9e8;
+    --common: #888888;
     --uncommon: #1a5fb4;
     --epic: #800080;
     --legendary: #ff0000;
@@ -774,8 +774,8 @@ body {
 .lootbox-item.common {
     border: 3px solid var(--common);
     background: linear-gradient(135deg, 
-        rgba(125, 185, 232, 0.4) 0%, 
-        rgba(100, 150, 200, 0.4) 100%);
+        rgba(136, 136, 136, 0.2) 0%, 
+        rgba(100, 100, 100, 0.3) 100%);
 }
 
 .lootbox-item.uncommon {
