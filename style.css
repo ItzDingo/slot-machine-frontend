@@ -12,6 +12,9 @@
     --epic: #800080;
     --legendary: #ff0000;
     --mythic: #FFD700;
+    --exclusive: #ff0357;
+    --limited: #00ff6adc;
+    --garbage: #A9A9A9;
 }
 
 * {
@@ -814,6 +817,82 @@ body {
     0% { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 215, 0, 0.5); }
     100% { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 25px rgba(255, 215, 0, 0.9); }
 }
+
+/* Case timer styles */
+.case-timer {
+    font-size: 0.8rem;
+    color: var(--primary);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 3px 6px;
+    border-radius: 4px;
+    margin-top: 5px;
+    font-weight: bold;
+}
+
+.case-timer.expired {
+    color: var(--error);
+}
+
+.disabled-case {
+    opacity: 0.6;
+    cursor: not-allowed !important;
+    position: relative;
+}
+
+.disabled-case::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+/* New rarity styles */
+.lootbox-item.exclusive {
+    border: 3px solid var(--exclusive);
+    background: linear-gradient(135deg, 
+        rgba(0, 255, 255, 0.3) 0%, 
+        rgba(0, 200, 200, 0.3) 100%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(0, 255, 255, 0.5);
+}
+
+.lootbox-item.limited {
+    border: 3px solid var(--limited);
+    background: linear-gradient(135deg, 
+        rgba(255, 165, 0, 0.3) 0%, 
+        rgba(200, 130, 0, 0.3) 100%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 165, 0, 0.5);
+}
+
+.lootbox-item.garbage {
+    border: 3px solid var(--garbage);
+    background: linear-gradient(135deg, 
+        rgba(169, 169, 169, 0.3) 0%, 
+        rgba(140, 140, 140, 0.3) 100%);
+}
+
+.rarity-item.exclusive {
+    background: rgba(0, 255, 255, 0.2);
+    border-left: 4px solid var(--exclusive);
+    color: #00FFFF;
+}
+
+.rarity-item.limited {
+    background: rgba(255, 165, 0, 0.2);
+    border-left: 4px solid var(--limited);
+    color: #FFA500;
+}
+
+.rarity-item.garbage {
+    background: rgba(169, 169, 169, 0.2);
+    border-left: 4px solid var(--garbage);
+    color: #A9A9A9;
+}
+
+/* Continue */
 
 .lootbox-controls {
     display: flex;
