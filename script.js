@@ -1214,40 +1214,76 @@ elements.lootboxRarity.textContent = nameMap[item.rarity] || item.rarity.toUpper
 // Inventory Functions
 function updateInventoryDisplay() {
     if (!elements.inventoryItems) return;
-    
-    elements.inventoryItems.innerHTML = '';
-    
+
+    const container = elements.inventoryItems;
+    container.innerHTML = '';
+
     if (gameState.inventory.length === 0) {
-        elements.inventoryItems.innerHTML = '<div class="inventory-empty">Your inventory is empty</div>';
+        container.innerHTML = '<div class="inventory-empty">Your inventory is empty</div>';
         elements.inventoryTotalItems.textContent = '0 items';
         return;
     }
-    
+
     elements.inventoryTotalItems.textContent = `${gameState.inventory.length} items`;
-    
-    // CS:GO rarity name mapping
+
+    const rarityOrder = ['mythic', 'legendary', 'epic', 'uncommon', 'common'];
+
     const rarityNames = {
-        'common': 'Mil-Spec',
-        'uncommon': 'Restricted',
-        'epic': 'Classified',
+        'mythic': 'Special item',
         'legendary': 'Covert',
-        'mythic': 'Special'
+        'epic': 'Classified',
+        'uncommon': 'Restricted',
+        'common': 'Mil-Spec'
     };
-    
+
+    // Group items by rarity
+    const grouped = {};
+    rarityOrder.forEach(r => grouped[r] = []);
     gameState.inventory.forEach(item => {
-        const itemElement = document.createElement('div');
-        itemElement.className = `inventory-item ${item.rarity}`;
-        itemElement.innerHTML = `
-            <img src="${item.img}" alt="${item.name}" class="inventory-item-img">
-            <div class="inventory-item-name">${item.name}</div>
-            <div class="inventory-item-rarity">${rarityNames[item.rarity] || item.rarity}</div>
-            <div class="inventory-item-count">${item.quantity}</div>
-        `;
-        
-        itemElement.addEventListener('click', () => showSellPanel(item));
-        elements.inventoryItems.appendChild(itemElement);
+        if (grouped[item.rarity]) {
+            grouped[item.rarity].push(item);
+        } else {
+            grouped[item.rarity] = [item];
+        }
+    });
+
+    // Render items group-by-group
+    rarityOrder.forEach(rarity => {
+        const items = grouped[rarity];
+        if (items.length > 0) {
+            // Create header
+            const header = document.createElement('h3');
+            header.innerText = `${rarityNames[rarity]}:`;
+            header.style.color = 'white';
+            header.style.margin = '20px 0 10px';
+            container.appendChild(header);
+
+            // Create item group wrapper
+            const groupWrapper = document.createElement('div');
+            groupWrapper.className = 'inventory-group';
+            groupWrapper.style.display = 'flex';
+            groupWrapper.style.flexWrap = 'wrap';
+            groupWrapper.style.gap = '10px';
+
+            // Add items
+            items.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = `inventory-item ${item.rarity}`;
+                itemElement.innerHTML = `
+                    <img src="${item.img}" alt="${item.name}" class="inventory-item-img">
+                    <div class="inventory-item-name">${item.name}</div>
+                    <div class="inventory-item-rarity">${rarityNames[item.rarity] || item.rarity}</div>
+                    <div class="inventory-item-count">${item.quantity}</div>
+                `;
+                itemElement.addEventListener('click', () => showSellPanel(item));
+                groupWrapper.appendChild(itemElement);
+            });
+
+            container.appendChild(groupWrapper);
+        }
     });
 }
+
 
 function showSellPanel(item) {
     if (!elements.inventorySellPanel) return;
