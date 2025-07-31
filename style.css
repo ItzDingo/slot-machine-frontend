@@ -1837,6 +1837,22 @@ body {
     }
 }
 
+#lootbox-instant-spin-btn, 
+#lootbox-change-case-btn {
+    width: 200px !important;       /* Match spin button width */
+    height: 50px !important;       /* Fixed height */
+    padding: 12px 0 !important;    /* Vertical padding */
+    font-size: 1.1rem !important;  /* Text size */
+    margin: 0 !important;          /* Remove margins */
+}
+
+/* Keep buttons side-by-side */
+.lootbox-secondary-buttons {
+    display: flex !important;
+    gap: 10px !important;
+    justify-content: center !important;
+}
+
 @media (max-width: 480px) {
     .slot-machine {
         height: 120px;
@@ -1914,4 +1930,5 @@ body {
     .lootbox-case-name {
         font-size: 0.8rem;
     }
+
 }
