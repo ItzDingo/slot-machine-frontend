@@ -7,11 +7,11 @@
     --success: #4CAF50;
     --error: #f44336;
     --shadow-gold: 0 0 5px rgba(255, 215, 0, 0.5);
-    --common: #969696;
-    --uncommon: #00aa00;
+    --common: #7db9e8;
+    --uncommon: #1a5fb4;
     --epic: #800080;
-    --legendary: #FFD700;
-    --mythic: #ff0000;
+    --legendary: #ff0000;
+    --mythic: #FFD700;
 }
 
 * {
@@ -774,18 +774,19 @@ body {
 .lootbox-item.common {
     border: 3px solid var(--common);
     background: linear-gradient(135deg, 
-        rgba(150, 150, 150, 0.4) 0%, 
-        rgba(100, 100, 100, 0.4) 100%);
+        rgba(125, 185, 232, 0.4) 0%, 
+        rgba(100, 150, 200, 0.4) 100%);
 }
 
 .lootbox-item.uncommon {
     border: 3px solid var(--uncommon);
     background: linear-gradient(135deg, 
-        rgba(0, 170, 0, 0.3) 0%, 
-        rgba(0, 120, 0, 0.3) 100%);
+        rgba(26, 95, 180, 0.3) 0%, 
+        rgba(20, 70, 140, 0.3) 100%);
 }
 
 .lootbox-item.epic {
+    /* Keep existing purple styles */
     border: 3px solid var(--epic);
     background: linear-gradient(135deg, 
         rgba(128, 0, 128, 0.4) 0%, 
@@ -795,23 +796,23 @@ body {
 .lootbox-item.legendary {
     border: 3px solid var(--legendary);
     background: linear-gradient(135deg, 
-        rgba(255, 215, 0, 0.4) 0%, 
-        rgba(200, 160, 0, 0.4) 100%);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 215, 0, 0.3);
+        rgba(204, 0, 0, 0.4) 0%, 
+        rgba(150, 0, 0, 0.4) 100%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(204, 0, 0, 0.5);
 }
 
 .lootbox-item.mythic {
     border: 3px solid var(--mythic);
     background: linear-gradient(135deg, 
-        rgba(255, 0, 0, 0.4) 0%, 
-        rgba(150, 0, 0, 0.4) 100%);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 0, 0, 0.5);
-    animation: mythicGlow 2s ease-in-out infinite alternate;
+        rgba(255, 215, 0, 0.4) 0%, 
+        rgba(200, 160, 0, 0.4) 100%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 215, 0, 0.7);
+    animation: goldGlow 2s ease-in-out infinite alternate;
 }
 
-@keyframes mythicGlow {
-    0% { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 0, 0, 0.5); }
-    100% { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 25px rgba(255, 0, 0, 0.8); }
+@keyframes goldGlow {
+    0% { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 215, 0, 0.5); }
+    100% { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 25px rgba(255, 215, 0, 0.9); }
 }
 
 .lootbox-controls {
@@ -1020,15 +1021,15 @@ body {
 }
 
 .rarity-item.common {
-    background: rgba(150, 150, 150, 0.3);
+    background: rgba(125, 185, 232, 0.3);
     border-left: 4px solid var(--common);
-    color: #e0e0e0;
+    color: #7db9e8;
 }
 
 .rarity-item.uncommon {
-    background: rgba(0, 170, 0, 0.2);
+    background: rgba(26, 95, 180, 0.2);
     border-left: 4px solid var(--uncommon);
-    color: #00ff00;
+    color: #1a5fb4;
 }
 
 .rarity-item.epic {
@@ -1038,15 +1039,15 @@ body {
 }
 
 .rarity-item.legendary {
-    background: rgba(255, 215, 0, 0.3);
+    background: rgba(204, 0, 0, 0.3);
     border-left: 4px solid var(--legendary);
-    color: #FFD700;
+    color: #ff5050;
 }
 
 .rarity-item.mythic {
-    background: linear-gradient(135deg, rgba(255, 0, 0, 0.3), rgba(139, 0, 0, 0.3));
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(200, 160, 0, 0.3));
     border-left: 4px solid var(--mythic);
-    color: #ff5050;
+    color: #FFD700;
 }
 
 /* Loot Box Win Popup */
@@ -1376,22 +1377,18 @@ body {
 .inventory-item.common {
     border: 2px solid var(--common);
 }
-
 .inventory-item.uncommon {
     border: 2px solid var(--uncommon);
 }
-
 .inventory-item.epic {
     border: 2px solid var(--epic);
 }
-
 .inventory-item.legendary {
     border: 2px solid var(--legendary);
 }
-
 .inventory-item.mythic {
     border: 2px solid var(--mythic);
-    animation: mythicGlow 2s ease-in-out infinite alternate;
+    animation: goldGlow 2s ease-in-out infinite alternate;
 }
 
 .inventory-item-img {
@@ -1434,25 +1431,21 @@ body {
     background: var(--common);
     color: white;
 }
-
 .inventory-item.uncommon .inventory-item-rarity {
     background: var(--uncommon);
     color: white;
 }
-
 .inventory-item.epic .inventory-item-rarity {
     background: var(--epic);
     color: white;
 }
-
 .inventory-item.legendary .inventory-item-rarity {
     background: var(--legendary);
-    color: black;
+    color: white;
 }
-
 .inventory-item.mythic .inventory-item-rarity {
     background: var(--mythic);
-    color: white;
+    color: black;
 }
 
 .inventory-sell-panel {
