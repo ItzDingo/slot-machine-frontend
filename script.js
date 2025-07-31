@@ -337,19 +337,30 @@ function isCaseAvailable(caseItem) {
     if (!caseItem.limitedTime) return true;
     
     const now = new Date();
+    const startTime = caseItem.startTime ? new Date(caseItem.startTime) : new Date(0); // Default to epoch if no start time
     const endTime = new Date(caseItem.endTime);
-    return now < endTime;
+    
+    return now >= startTime && now < endTime;
 }
 
 function getTimeRemaining(caseItem) {
     if (!caseItem.limitedTime) return null;
     
     const now = new Date();
+    const startTime = caseItem.startTime ? new Date(caseItem.startTime) : new Date(0);
     const endTime = new Date(caseItem.endTime);
+    
+    if (now < startTime) {
+        const diff = startTime - now;
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        return `Starts in ${days}d ${hours}h ${minutes}m`;
+    }
+    
+    if (now >= endTime) return "Expired";
+    
     const diff = endTime - now;
-    
-    if (diff <= 0) return "Expired";
-    
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -856,11 +867,21 @@ function populateLootboxCases() {
         const caseElement = document.createElement('div');
         caseElement.className = `lootbox-case ${!isAvailable ? 'disabled-case' : ''}`;
         
-        let timerHtml = '';
+        let statusHtml = '';
         if (lootboxCase.limitedTime) {
-            timerHtml = `
-                <div class="case-timer ${!isAvailable ? 'expired' : ''}">
-                    ${isAvailable ? timeRemaining : 'EXPIRED'}
+            const now = new Date();
+            const startTime = lootboxCase.startTime ? new Date(lootboxCase.startTime) : new Date(0);
+            
+            let statusClass = '';
+            if (now < startTime) {
+                statusClass = 'not-started';
+            } else if (!isAvailable) {
+                statusClass = 'expired';
+            }
+            
+            statusHtml = `
+                <div class="case-timer ${statusClass}">
+                    ${timeRemaining}
                 </div>
             `;
         }
@@ -869,7 +890,7 @@ function populateLootboxCases() {
             <img src="${lootboxCase.img}" alt="${lootboxCase.name}" class="lootbox-case-img">
             <div class="lootbox-case-name">${lootboxCase.name}</div>
             <div class="lootbox-case-price">${lootboxCase.cost} chips</div>
-            ${timerHtml}
+            ${statusHtml}
         `;
         
         if (isAvailable) {
@@ -894,8 +915,16 @@ function selectLootboxCase(selectedCase) {
 
 async function startLootboxSpin() {
     if (!isCaseAvailable(gameState.lootboxGame.currentCase)) {
-        showNotification("This case is no longer available!", false);
-        showLootboxCaseSelectScreen();
+        const now = new Date();
+        const startTime = gameState.lootboxGame.currentCase.startTime 
+            ? new Date(gameState.lootboxGame.currentCase.startTime) 
+            : new Date(0);
+        
+        if (now < startTime) {
+            showNotification("This case hasn't started yet!", false);
+        } else {
+            showNotification("This case is no longer available!", false);
+        }
         return;
     }
 
