@@ -829,11 +829,16 @@ body {
     font-weight: bold;
 }
 
+.case-timer.not-started {
+    color: var(--secondary); /* Orange color for "starts in" timer */
+}
+
 .case-timer.expired {
-    color: var(--error);
+    color: var(--error); /* Red color for expired */
 }
 
 .disabled-case {
+    pointer-events: none; /* Prevent all interactions */
     opacity: 0.6;
     cursor: not-allowed !important;
     position: relative;
