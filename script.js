@@ -318,6 +318,39 @@ const elements = {
 const spinSound = new Audio('spins/spin.mp3');
 const openSound = new Audio('spins/open.mp3');
 
+
+function checkAutoSell(rarity) {
+    const checkbox = document.getElementById(`auto-sell-${rarity}`);
+    return checkbox ? checkbox.checked : false;
+}
+
+// ----------------------------------
+function loadAutoSellPreferences() {
+    const rarities = ['common', 'uncommon', 'epic', 'legendary', 'mythic'];
+    rarities.forEach(rarity => {
+        const savedValue = localStorage.getItem(`autoSell_${rarity}`);
+        if (savedValue !== null) {
+            const checkbox = document.getElementById(`auto-sell-${rarity}`);
+            if (checkbox) {
+                checkbox.checked = savedValue === 'true';
+            }
+        }
+    });
+}
+
+function setupAutoSellListeners() {
+    const rarities = ['common', 'uncommon', 'epic', 'legendary', 'mythic'];
+    rarities.forEach(rarity => {
+        const checkbox = document.getElementById(`auto-sell-${rarity}`);
+        if (checkbox) {
+            checkbox.addEventListener('change', (e) => {
+                localStorage.setItem(`autoSell_${rarity}`, e.target.checked);
+            });
+        }
+    });
+}
+// ----------------------------------
+
 function setLootboxButtonsDisabled(disabled) {
     if (elements.lootboxChangeCaseBtn) elements.lootboxChangeCaseBtn.disabled = disabled;
     if (elements.lootboxBackToMenuBtn) elements.lootboxBackToMenuBtn.disabled = disabled;
@@ -400,6 +433,7 @@ function initializeLootboxItems() {
     track.style.opacity = '1';
 }
 
+// Modify the claimLootboxWin function to look like this:
 async function claimLootboxWin() {
     if (elements.lootboxPopup) elements.lootboxPopup.style.display = 'none';
     
@@ -409,31 +443,38 @@ async function claimLootboxWin() {
     }
     
     if (gameState.lootboxGame.currentItem) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/inventory/add`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: gameState.userId,
-                    item: gameState.lootboxGame.currentItem
-                }),
-                credentials: 'include'
-            });
+        const shouldAutoSell = checkAutoSell(gameState.lootboxGame.currentItem.rarity);
+        
+        if (shouldAutoSell) {
+            await autoSellItem(gameState.lootboxGame.currentItem);
+            showNotification(`Auto-sold ${gameState.lootboxGame.currentItem.name} for ${gameState.lootboxGame.currentItem.value} chips`, true);
+        } else {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/inventory/add`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: gameState.userId,
+                        item: gameState.lootboxGame.currentItem
+                    }),
+                    credentials: 'include'
+                });
 
-            if (!response.ok) throw new Error('Failed to add item to inventory');
-            
-            const data = await response.json();
-            gameState.inventory = data.inventory;
-            
-            if (gameState.currentGame === 'inventory') {
-                updateInventoryDisplay();
+                if (!response.ok) throw new Error('Failed to add item to inventory');
+                
+                const data = await response.json();
+                gameState.inventory = data.inventory;
+                
+                if (gameState.currentGame === 'inventory') {
+                    updateInventoryDisplay();
+                }
+            } catch (error) {
+                console.error('Error adding item to inventory:', error);
+                showNotification('Failed to save item to inventory', false);
             }
-        } catch (error) {
-            console.error('Error adding item to inventory:', error);
-            showNotification('Failed to save item to inventory', false);
         }
     }
 }
@@ -790,7 +831,6 @@ async function startLootboxSpin() {
     // Create a pool of items based on their weights
     const itemsPool = [];
     gameState.lootboxGame.currentCase.items.forEach(item => {
-        // Add more copies of common items to maintain probability
         const count = Math.max(1, Math.floor(item.chance * 10));
         for (let i = 0; i < count; i++) {
             itemsPool.push(item);
@@ -804,11 +844,10 @@ async function startLootboxSpin() {
     }
     
     // Create 3 loops of items (start, middle, end) with the target in the middle
-    const singleLoop = itemsPool.slice(0, 50); // Take first 50 items for variety
+    const singleLoop = itemsPool.slice(0, 50);
     
     // Ensure the target item is in the middle section
     if (!singleLoop.some(item => item.name === resultItem.name)) {
-        // If target not in first 50, replace a random item
         const replaceIndex = Math.floor(Math.random() * singleLoop.length);
         singleLoop[replaceIndex] = resultItem;
     }
@@ -854,7 +893,7 @@ async function startLootboxSpin() {
             const item = allItems[i];
             const itemName = item.dataset.itemName || item.querySelector('img').alt;
             if (itemName === resultItem.name) {
-                targetIndex = i + itemsPerLoop; // Add one loop length to position it in middle
+                targetIndex = i + itemsPerLoop;
                 break;
             }
         }
@@ -935,9 +974,20 @@ async function startLootboxSpin() {
                     finalReward = randomKnife;
                 }
                 
+                // NEW AUTO-SELL CHECK AND HANDLING
                 setTimeout(() => {
-                    showLootboxPopup(finalReward);
-                    resetLootboxSpinState();
+                    const shouldAutoSell = checkAutoSell(finalReward.rarity);
+                    if (shouldAutoSell) {
+                        autoSellItem(finalReward).then(success => {
+                            if (success) {
+                                showNotification(`Auto-sold ${finalReward.name} for ${finalReward.value} chips`, true);
+                            }
+                            resetLootboxSpinState();
+                        });
+                    } else {
+                        showLootboxPopup(finalReward);
+                        resetLootboxSpinState();
+                    }
                 }, 200);
             } else {
                 let finalReward = resultItem;
@@ -947,9 +997,20 @@ async function startLootboxSpin() {
                     finalReward = randomKnife;
                 }
                 
+                // NEW AUTO-SELL CHECK AND HANDLING
                 setTimeout(() => {
-                    showLootboxPopup(finalReward);
-                    resetLootboxSpinState();
+                    const shouldAutoSell = checkAutoSell(finalReward.rarity);
+                    if (shouldAutoSell) {
+                        autoSellItem(finalReward).then(success => {
+                            if (success) {
+                                showNotification(`Auto-sold ${finalReward.name} for ${finalReward.value} chips`, true);
+                            }
+                            resetLootboxSpinState();
+                        });
+                    } else {
+                        showLootboxPopup(finalReward);
+                        resetLootboxSpinState();
+                    }
                 }, 200);
             }
             return;
@@ -961,6 +1022,94 @@ async function startLootboxSpin() {
     }
     
     requestAnimationFrame(animate);
+}
+
+// Add this function to your script.js
+async function instantLootboxSpin() {
+    if (gameState.chips < gameState.lootboxGame.currentCase.cost) {
+        showNotification("Not enough chips!", false);
+        return;
+    }
+
+    try {
+        // Deduct cost
+        const response = await fetch(`${API_BASE_URL}/api/spin`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                cost: gameState.lootboxGame.currentCase.cost
+            }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) throw new Error('Lootbox spin failed');
+        const data = await response.json();
+        gameState.chips = data.newBalance;
+        updateCurrencyDisplay();
+
+        // Get random item
+        const resultItem = getRandomLootboxItem(gameState.lootboxGame.currentCase.items);
+        let finalReward = resultItem;
+        
+        // Check for mythic (knife) items
+        if (resultItem.rarity === 'mythic') {
+            finalReward = getRandomKnife(gameState.lootboxGame.currentCase.knifes);
+        }
+
+        // Check auto-sell settings
+        const shouldAutoSell = checkAutoSell(finalReward.rarity);
+        if (shouldAutoSell) {
+            await autoSellItem(finalReward);
+            showNotification(`Auto-sold ${finalReward.name} for ${finalReward.value} chips`, true);
+        } else {
+            // Show popup if not auto-sold
+            showLootboxPopup(finalReward);
+            
+            // Play open sound
+            if (openSound) {
+                openSound.currentTime = 0;
+                openSound.play().catch(e => console.warn('Open sound error:', e));
+            }
+        }
+
+    } catch (error) {
+        console.error('Instant spin error:', error);
+        showNotification('Failed to process instant spin', false);
+    }
+}
+
+
+// Add this function to handle auto-selling
+async function autoSellItem(item) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/win`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                amount: item.value || 0
+            }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) throw new Error('Auto-sell failed');
+        
+        const data = await response.json();
+        gameState.chips = data.newBalance;
+        updateCurrencyDisplay();
+        
+        return true;
+    } catch (error) {
+        console.error('Auto-sell error:', error);
+        return false;
+    }
 }
 
 function resetLootboxSpinState() {
@@ -1689,6 +1838,10 @@ if (elements.lootboxClaimBtn) elements.lootboxClaimBtn.addEventListener('click',
 if (elements.slotMachineBtn) elements.slotMachineBtn.addEventListener('click', startSlotMachineGame);
 if (elements.minesGameBtn) elements.minesGameBtn.addEventListener('click', startMinesGame);
 if (elements.lootboxBtn) elements.lootboxBtn.addEventListener('click', startLootboxGame);
+if (document.getElementById('lootbox-instant-spin-btn')) {
+    document.getElementById('lootbox-instant-spin-btn').addEventListener('click', instantLootboxSpin);
+}
+
 if (elements.inventoryBtn) elements.inventoryBtn.addEventListener('click', startInventoryScreen);
 if (elements.minesStartBtn) elements.minesStartBtn.addEventListener('click', startNewMinesGame);
 if (elements.minesCashoutBtn) elements.minesCashoutBtn.addEventListener('click', cashoutMinesGame);
