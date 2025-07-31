@@ -322,7 +322,12 @@ const openSound = new Audio('spins/open.mp3');
 
 
 function checkAutoSell(rarity) {
-    if (!gameState.autoSellEnabled) return false;
+    if (!gameState.autoSellEnabled) {
+        // Disable instant spin button if auto-sell is disabled
+        const instantSpinBtn = document.getElementById('lootbox-instant-spin-btn');
+        if (instantSpinBtn) instantSpinBtn.disabled = true;
+        return false;
+    }
     const checkbox = document.getElementById(`auto-sell-${rarity}`);
     return checkbox ? checkbox.checked : false;
 }
@@ -363,9 +368,11 @@ function setAutoSellEnabled(enabled) {
         if (enabled) {
             container.classList.remove('broken');
             overlay.classList.add('hidden');
+            if (instantSpinBtn) instantSpinBtn.disabled = false;
         } else {
             container.classList.add('broken');
             overlay.classList.remove('hidden');
+            if (instantSpinBtn) instantSpinBtn.disabled = true;
         }
     }
 }
@@ -463,18 +470,21 @@ async function claimLootboxWin() {
     if (track) {
         track.style.opacity = '1';
     }
-    
+
     if (gameState.lootboxGame.currentItem) {
         const shouldAutoSell = checkAutoSell(gameState.lootboxGame.currentItem.rarity);
-        
+
         if (shouldAutoSell) {
             await autoSellItem(gameState.lootboxGame.currentItem);
-            showNotification(`Auto-sold ${gameState.lootboxGame.currentItem.name} for ${gameState.lootboxGame.currentItem.value} chips`, true);
+            showNotification(
+                `Auto-sold ${gameState.lootboxGame.currentItem.name} for ${gameState.lootboxGame.currentItem.value} chips`, 
+                true
+            );
         } else {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/inventory/add`, {
                     method: 'POST',
-                    headers: { 
+                    headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
                     },
@@ -486,10 +496,10 @@ async function claimLootboxWin() {
                 });
 
                 if (!response.ok) throw new Error('Failed to add item to inventory');
-                
+
                 const data = await response.json();
                 gameState.inventory = data.inventory;
-                
+
                 if (gameState.currentGame === 'inventory') {
                     updateInventoryDisplay();
                 }
@@ -498,8 +508,23 @@ async function claimLootboxWin() {
                 showNotification('Failed to save item to inventory', false);
             }
         }
+
+        // ✅ Set display rarity name
+        const rarityNames = {
+            mythic: 'Special item',
+            legendary: 'Covert',
+            epic: 'Classified',
+            uncommon: 'Restricted',
+            common: 'Mil-Spec'
+        };
+
+        if (elements.lootboxRarity) {
+            elements.lootboxRarity.innerText = rarityNames[gameState.lootboxGame.currentItem.rarity] 
+                || gameState.lootboxGame.currentItem.rarity;
+        }
     }
 }
+
 
 function resetReel(reel, centerSymbol) {
     if (!reel) return;
@@ -1048,8 +1073,10 @@ async function startLootboxSpin() {
 
 // Add this function to your script.js
 async function instantLootboxSpin() {
-    if (isLootboxSpinning || gameState.chips < gameState.lootboxGame.currentCase.cost) {
-        if (gameState.chips < gameState.lootboxGame.currentCase.cost) {
+    if (!gameState.autoSellEnabled || isLootboxSpinning || gameState.chips < gameState.lootboxGame.currentCase.cost) {
+        if (!gameState.autoSellEnabled) {
+            showNotification("Auto-sell is disabled - instant spin unavailable", false);
+        } else if (gameState.chips < gameState.lootboxGame.currentCase.cost) {
             showNotification("Not enough chips!", false);
         } else if (isLootboxSpinning) {
             showNotification("Please wait for current spin to finish", false);
@@ -1158,7 +1185,15 @@ function showLootboxPopup(item) {
     
     elements.lootboxItemWon.innerHTML = `<img src="${item.img}" alt="${item.name}">`;
     elements.lootboxItemName.textContent = item.name;
-    elements.lootboxRarity.textContent = item.rarity.toUpperCase();
+    
+    const nameMap = {
+    common: "MIL-SPEC",
+    uncommon: "RESTRICTED",
+    epic: "CLASSIFIED",
+    legendary: "COVERT",
+    mythic: "SPECIAL ITEM"
+};
+elements.lootboxRarity.textContent = nameMap[item.rarity] || item.rarity.toUpperCase();
     
     elements.lootboxItemWon.className = 'lootbox-item-won';
     elements.lootboxItemWon.classList.add(item.rarity);
@@ -1199,13 +1234,22 @@ function updateInventoryDisplay() {
     
     elements.inventoryTotalItems.textContent = `${gameState.inventory.length} items`;
     
+    // CS:GO rarity name mapping
+    const rarityNames = {
+        'common': 'Mil-Spec',
+        'uncommon': 'Restricted',
+        'epic': 'Classified',
+        'legendary': 'Covert',
+        'mythic': 'Special'
+    };
+    
     gameState.inventory.forEach(item => {
         const itemElement = document.createElement('div');
         itemElement.className = `inventory-item ${item.rarity}`;
         itemElement.innerHTML = `
             <img src="${item.img}" alt="${item.name}" class="inventory-item-img">
             <div class="inventory-item-name">${item.name}</div>
-            <div class="inventory-item-rarity">${item.rarity}</div>
+            <div class="inventory-item-rarity">${rarityNames[item.rarity] || item.rarity}</div>
             <div class="inventory-item-count">${item.quantity}</div>
         `;
         
