@@ -1229,60 +1229,33 @@ function updateInventoryDisplay() {
     const rarityOrder = ['mythic', 'legendary', 'epic', 'uncommon', 'common'];
 
     const rarityNames = {
-        'mythic': 'Special item',
-        'legendary': 'Covert',
-        'epic': 'Classified',
-        'uncommon': 'Restricted',
-        'common': 'Mil-Spec'
+        mythic: 'Special item',
+        legendary: 'Covert',
+        epic: 'Classified',
+        uncommon: 'Restricted',
+        common: 'Mil-Spec'
     };
 
-    // Group items by rarity
-    const grouped = {};
-    rarityOrder.forEach(r => grouped[r] = []);
-    gameState.inventory.forEach(item => {
-        if (grouped[item.rarity]) {
-            grouped[item.rarity].push(item);
-        } else {
-            grouped[item.rarity] = [item];
-        }
+    // ✅ Sort inventory by rarity first
+    const sortedInventory = [...gameState.inventory].sort((a, b) => {
+        return rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity);
     });
 
-    // Render items group-by-group
-    rarityOrder.forEach(rarity => {
-        const items = grouped[rarity];
-        if (items.length > 0) {
-            // Create header
-            const header = document.createElement('h3');
-            header.innerText = `${rarityNames[rarity]}:`;
-            header.style.color = 'white';
-            header.style.margin = '20px 0 10px';
-            container.appendChild(header);
-
-            // Create item group wrapper
-            const groupWrapper = document.createElement('div');
-            groupWrapper.className = 'inventory-group';
-            groupWrapper.style.display = 'flex';
-            groupWrapper.style.flexWrap = 'wrap';
-            groupWrapper.style.gap = '10px';
-
-            // Add items
-            items.forEach(item => {
-                const itemElement = document.createElement('div');
-                itemElement.className = `inventory-item ${item.rarity}`;
-                itemElement.innerHTML = `
-                    <img src="${item.img}" alt="${item.name}" class="inventory-item-img">
-                    <div class="inventory-item-name">${item.name}</div>
-                    <div class="inventory-item-rarity">${rarityNames[item.rarity] || item.rarity}</div>
-                    <div class="inventory-item-count">${item.quantity}</div>
-                `;
-                itemElement.addEventListener('click', () => showSellPanel(item));
-                groupWrapper.appendChild(itemElement);
-            });
-
-            container.appendChild(groupWrapper);
-        }
+    // ✅ Now render sorted items in a flat grid
+    sortedInventory.forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.className = `inventory-item ${item.rarity}`;
+        itemElement.innerHTML = `
+            <img src="${item.img}" alt="${item.name}" class="inventory-item-img">
+            <div class="inventory-item-name">${item.name}</div>
+            <div class="inventory-item-rarity">${rarityNames[item.rarity] || item.rarity}</div>
+            <div class="inventory-item-count">${item.quantity}</div>
+        `;
+        itemElement.addEventListener('click', () => showSellPanel(item));
+        container.appendChild(itemElement);
     });
 }
+
 
 
 function showSellPanel(item) {
