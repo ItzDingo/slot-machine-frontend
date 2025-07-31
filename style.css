@@ -948,6 +948,17 @@ body {
     background: linear-gradient(to bottom, #66BB6A, #388E3C);
 }
 
+#lootbox-instant-spin-btn:disabled {
+    background: #666 !important;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+#lootbox-instant-spin-btn:disabled:hover {
+    background: #666 !important;
+}
+
 /* Auto-sell rarity specific colors */
 #auto-sell-common:checked + span {
     color: var(--common);
