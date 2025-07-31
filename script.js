@@ -79,7 +79,7 @@ const CONFIG = {
             cost: 75,
             limitedTime: true, // Add this
             startTime: '2025-07-30T00:00:00', // Add start time (optional)
-            endTime: '2025-08-15T23:59:59', // Add end time
+            endTime: '2025-08-01T02:00:00', // Add end time
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
                 { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 3, value: 340 },
@@ -190,6 +190,9 @@ const CONFIG = {
 // Game State
 let gameState = {
     autoSellEnabled: false,
+    instantSpinLimit: 25,
+    instantSpinsUsed: 0,
+    lastRefillTime: null,
     chips: 0,
     dice: 0,
     isSpinning: false,
@@ -466,6 +469,7 @@ function getRandomSymbol() {
     return CONFIG.symbols[Math.floor(Math.random() * CONFIG.symbols.length)];
 }
 
+
 function getRandomLootboxItem(caseItems) {
     const totalWeight = caseItems.reduce((sum, item) => sum + item.chance, 0);
     const random = Math.random() * totalWeight;
@@ -639,6 +643,69 @@ function showNotification(message, isSuccess) {
     notification.textContent = message;
     document.body.appendChild(notification);
     setTimeout(() => notification.remove(), 3000);
+}
+
+
+function showRefillPopup() {
+    const refillCost = Math.floor(gameState.chips * 0.1);
+    document.getElementById('refill-cost').textContent = refillCost.toLocaleString();
+    document.getElementById('refill-popup').style.display = 'flex';
+}
+
+async function refillInstantSpins() {
+    const refillCost = Math.floor(gameState.chips * 0.1);
+    
+    if (refillCost > gameState.chips) {
+        showNotification("Not enough chips to refill!", false);
+        return false;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/spin`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                cost: refillCost
+            }),
+            credentials: 'include'
+        });
+
+        if (!response.ok) throw new Error('Refill failed');
+        
+        const data = await response.json();
+        gameState.chips = data.newBalance;
+        gameState.instantSpinsUsed = 0;
+        gameState.lastRefillTime = new Date();
+        
+        updateCurrencyDisplay();
+        updateInstantSpinDisplay();
+        document.getElementById('refill-popup').style.display = 'none';
+        
+        showNotification(`Instant spins refilled! Cost: ${refillCost} chips`, true);
+        return true;
+    } catch (error) {
+        console.error('Refill error:', error);
+        showNotification('Failed to refill instant spins', false);
+        return false;
+    }
+}
+
+function updateInstantSpinDisplay() {
+    const instantSpinBtn = document.getElementById('lootbox-instant-spin-btn');
+    if (instantSpinBtn) {
+        const remaining = gameState.instantSpinLimit - gameState.instantSpinsUsed;
+        instantSpinBtn.textContent = `Instant Spin (${remaining}/25)`;
+        
+        if (remaining <= 0) {
+            instantSpinBtn.classList.add('disabled');
+        } else {
+            instantSpinBtn.classList.remove('disabled');
+        }
+    }
 }
 
 // Slot Machine Functions
@@ -1188,6 +1255,12 @@ async function startLootboxSpin() {
 
 // Add this function to your script.js
 async function instantLootboxSpin() {
+    // Check if out of instant spins
+    if (gameState.instantSpinsUsed >= gameState.instantSpinLimit) {
+        showRefillPopup();
+        return;
+    }
+
     if (isLootboxSpinning || gameState.chips < gameState.lootboxGame.currentCase.cost) {
         if (gameState.chips < gameState.lootboxGame.currentCase.cost) {
             showNotification("Not enough chips!", false);
@@ -1215,6 +1288,11 @@ async function instantLootboxSpin() {
         if (!response.ok) throw new Error('Lootbox spin failed');
         const data = await response.json();
         gameState.chips = data.newBalance;
+        
+        // Increment instant spin counter
+        gameState.instantSpinsUsed++;
+        updateInstantSpinDisplay();
+        
         updateCurrencyDisplay();
 
         // Get random item
@@ -2052,6 +2130,11 @@ if (elements.inventoryBackToMenuBtn) elements.inventoryBackToMenuBtn.addEventLis
 if (elements.lootboxCaseSelectBackBtn) elements.lootboxCaseSelectBackBtn.addEventListener('click', showGameSelectScreen);
 if (elements.lootboxChangeCaseBtn) elements.lootboxChangeCaseBtn.addEventListener('click', showLootboxCaseSelectScreen);
 
+document.getElementById('confirm-refill-btn')?.addEventListener('click', refillInstantSpins);
+document.getElementById('cancel-refill-btn')?.addEventListener('click', () => {
+    document.getElementById('refill-popup').style.display = 'none';
+});
+
 // Inventory event listeners
 if (elements.inventorySellInput) {
     elements.inventorySellInput.addEventListener('input', updateSellTotal);
@@ -2065,14 +2148,25 @@ if (elements.inventorySellClose) {
     elements.inventorySellClose.addEventListener('click', closeSellPanel);
 }
 
+
+
 // Initialize Game
 async function initGame() {
     try {
         const authCheck = await checkAuthStatus();
         if (authCheck && !gameState.authChecked) {
             gameState.authChecked = true;
+            
+            // Check if it's a new day for spin reset
+            const today = new Date().toDateString();
+            if (!gameState.lastRefillTime || gameState.lastRefillTime.toDateString() !== today) {
+                gameState.instantSpinsUsed = 0;
+                gameState.lastRefillTime = new Date();
+            }
+            
+            updateInstantSpinDisplay();
         }
-        
+
         // Add this line to initialize auto-sell state
         setAutoSellEnabled(gameState.autoSellEnabled);
         
