@@ -215,7 +215,7 @@
 <div class="lootbox-controls">
     <button id="lootbox-spin-btn" class="lootbox-spin-button">OPEN</button>
     <div class="lootbox-secondary-buttons">
-        <button id="lootbox-instant-spin-btn" class="lootbox-spin-button">INSTANT SPIN</button>
+        <button id="lootbox-instant-spin-btn" class="lootbox-spin-button">Instant Spin (25/25)</button>
         <button id="lootbox-change-case-btn" class="lootbox-spin-button" style="background: #444;">Change Case</button>
     </div>
 </div>
@@ -327,6 +327,19 @@
             <button id="lootbox-claim-btn" class="claim-btn">CLAIM</button>
         </div>
     </div>
+
+    <!-- NEW REFILL POPUP - Add this right here -->
+<div id="refill-popup" class="win-popup">
+    <div class="win-content">
+        <h3>Instant Spins Refill</h3>
+        <p>You've used all your instant spins!</p>
+        <p>Refill 25 instant spins for <span id="refill-cost">10%</span> of your chips?</p>
+        <div class="popup-buttons">
+            <button id="confirm-refill-btn" class="popup-btn confirm">Yes, Refill</button>
+            <button id="cancel-refill-btn" class="popup-btn cancel">No, Thanks</button>
+        </div>
+    </div>
+</div>
 
     <script src="script.js"></script>
 
