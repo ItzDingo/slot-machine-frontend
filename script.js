@@ -322,12 +322,7 @@ const openSound = new Audio('spins/open.mp3');
 
 
 function checkAutoSell(rarity) {
-    if (!gameState.autoSellEnabled) {
-        // Disable instant spin button if auto-sell is disabled
-        const instantSpinBtn = document.getElementById('lootbox-instant-spin-btn');
-        if (instantSpinBtn) instantSpinBtn.disabled = true;
-        return false;
-    }
+    if (!gameState.autoSellEnabled) return false;
     const checkbox = document.getElementById(`auto-sell-${rarity}`);
     return checkbox ? checkbox.checked : false;
 }
@@ -368,11 +363,9 @@ function setAutoSellEnabled(enabled) {
         if (enabled) {
             container.classList.remove('broken');
             overlay.classList.add('hidden');
-            if (instantSpinBtn) instantSpinBtn.disabled = false;
         } else {
             container.classList.add('broken');
             overlay.classList.remove('hidden');
-            if (instantSpinBtn) instantSpinBtn.disabled = true;
         }
     }
 }
@@ -1073,10 +1066,8 @@ async function startLootboxSpin() {
 
 // Add this function to your script.js
 async function instantLootboxSpin() {
-    if (!gameState.autoSellEnabled || isLootboxSpinning || gameState.chips < gameState.lootboxGame.currentCase.cost) {
-        if (!gameState.autoSellEnabled) {
-            showNotification("Auto-sell is disabled - instant spin unavailable", false);
-        } else if (gameState.chips < gameState.lootboxGame.currentCase.cost) {
+    if (isLootboxSpinning || gameState.chips < gameState.lootboxGame.currentCase.cost) {
+        if (gameState.chips < gameState.lootboxGame.currentCase.cost) {
             showNotification("Not enough chips!", false);
         } else if (isLootboxSpinning) {
             showNotification("Please wait for current spin to finish", false);
