@@ -245,7 +245,7 @@ const CONFIG = {
 // Game State
 let gameState = {
     autoSellEnabled: true,
-    instantSpinLimit: 10,
+    instantSpinLimit: 25,
     instantSpinsUsed: 0,
     lastRefillTime: null,
     chips: 0,
