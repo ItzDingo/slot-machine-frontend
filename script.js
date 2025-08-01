@@ -1082,13 +1082,14 @@ async function startLootboxSpin() {
         
         if (now < startTime) {
             showNotification("This case hasn't started yet!", false);
+            return;
         } else {
             showNotification("This case is no longer available!", false);
+            return;
         }
-        return;
     }
 
-    // 2. Server-side validation with loading state
+    // 2. Set loading state
     setLootboxButtonsDisabled(true);
     if (elements.lootboxSpinBtn) {
         elements.lootboxSpinBtn.disabled = true;
@@ -1116,22 +1117,13 @@ async function startLootboxSpin() {
 
         const validationData = await validationResponse.json();
         
-        // 4. Check server time vs client time
-        const clientTime = new Date();
-        const serverTime = new Date(validationData.serverTime);
-        const timeDiff = Math.abs(clientTime - serverTime);
-        
-        if (timeDiff > 30000) { // 30 second threshold
-            showNotification("Your system time appears incorrect. Please sync your clock.", false);
-            return;
-        }
-
         if (!validationData.valid) {
             showNotification("Server validation failed - case unavailable", false);
+            resetLootboxSpinState();
             return;
         }
 
-        // 5. Deduct cost and start spin
+        // 4. Deduct cost and start spin
         const spinResponse = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
             headers: { 
@@ -1151,9 +1143,9 @@ async function startLootboxSpin() {
         gameState.chips = spinData.newBalance;
         updateCurrencyDisplay();
 
-        // 6. Start spin animation
+        // 5. Start spin animation
         isLootboxSpinning = true;
-        if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.textContent = "SPINNING...";
+        if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.textContent = "Spinning...";
 
         if (spinSound) {
             spinSound.currentTime = 0;
