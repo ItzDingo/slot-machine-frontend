@@ -337,13 +337,28 @@ function checkAutoSell(rarity) {
 }
 
 function isCaseAvailable(caseItem) {
-    if (!caseItem.limitedTime) return true;
-    
+    // For immediate client-side check (will be validated again server-side)
     const now = new Date();
-    const startTime = caseItem.startTime ? new Date(caseItem.startTime) : new Date(0); // Default to epoch if no start time
+    const startTime = caseItem.startTime ? new Date(caseItem.startTime) : new Date(0);
     const endTime = new Date(caseItem.endTime);
     
     return now >= startTime && now < endTime;
+}
+
+async function validateCaseWithServer(caseItem) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/cases/validate`);
+        if (!response.ok) return false;
+        
+        const data = await response.json();
+        const serverTime = new Date(data.serverTime);
+        const caseData = data.cases.find(c => c.caseId === caseItem.id);
+        
+        return caseData?.isActive || false;
+    } catch (error) {
+        console.error('Case validation error:', error);
+        return false;
+    }
 }
 
 function getTimeRemaining(caseItem) {
@@ -375,42 +390,65 @@ function getTimeRemaining(caseItem) {
 }
 
 
-function updateCaseTimers() {
+// Modify your updateCaseTimers function
+async function updateCaseTimers() {
     if (!elements.lootboxCasesContainer) return;
     
-    const now = new Date();
-    const caseElements = elements.lootboxCasesContainer.querySelectorAll('.lootbox-case');
-    
-    caseElements.forEach((caseElement, index) => {
-        const caseData = CONFIG.lootboxCases[index];
-        if (!caseData.limitedTime) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/cases/validate`);
+        if (!response.ok) return;
+        
+        const data = await response.json();
+        const serverTime = new Date(data.serverTime);
+        
+        const caseElements = elements.lootboxCasesContainer.querySelectorAll('.lootbox-case');
+        
+        caseElements.forEach((caseElement, index) => {
+            const caseData = CONFIG.lootboxCases[index];
+            const serverCaseData = data.cases.find(c => c.caseId === caseData.id);
+            
+            if (!serverCaseData) return;
+            
+            const timerElement = caseElement.querySelector('.case-timer');
+            if (!timerElement) return;
 
-        const timerElement = caseElement.querySelector('.case-timer');
-        if (!timerElement) return;
-
-        const isAvailable = isCaseAvailable(caseData);
-        const timeRemaining = getTimeRemaining(caseData);
-        const startTime = caseData.startTime ? new Date(caseData.startTime) : new Date(0);
-
-        if (isAvailable) {
-            caseElement.classList.remove('disabled-case');
-            caseElement.style.opacity = '1';
-            caseElement.style.cursor = 'pointer';
-            timerElement.className = 'case-timer active';
-            timerElement.innerHTML = `
-                <div>Available Now</div>
-                <div class="end-countdown">${timeRemaining}</div>
-            `;
-        } else {
-            caseElement.classList.add('disabled-case');
-            caseElement.style.opacity = '0.6';
-            caseElement.style.cursor = 'not-allowed';
-            timerElement.className = now < startTime 
-                ? 'case-timer not-started' 
-                : 'case-timer expired';
-            timerElement.textContent = timeRemaining;
-        }
-    });
+            if (serverCaseData.isActive) {
+                caseElement.classList.remove('disabled-case');
+                caseElement.style.opacity = '1';
+                caseElement.style.cursor = 'pointer';
+                timerElement.className = 'case-timer active';
+                
+                // Format remaining time
+                const timeRemaining = serverCaseData.timeRemaining;
+                const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+                
+                timerElement.innerHTML = `
+                    <div>Available Now</div>
+                    <div class="end-countdown">Ends in ${days}d ${hours}h ${minutes}m ${seconds}s</div>
+                `;
+            } else {
+                caseElement.classList.add('disabled-case');
+                caseElement.style.opacity = '0.6';
+                caseElement.style.cursor = 'not-allowed';
+                
+                if (serverTime < new Date(caseData.startTime)) {
+                    timerElement.className = 'case-timer not-started';
+                    const timeUntilStart = new Date(caseData.startTime) - serverTime;
+                    const days = Math.floor(timeUntilStart / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((timeUntilStart % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    timerElement.textContent = `Starts in ${days}d ${hours}h`;
+                } else {
+                    timerElement.className = 'case-timer expired';
+                    timerElement.textContent = 'Expired';
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error updating case timers:', error);
+    }
 }
 
 
@@ -1012,6 +1050,7 @@ function selectLootboxCase(selectedCase) {
 }
 
 async function startLootboxSpin() {
+    // 1. Initial client-side availability check
     if (!isCaseAvailable(gameState.lootboxGame.currentCase)) {
         const now = new Date();
         const startTime = gameState.lootboxGame.currentCase.startTime 
@@ -1026,18 +1065,51 @@ async function startLootboxSpin() {
         return;
     }
 
+    // 2. Server-side validation with loading state
     setLootboxButtonsDisabled(true);
-
-    if (spinSound) {
-        spinSound.currentTime = 0;
-        spinSound.play().catch(e => console.warn('Spin sound error:', e));
+    if (elements.lootboxSpinBtn) {
+        elements.lootboxSpinBtn.disabled = true;
+        elements.lootboxSpinBtn.textContent = "Validating...";
     }
 
-    isLootboxSpinning = true;
-    if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.disabled = true;
-    
     try {
-        const response = await fetch(`${API_BASE_URL}/api/spin`, {
+        // 3. Validate with server
+        const validationResponse = await fetch(`${API_BASE_URL}/api/cases/validate-spin`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                caseId: gameState.lootboxGame.currentCase.id
+            }),
+            credentials: 'include'
+        });
+
+        if (!validationResponse.ok) {
+            throw new Error(`Validation failed: ${validationResponse.status}`);
+        }
+
+        const validationData = await validationResponse.json();
+        
+        // 4. Check server time vs client time
+        const clientTime = new Date();
+        const serverTime = new Date(validationData.serverTime);
+        const timeDiff = Math.abs(clientTime - serverTime);
+        
+        if (timeDiff > 30000) { // 30 second threshold
+            showNotification("Your system time appears incorrect. Please sync your clock.", false);
+            return;
+        }
+
+        if (!validationData.valid) {
+            showNotification("Server validation failed - case unavailable", false);
+            return;
+        }
+
+        // 5. Deduct cost and start spin
+        const spinResponse = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -1050,182 +1122,128 @@ async function startLootboxSpin() {
             credentials: 'include'
         });
 
-        if (!response.ok) throw new Error('Lootbox spin failed');
-        const data = await response.json();
-        gameState.chips = data.newBalance;
+        if (!spinResponse.ok) throw new Error('Spin deduction failed');
+        
+        const spinData = await spinResponse.json();
+        gameState.chips = spinData.newBalance;
         updateCurrencyDisplay();
-        
-    } catch (error) {
-        console.error('Lootbox spin error:', error);
-        showNotification('Failed to process lootbox spin. Please try again.', false);
-        resetLootboxSpinState();
-        return;
-    }
 
-    const track = document.getElementById('lootbox-items-track');
-    const container = track.parentElement;
-    
-    // First determine the result item based on probabilities
-    const resultItem = getRandomLootboxItem(gameState.lootboxGame.currentCase.items);
-    console.log('Target item:', resultItem.name, 'Rarity:', resultItem.rarity);
-    
-    // Clear and rebuild the track with new random items for this spin
-    track.innerHTML = '';
-    
-    // Create a pool of items based on their weights
-    const itemsPool = [];
-    gameState.lootboxGame.currentCase.items.forEach(item => {
-        const count = Math.max(1, Math.floor(item.chance * 10));
-        for (let i = 0; i < count; i++) {
-            itemsPool.push(item);
+        // 6. Start spin animation
+        isLootboxSpinning = true;
+        if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.textContent = "Spinning...";
+
+        if (spinSound) {
+            spinSound.currentTime = 0;
+            spinSound.play().catch(e => console.warn('Spin sound error:', e));
         }
-    });
-    
-    // Shuffle the items pool
-    for (let i = itemsPool.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [itemsPool[i], itemsPool[j]] = [itemsPool[j], itemsPool[i]];
-    }
-    
-    // Create 3 loops of items (start, middle, end) with the target in the middle
-    const singleLoop = itemsPool.slice(0, 50);
-    
-    // Ensure the target item is in the middle section
-    if (!singleLoop.some(item => item.name === resultItem.name)) {
-        const replaceIndex = Math.floor(Math.random() * singleLoop.length);
-        singleLoop[replaceIndex] = resultItem;
-    }
-    
-    // Build the track with 3 loops (start, middle, end)
-    for (let loop = 0; loop < 3; loop++) {
-        singleLoop.forEach(item => {
-            const itemElement = document.createElement('div');
-            itemElement.className = `lootbox-item ${item.rarity}`;
-            itemElement.innerHTML = `<img src="${item.img}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain;">`;
-            itemElement.dataset.itemName = item.name;
-            itemElement.style.minWidth = '120px';
-            itemElement.style.minHeight = '120px';
-            track.appendChild(itemElement);
+
+        const track = document.getElementById('lootbox-items-track');
+        const container = track.parentElement;
+        
+        // Determine result item
+        const resultItem = getRandomLootboxItem(gameState.lootboxGame.currentCase.items);
+        console.log('Target item:', resultItem.name, 'Rarity:', resultItem.rarity);
+        
+        // Build item track
+        track.innerHTML = '';
+        const itemsPool = [];
+        
+        gameState.lootboxGame.currentCase.items.forEach(item => {
+            const count = Math.max(1, Math.floor(item.chance * 10));
+            for (let i = 0; i < count; i++) itemsPool.push(item);
         });
-    }
-    
-    // Reset track position
-    track.style.transform = 'translateX(0px)';
-    track.style.transition = 'none';
-    track.style.opacity = '1';
-    
-    // Find all item elements after building the track
-    const allItems = track.querySelectorAll('.lootbox-item');
-    const itemsPerLoop = allItems.length / 3;
-    const middleStart = Math.floor(itemsPerLoop);
-    const middleEnd = Math.floor(itemsPerLoop * 2);
-    
-    // Find the target item in the middle section
-    let targetIndex = -1;
-    for (let i = middleStart; i < middleEnd; i++) {
-        const item = allItems[i];
-        const itemName = item.dataset.itemName || item.querySelector('img').alt;
-        if (itemName === resultItem.name) {
-            targetIndex = i;
-            break;
+
+        // Shuffle items
+        for (let i = itemsPool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [itemsPool[i], itemsPool[j]] = [itemsPool[j], itemsPool[i]];
         }
-    }
-    
-    // If not found in middle section, look in first section and adjust index
-    if (targetIndex === -1) {
-        for (let i = 0; i < middleStart; i++) {
-            const item = allItems[i];
-            const itemName = item.dataset.itemName || item.querySelector('img').alt;
-            if (itemName === resultItem.name) {
-                targetIndex = i + itemsPerLoop;
-                break;
-            }
+
+        // Create 3 loops with target in middle
+        const singleLoop = itemsPool.slice(0, 50);
+        if (!singleLoop.some(item => item.name === resultItem.name)) {
+            singleLoop[Math.floor(Math.random() * singleLoop.length)] = resultItem;
         }
-    }
-    
-    // Fallback if still not found (shouldn't happen)
-    if (targetIndex === -1) {
-        console.error('Target item not found, using fallback');
-        targetIndex = middleStart + Math.floor(Math.random() * (middleEnd - middleStart));
-    }
-    
-    const itemWidth = 140;
-    const containerCenter = container.offsetWidth / 2;
-    const loopWidth = (allItems.length / 3) * itemWidth;
-    
-    // Start with a random position within one loop
-    const randomOffset = Math.random() * loopWidth;
-    let currentPosition = randomOffset;
-    
-    let velocity = 8;
-    const maxVelocity = 25;
-    const acceleration = 1.1;
-    const minVelocity = 0.3;
-    
-    let phase = 'accelerating';
-    let spinTime = 0;
-    const minSpinTime = 4500;
-    const maxSpinTime = 5500;  
-    const targetSpinTime = minSpinTime + Math.random() * (maxSpinTime - minSpinTime);
-    
-    function animate() {
-        spinTime += 16;
-        
-        if (phase === 'accelerating' && spinTime > targetSpinTime * 0.3) {
-            phase = 'decelerating';
+
+        for (let loop = 0; loop < 3; loop++) {
+            singleLoop.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = `lootbox-item ${item.rarity}`;
+                itemElement.innerHTML = `<img src="${item.img}" alt="${item.name}">`;
+                itemElement.dataset.itemName = item.name;
+                itemElement.style.minWidth = '120px';
+                itemElement.style.minHeight = '120px';
+                track.appendChild(itemElement);
+            });
         }
-        
-        if (phase === 'accelerating') {
-            velocity = Math.min(velocity * acceleration, maxVelocity);
-        } else if (phase === 'decelerating') {
-            velocity *= 0.985;
-        }
-        
-        currentPosition += velocity;
-        
-        while (currentPosition >= loopWidth) {
-            currentPosition -= loopWidth;
-        }
-        
-        track.style.transform = `translateX(${-currentPosition}px)`;
+
+        track.style.transform = 'translateX(0px)';
         track.style.transition = 'none';
+        track.style.opacity = '1';
+
+        // Animation logic
+        const allItems = track.querySelectorAll('.lootbox-item');
+        const itemsPerLoop = allItems.length / 3;
+        const middleStart = Math.floor(itemsPerLoop);
+        const middleEnd = Math.floor(itemsPerLoop * 2);
         
-        if (spinTime >= targetSpinTime && velocity <= minVelocity) {
-            const centerPosition = currentPosition + containerCenter - 66;
+        let targetIndex = -1;
+        for (let i = middleStart; i < middleEnd && targetIndex === -1; i++) {
+            const itemName = allItems[i].dataset.itemName || allItems[i].querySelector('img').alt;
+            if (itemName === resultItem.name) targetIndex = i;
+        }
+
+        // Fallback if target not found
+        if (targetIndex === -1) {
+            targetIndex = middleStart + Math.floor(Math.random() * (middleEnd - middleStart));
+        }
+
+        const itemWidth = 140;
+        const containerCenter = container.offsetWidth / 2;
+        const loopWidth = itemsPerLoop * itemWidth;
+        let currentPosition = Math.random() * loopWidth;
+        
+        let velocity = 8;
+        const maxVelocity = 25;
+        const acceleration = 1.1;
+        const minVelocity = 0.3;
+        
+        let phase = 'accelerating';
+        let spinTime = 0;
+        const targetSpinTime = 4500 + Math.random() * 1000;
+
+        function animate() {
+            spinTime += 16;
             
-            const nearestItemIndex = Math.round(centerPosition / itemWidth);
-            
-            const itemsPerLoop = allItems.length / 3;
-            const middleStart = Math.floor(itemsPerLoop);
-            let finalItemIndex = (nearestItemIndex % itemsPerLoop) + middleStart;
-            
-            if (finalItemIndex >= allItems.length) {
-                finalItemIndex = middleStart + (finalItemIndex - middleStart) % itemsPerLoop;
+            if (phase === 'accelerating' && spinTime > targetSpinTime * 0.3) {
+                phase = 'decelerating';
             }
             
-            const centeredItem = allItems[finalItemIndex];
+            velocity = phase === 'accelerating' 
+                ? Math.min(velocity * acceleration, maxVelocity) 
+                : velocity * 0.985;
             
-            if (centeredItem) {
-                const itemName = centeredItem.dataset.itemName || centeredItem.querySelector('img').alt;
-                const wonItem = gameState.lootboxGame.currentCase.items.find(item => item.name === itemName) || resultItem;
+            currentPosition += velocity;
+            while (currentPosition >= loopWidth) currentPosition -= loopWidth;
+            
+            track.style.transform = `translateX(${-currentPosition}px)`;
+            track.style.transition = 'none';
+            
+            if (spinTime >= targetSpinTime && velocity <= minVelocity) {
+                const centerPos = currentPosition + containerCenter - 66;
+                const nearestIdx = Math.round(centerPos / itemWidth) % itemsPerLoop + middleStart;
+                const finalItem = allItems[nearestIdx >= allItems.length ? middleStart : nearestIdx];
+                const itemName = finalItem?.dataset.itemName || finalItem?.querySelector('img').alt;
                 
-                console.log('Stopped at position:', currentPosition, 'Center position:', centerPosition, 'Item:', wonItem.name);
-                
-                let finalReward = wonItem;
-                if (wonItem.rarity === 'mythic') {
-                    const randomKnife = getRandomKnife(gameState.lootboxGame.currentCase.knifes);
-                    console.log('Mythic item won! Giving random knife:', randomKnife.name, 'Knife rarity:', randomKnife.rarity);
-                    finalReward = randomKnife;
+                let finalReward = gameState.lootboxGame.currentCase.items.find(i => i.name === itemName) || resultItem;
+                if (finalReward.rarity === 'mythic') {
+                    finalReward = getRandomKnife(gameState.lootboxGame.currentCase.knifes);
                 }
-                
-                // NEW AUTO-SELL CHECK AND HANDLING
+
                 setTimeout(() => {
-                    const shouldAutoSell = checkAutoSell(finalReward.rarity);
-                    if (shouldAutoSell) {
-                        autoSellItem(finalReward).then(success => {
-                            if (success) {
-                                showNotification(`Auto-sold ${finalReward.name} for ${finalReward.value} chips`, true);
-                            }
+                    if (checkAutoSell(finalReward.rarity)) {
+                        autoSellItem(finalReward).then(() => {
+                            showNotification(`Auto-sold ${finalReward.name} for ${finalReward.value} chips`, true);
                             resetLootboxSpinState();
                         });
                     } else {
@@ -1233,39 +1251,19 @@ async function startLootboxSpin() {
                         resetLootboxSpinState();
                     }
                 }, 200);
-            } else {
-                let finalReward = resultItem;
-                if (resultItem.rarity === 'mythic') {
-                    const randomKnife = getRandomKnife(gameState.lootboxGame.currentCase.knifes);
-                    console.log('Fallback mythic item! Giving random knife:', randomKnife.name);
-                    finalReward = randomKnife;
-                }
-                
-                // NEW AUTO-SELL CHECK AND HANDLING
-                setTimeout(() => {
-                    const shouldAutoSell = checkAutoSell(finalReward.rarity);
-                    if (shouldAutoSell) {
-                        autoSellItem(finalReward).then(success => {
-                            if (success) {
-                                showNotification(`Auto-sold ${finalReward.name} for ${finalReward.value} chips`, true);
-                            }
-                            resetLootboxSpinState();
-                        });
-                    } else {
-                        showLootboxPopup(finalReward);
-                        resetLootboxSpinState();
-                    }
-                }, 200);
+                return;
             }
-            return;
+            
+            if (isLootboxSpinning) requestAnimationFrame(animate);
         }
         
-        if (isLootboxSpinning) {
-            requestAnimationFrame(animate);
-        }
+        requestAnimationFrame(animate);
+
+    } catch (error) {
+        console.error('Spin error:', error);
+        showNotification(`Spin failed: ${error.message}`, false);
+        resetLootboxSpinState();
     }
-    
-    requestAnimationFrame(animate);
 }
 
 // Add this function to your script.js
