@@ -448,15 +448,11 @@ function playCaseVideo(videoSrc) {
         
         const video = document.createElement('video');
         video.src = videoSrc;
-        video.autoplay = true;
-        video.muted = false; // Mute by default to avoid sudden sounds
-        video.playsInline = true; // For mobile browsers
-        video.disablePictureInPicture = true;
-        video.disableRemotePlayback = true;
-
+        video.style.maxWidth = '100%';
+        video.style.maxHeight = '100%';
         video.controls = false;
-        video.setAttribute('controlslist', 'nodownload nofullscreen noremoteplayback');
-        video.setAttribute('disablepictureinpicture', 'true');
+        video.autoplay = true;
+        video.muted = false;
         
         // Exit fullscreen and resolve when video ends or is clicked
         const handleEnd = () => {
@@ -1340,47 +1336,41 @@ async function selectLootboxCase(selectedCase) {
 }
 
 async function startLootboxSpin() {
-    // Prevent spinning if already in progress (including instant spins)
-    if (gameState.isSpinning || isLootboxSpinning) {
-        showNotification("Please wait for current spin to finish", false);
-        return;
+    // 0. Prevent multiple simultaneous spins
+    if (isLootboxSpinning) return;
+    isLootboxSpinning = true;
+    
+    // 1. Client-side availability check
+    const caseItem = gameState.lootboxGame.currentCase;
+    const now = new Date();
+    
+    // Only validate time for limited cases
+    if (caseItem.limitedTime) {
+        const startTime = caseItem.startTime ? new Date(caseItem.startTime) : new Date(0);
+        const endTime = new Date(caseItem.endTime);
+        
+        if (now < startTime) {
+            showNotification("This case hasn't started yet!", false);
+            resetLootboxSpinState();
+            return;
+        }
+        
+        if (now >= endTime) {
+            showNotification("This case is no longer available!", false);
+            resetLootboxSpinState();
+            return;
+        }
     }
 
-    // Disable instant spin button immediately
-    const instantSpinBtn = document.getElementById('lootbox-instant-spin-btn');
-    if (instantSpinBtn) instantSpinBtn.disabled = true;
+    // 2. Set loading state
+    setLootboxButtonsDisabled(true);
+    if (elements.lootboxSpinBtn) {
+        elements.lootboxSpinBtn.disabled = true;
+        elements.lootboxSpinBtn.textContent = "Validating...";
+    }
 
     try {
-        gameState.isSpinning = true;
-        isLootboxSpinning = true;
-        
-        const caseItem = gameState.lootboxGame.currentCase;
-        const now = new Date();
-        
-        // Client-side availability check
-        if (caseItem.limitedTime) {
-            const startTime = caseItem.startTime ? new Date(caseItem.startTime) : new Date(0);
-            const endTime = new Date(caseItem.endTime);
-            
-            if (now < startTime) {
-                showNotification("This case hasn't started yet!", false);
-                return;
-            }
-            
-            if (now >= endTime) {
-                showNotification("This case is no longer available!", false);
-                return;
-            }
-        }
-
-        // Set loading state
-        setLootboxButtonsDisabled(true);
-        if (elements.lootboxSpinBtn) {
-            elements.lootboxSpinBtn.disabled = true;
-            elements.lootboxSpinBtn.textContent = "Validating...";
-        }
-
-        // Server-side validation for limited cases
+        // 3. Server-side validation (only for limited cases)
         if (caseItem.limitedTime) {
             const validationResponse = await fetch(`${API_BASE_URL}/api/cases/validate-spin`, {
                 method: 'POST',
@@ -1400,13 +1390,14 @@ async function startLootboxSpin() {
             }
 
             const validationData = await validationResponse.json();
+            
             if (!validationData.valid) {
                 showNotification("Server validation failed - case unavailable", false);
                 return;
             }
         }
 
-        // Deduct cost and start spin
+        // 4. Deduct cost and start spin
         const spinResponse = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
             headers: { 
@@ -1426,7 +1417,7 @@ async function startLootboxSpin() {
         gameState.chips = spinData.newBalance;
         updateCurrencyDisplay();
 
-        // Start spin animation
+        // 5. Start spin animation
         if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.textContent = "Spinning...";
 
         if (spinSound) {
@@ -1434,16 +1425,6 @@ async function startLootboxSpin() {
             spinSound.play().catch(e => console.warn('Spin sound error:', e));
         }
 
-        // Play case video if configured
-        if (caseItem.playVideo && caseItem.video) {
-            try {
-                await playCaseVideo(caseItem.video);
-            } catch (error) {
-                console.error('Video playback error:', error);
-            }
-        }
-
-        // Build item track and spin logic
         const track = document.getElementById('lootbox-items-track');
         const container = track.parentElement;
         
