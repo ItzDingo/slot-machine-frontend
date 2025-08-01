@@ -661,7 +661,7 @@ async function refillInstantSpins() {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/spin`, {
+        const response = await fetch(`${API_BASE_URL}/api/instant-spins/refill`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -678,8 +678,7 @@ async function refillInstantSpins() {
         
         const data = await response.json();
         gameState.chips = data.newBalance;
-        gameState.instantSpinsUsed = 0;
-        gameState.lastRefillTime = new Date();
+        gameState.instantSpins = data.instantSpins;
         
         updateCurrencyDisplay();
         updateInstantSpinDisplay();
@@ -697,7 +696,7 @@ async function refillInstantSpins() {
 function updateInstantSpinDisplay() {
     const instantSpinBtn = document.getElementById('lootbox-instant-spin-btn');
     if (instantSpinBtn) {
-        const remaining = gameState.instantSpinLimit - gameState.instantSpinsUsed;
+        const remaining = gameState.instantSpins?.remaining || (gameState.instantSpinLimit - gameState.instantSpinsUsed);
         instantSpinBtn.textContent = `Instant Spin (${remaining}/25)`;
         
         if (remaining <= 0) {
@@ -1271,8 +1270,8 @@ async function instantLootboxSpin() {
     }
 
     try {
-        // Deduct cost
-        const response = await fetch(`${API_BASE_URL}/api/spin`, {
+        // First, use an instant spin
+        const spinResponse = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -1280,20 +1279,21 @@ async function instantLootboxSpin() {
             },
             body: JSON.stringify({
                 userId: gameState.userId,
-                cost: gameState.lootboxGame.currentCase.cost
+                cost: gameState.lootboxGame.currentCase.cost,
+                isInstantSpin: true
             }),
             credentials: 'include'
         });
 
-        if (!response.ok) throw new Error('Lootbox spin failed');
-        const data = await response.json();
-        gameState.chips = data.newBalance;
+        if (!spinResponse.ok) throw new Error('Instant spin failed');
         
-        // Increment instant spin counter
-        gameState.instantSpinsUsed++;
-        updateInstantSpinDisplay();
+        const spinData = await spinResponse.json();
+        gameState.chips = spinData.newBalance;
+        gameState.instantSpins = spinData.instantSpins;
         
+        // Update UI
         updateCurrencyDisplay();
+        updateInstantSpinDisplay();
 
         // Get random item
         const resultItem = getRandomLootboxItem(gameState.lootboxGame.currentCase.items);
@@ -2010,6 +2010,10 @@ function handleSuccessfulLogin(user) {
     gameState.chips = user.chips;
     gameState.dice = user.dice;
     gameState.inventory = user.inventory || [];
+    gameState.instantSpins = user.instantSpins || {
+        remaining: 25,
+        lastRefill: new Date()
+    };
     const avatarSrc = user.avatar || 'assets/default-avatar.png';
     
     if (elements.usernameDisplay) elements.usernameDisplay.textContent = user.username;
