@@ -79,7 +79,7 @@ const CONFIG = {
             cost: 75,
             limitedTime: true, // Add this
             startTime: '2025-07-30T00:00:00', // Add start time (optional)
-            endTime: '2025-08-01T03:00:00', // Add end time
+            endTime: '2025-08-01T02:00:00', // Add end time
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
                 { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 3, value: 340 },
@@ -1130,7 +1130,7 @@ async function startLootboxSpin() {
 
         // 6. Start spin animation
         isLootboxSpinning = true;
-        if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.textContent = "Spinning...";
+        if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.textContent = "SPINNING...";
 
         if (spinSound) {
             spinSound.currentTime = 0;
@@ -1268,23 +1268,41 @@ async function startLootboxSpin() {
 
 // Add this function to your script.js
 async function instantLootboxSpin() {
-    // Check if out of instant spins
-    if ((gameState.instantSpins?.remaining || 0) <= 0) {
-        updateInstantSpinDisplay(true); // Pass true to show popup
+    // 1. First check if case is available
+    const now = new Date();
+    const caseItem = gameState.lootboxGame.currentCase;
+    const startTime = caseItem.startTime ? new Date(caseItem.startTime) : new Date(0);
+    const endTime = new Date(caseItem.endTime);
+    
+    if (now < startTime) {
+        showNotification("This case hasn't started yet!", false);
+        return;
+    }
+    
+    if (now >= endTime) {
+        showNotification("This case is no longer available!", false);
         return;
     }
 
-    if (isLootboxSpinning || gameState.chips < gameState.lootboxGame.currentCase.cost) {
-        if (gameState.chips < gameState.lootboxGame.currentCase.cost) {
-            showNotification("Not enough chips!", false);
-        } else if (isLootboxSpinning) {
-            showNotification("Please wait for current spin to finish", false);
-        }
+    // Check if out of instant spins
+    if ((gameState.instantSpins?.remaining || 0) <= 0) {
+        updateInstantSpinDisplay(true);
+        return;
+    }
+
+    // Add check for enough chips
+    if (gameState.chips < gameState.lootboxGame.currentCase.cost) {
+        showNotification("Not enough chips!", false);
+        return;
+    }
+
+    if (isLootboxSpinning) {
+        showNotification("Please wait for current spin to finish", false);
         return;
     }
 
     try {
-        // First, use an instant spin
+        // First, use an instant spin and deduct chips
         const spinResponse = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
             headers: { 
@@ -1309,31 +1327,7 @@ async function instantLootboxSpin() {
         updateCurrencyDisplay();
         updateInstantSpinDisplay();
 
-        // Get random item
-        const resultItem = getRandomLootboxItem(gameState.lootboxGame.currentCase.items);
-        let finalReward = resultItem;
-        
-        // Check for mythic (knife) items
-        if (resultItem.rarity === 'mythic') {
-            finalReward = getRandomKnife(gameState.lootboxGame.currentCase.knifes);
-        }
-
-        // Check auto-sell settings
-        const shouldAutoSell = checkAutoSell(finalReward.rarity);
-        if (shouldAutoSell) {
-            await autoSellItem(finalReward);
-            showNotification(`Auto-sold ${finalReward.name} for ${finalReward.value} chips`, true);
-        } else {
-            // Show popup if not auto-sold
-            showLootboxPopup(finalReward);
-            
-            // Play open sound
-            if (openSound) {
-                openSound.currentTime = 0;
-                openSound.play().catch(e => console.warn('Open sound error:', e));
-            }
-        }
-
+        // Rest of your existing code...
     } catch (error) {
         console.error('Instant spin error:', error);
         showNotification('Failed to process instant spin', false);
@@ -1374,6 +1368,7 @@ function resetLootboxSpinState() {
     isLootboxSpinning = false;
     if (elements.lootboxSpinBtn) {
         elements.lootboxSpinBtn.disabled = false;
+        elements.lootboxSpinBtn.textContent = "OPEN"; // Reset the text
     }
     if (spinAnimation) {
         cancelAnimationFrame(spinAnimation);
@@ -1381,7 +1376,6 @@ function resetLootboxSpinState() {
     }
 
     setLootboxButtonsDisabled(false);
-
     console.log('Lootbox spin state reset - can spin again');
 }
 
