@@ -129,7 +129,7 @@ const CONFIG = {
         },
         {
             id: 'case3',
-            name: 'Predatory Cobra',
+            name: 'Predatory Cobra [LIMITED]',
             img: 'spins/case3.png',
             cost: 0,
             limitedTime: true, // Add this
