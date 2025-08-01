@@ -12,8 +12,8 @@
     --epic: #800080;
     --legendary: #ff0000;
     --mythic: #FFD700;
-    --exclusive: #ff0357;
-    --limited: #00ff6adc;
+    --exclusive: #db5800dc;
+    --limited: #ff0357;
     --garbage: #A9A9A9;
     --success: #4CAF50; /* Green */
     --secondary: #FF5733; /* Orange */
@@ -921,6 +921,14 @@ video::-webkit-media-controls-start-playback-button {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(204, 0, 0, 0.5);
 }
 
+.lootbox-item.exclusive {
+    border: 3px solid var(--exclusive);
+    background: linear-gradient(135deg, 
+        rgba(219, 88, 0, 0.700) 0%, 
+        rgba(175, 88, 0, 0.700) 100%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(219, 88, 0, 0.863);
+}
+
 .lootbox-item.mythic {
     border: 3px solid var(--mythic);
     background: linear-gradient(135deg, 
@@ -928,6 +936,14 @@ video::-webkit-media-controls-start-playback-button {
         rgba(200, 160, 0, 0.4) 100%);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 215, 0, 0.7);
     animation: goldGlow 2s ease-in-out infinite alternate;
+}
+
+.lootbox-item.limited {
+    border: 3px solid var(--limited);
+    background: linear-gradient(135deg, 
+        rgba(255, 3, 85) 0%, 
+        rgba(125, 3, 85) 100%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 3, 87);
 }
 
 @keyframes goldGlow {
@@ -1199,8 +1215,16 @@ video::-webkit-media-controls-start-playback-button {
     color: var(--legendary);
 }
 
+#auto-sell-exclusive:checked + span {
+    color: var(--exclusive);
+}
+
 #auto-sell-mythic:checked + span {
     color: var(--mythic);
+}
+
+#auto-sell-limited:checked + span {
+    color: var(--limited);
 }
 
 .lootbox-sidebar {
@@ -1265,13 +1289,25 @@ video::-webkit-media-controls-start-playback-button {
 .rarity-item.legendary {
     background: rgba(204, 0, 0, 0.3);
     border-left: 4px solid var(--legendary);
-    color: #ff5050;
+    color: #993737;
+}
+
+.rarity-item.exclusive {
+    background: rgba(175, 88, 0, 0.500);
+    border-left: 4px solid var(--exclusive);
+    color: #db5800dc;
 }
 
 .rarity-item.mythic {
     background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(200, 160, 0, 0.3));
     border-left: 4px solid var(--mythic);
     color: #FFD700;
+}
+
+.rarity-item.limited {
+    background: rgba(100, 3, 80);
+    border-left: 4px solid var(--limited);
+    color: #ff0357;
 }
 
 /* Loot Box Win Popup */
@@ -1383,10 +1419,22 @@ video::-webkit-media-controls-start-playback-button {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
+.lootbox-rarity.exclusive {
+    background: linear-gradient(135deg, var(--exclusive), #db5800dc);
+    color: #000;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
 .lootbox-rarity.mythic {
     background: linear-gradient(135deg, var(--mythic), #CC0000);
     color: white;
     animation: mythicPulse 1.5s ease-in-out infinite alternate;
+}
+
+.lootbox-rarity.limited {
+    background: linear-gradient(135deg, var(--limited), #ff0357);
+    color: #000;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes mythicPulse {
@@ -1611,9 +1659,15 @@ video::-webkit-media-controls-start-playback-button {
 .inventory-item.legendary {
     border: 2px solid var(--legendary);
 }
+.inventory-item.exclusive {
+    border: 2px solid var(--exclusive);
+}
 .inventory-item.mythic {
     border: 2px solid var(--mythic);
     animation: goldGlow 2s ease-in-out infinite alternate;
+}
+.inventory-item.limited {
+    border: 2px solid var(--limited);
 }
 
 .inventory-item-img {
@@ -1668,9 +1722,20 @@ video::-webkit-media-controls-start-playback-button {
     background: var(--legendary);
     color: white;
 }
+
+.inventory-item.exclusive .inventory-item-rarity {
+    background: var(--exclusive);
+    color: white;
+}
+
 .inventory-item.mythic .inventory-item-rarity {
     background: var(--mythic);
     color: black;
+}
+
+.inventory-item.limited .inventory-item-rarity {
+    background: var(--limited);
+    color: white;
 }
 
 .inventory-sell-panel {
