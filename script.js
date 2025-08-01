@@ -133,8 +133,8 @@ const CONFIG = {
             img: 'spins/case3.png',
             cost: 0,
             limitedTime: true, // Add this
-            startTime: '2025-08-03T00:00:00Z', // Add start time (optional)
-            endTime: '2025-08-05T02:00:00Z', // Add end time
+            startTime: '2025-08-03T00:00:00.000Z', // Full ISO format with milliseconds
+            endTime: '2025-08-05T02:00:00.000Z',
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
                 { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 3, value: 340 },
@@ -382,24 +382,25 @@ const elements = {
 
 const TimerManager = {
     interval: null,
-    active: false,
     
     start: function() {
-        if (this.interval) clearInterval(this.interval);
-        this.active = true;
+        this.stop(); // Clear any existing interval
         this.interval = setInterval(() => {
+            // Only update if on case select screen
             if (elements.lootboxCaseSelectScreen && 
                 elements.lootboxCaseSelectScreen.style.display === 'block') {
                 updateCaseTimers();
             }
         }, 1000);
-        // Force immediate first update
+        // Force immediate update
         updateCaseTimers();
     },
     
     stop: function() {
-        if (this.interval) clearInterval(this.interval);
-        this.active = false;
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+        }
     }
 };
 
@@ -441,6 +442,15 @@ async function validateCaseWithServer(caseItem) {
     }
 }
 
+// Add this with your helper functions
+function formatTimeRemaining(ms) {
+    const days = Math.floor(ms / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+}
+
 function getTimeRemaining(caseItem) {
     if (!caseItem.limitedTime) return '';
     
@@ -468,83 +478,71 @@ function getTimeRemaining(caseItem) {
 let lastCaseUpdateTime = 0;
 
 async function updateCaseTimers() {
-    if (!elements.lootboxCasesContainer) return;
-    
+    if (!elements.lootboxCasesContainer || 
+        !elements.lootboxCaseSelectScreen || 
+        elements.lootboxCaseSelectScreen.style.display !== 'block') {
+        return;
+    }
+
     try {
-        const response = await fetch(`${API_BASE_URL}/api/cases/validate`);
-        if (!response.ok) return;
+        // Get server time for consistency
+        const now = new Date();
         
-        const data = await response.json();
-        // Use server time for consistency
-        const now = new Date(data.serverTime);
+        // Debug output
+        console.log('Current time:', now.toISOString());
         
         const caseElements = elements.lootboxCasesContainer.querySelectorAll('.lootbox-case');
         
         caseElements.forEach((caseElement, index) => {
             const caseData = CONFIG.lootboxCases[index];
-            if (!caseData) return;
+            if (!caseData || !caseData.limitedTime) return;
             
             const timerElement = caseElement.querySelector('.case-timer');
             if (!timerElement) return;
 
-            // Force DOM update by cloning
-            const newTimerElement = timerElement.cloneNode(true);
-            timerElement.parentNode.replaceChild(newTimerElement, timerElement);
+            // Parse dates as UTC
+            const startTime = new Date(caseData.startTime);
+            const endTime = new Date(caseData.endTime);
             
-            // Parse dates consistently (UTC)
-            const startTime = new Date(caseData.startTime + 'Z'); // Add 'Z' to force UTC
-            const endTime = new Date(caseData.endTime + 'Z');
+            // Debug output
+            console.log(`Case ${caseData.id}:`, {
+                startTime: startTime.toISOString(),
+                endTime: endTime.toISOString(),
+                now: now.toISOString()
+            });
+
+            // Clear existing classes
+            caseElement.classList.remove('disabled-case');
+            timerElement.className = 'case-timer';
             
-            const isActive = now >= startTime && now < endTime;
-            const hasNotStarted = now < startTime;
-            const hasEnded = now >= endTime;
-            
-            if (isActive) {
-                caseElement.classList.remove('disabled-case');
+            if (now < startTime) {
+                // Case hasn't started yet
+                const timeUntilStart = startTime - now;
+                timerElement.innerHTML = `
+                    <div>Starts in</div>
+                    <div class="start-countdown">${formatTimeRemaining(timeUntilStart)}</div>
+                `;
+                timerElement.classList.add('not-started');
+                caseElement.style.opacity = '0.6';
+                caseElement.style.pointerEvents = 'none';
+            } 
+            else if (now < endTime) {
+                // Case is active
+                const timeRemaining = endTime - now;
+                timerElement.innerHTML = `
+                    <div>Available Now</div>
+                    <div class="end-countdown">Ends in ${formatTimeRemaining(timeRemaining)}</div>
+                `;
+                timerElement.classList.add('active');
                 caseElement.style.opacity = '1';
                 caseElement.style.pointerEvents = 'auto';
-                
-                const timeRemaining = endTime - now;
-                const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
-                
-                newTimerElement.className = 'case-timer active';
-                newTimerElement.innerHTML = `
-                    <div>Available Now</div>
-                    <div class="end-countdown">Ends in ${days}d ${hours}h ${minutes}m ${seconds}s</div>
-                `;
-                
-                caseElement.onclick = () => selectLootboxCase(caseData);
-            } 
-            else if (hasNotStarted) {
-                caseElement.classList.add('disabled-case');
-                caseElement.style.opacity = '0.6';
-                caseElement.style.pointerEvents = 'none';
-                
-                const timeUntilStart = startTime - now;
-                const days = Math.floor(timeUntilStart / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((timeUntilStart % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((timeUntilStart % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((timeUntilStart % (1000 * 60)) / 1000);
-                
-                newTimerElement.className = 'case-timer not-started';
-                newTimerElement.innerHTML = `
-                    <div>Starts in</div>
-                    <div class="start-countdown">${days}d ${hours}h ${minutes}m ${seconds}s</div>
-                `;
-                
-                caseElement.onclick = null;
             } 
             else {
-                caseElement.classList.add('disabled-case');
+                // Case has expired
+                timerElement.innerHTML = '<div>Expired</div>';
+                timerElement.classList.add('expired');
                 caseElement.style.opacity = '0.6';
                 caseElement.style.pointerEvents = 'none';
-                newTimerElement.className = 'case-timer expired';
-                newTimerElement.innerHTML = '<div>Expired</div>';
-                
-                caseElement.onclick = null;
             }
         });
     } catch (error) {
@@ -1086,16 +1084,23 @@ function showLootboxCaseSelectScreen() {
         return;
     }
     
-    if (elements.lootboxCaseSelectScreen) elements.lootboxCaseSelectScreen.style.display = 'block';
-    if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
+    // Hide other screens
+    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
+    if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
     
-    populateLootboxCases();
-    TimerManager.start();
+    // Show case select screen
+    if (elements.lootboxCaseSelectScreen) {
+        elements.lootboxCaseSelectScreen.style.display = 'block';
+        populateLootboxCases();
+        TimerManager.start();
+    }
 }
 
 function hideLootboxCaseSelectScreen() {
-    if (elements.lootboxCaseSelectScreen) elements.lootboxCaseSelectScreen.style.display = 'none';
+    if (elements.lootboxCaseSelectScreen) {
+        elements.lootboxCaseSelectScreen.style.display = 'none';
+    }
     TimerManager.stop();
 }
 
