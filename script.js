@@ -77,7 +77,7 @@ const CONFIG = {
             name: 'Recoil Case',
             img: 'spins/case2.png',
             cost: 75,
-            limitedTime: true, // Add this
+            limitedTime: false, // Add this
             startTime: '2025-07-30T00:00:00', // Add start time (optional)
             endTime: '2025-08-01T02:00:00', // Add end time
             items: [
@@ -189,7 +189,7 @@ const CONFIG = {
 
 // Game State
 let gameState = {
-    autoSellEnabled: false,
+    autoSellEnabled: true,
     instantSpinLimit: 25,
     instantSpinsUsed: 0,
     lastRefillTime: null,
