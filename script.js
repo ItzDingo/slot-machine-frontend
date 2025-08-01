@@ -380,6 +380,29 @@ const elements = {
     lootboxChangeCaseBtn: document.getElementById('lootbox-change-case-btn')
 };
 
+const TimerManager = {
+    interval: null,
+    active: false,
+    
+    start: function() {
+        if (this.interval) clearInterval(this.interval);
+        this.active = true;
+        this.interval = setInterval(() => {
+            if (elements.lootboxCaseSelectScreen && 
+                elements.lootboxCaseSelectScreen.style.display === 'block') {
+                updateCaseTimers();
+            }
+        }, 1000);
+        // Force immediate first update
+        updateCaseTimers();
+    },
+    
+    stop: function() {
+        if (this.interval) clearInterval(this.interval);
+        this.active = false;
+    }
+};
+
 // Helper Functions
 const spinSound = new Audio('spins/spin.mp3');
 const openSound = new Audio('spins/open.mp3');
@@ -442,10 +465,17 @@ function getTimeRemaining(caseItem) {
     return `Ends in ${days}d ${hours}h ${minutes}m ${seconds}s`;
 }
 
+let lastCaseUpdateTime = 0;
 
-// Modify your updateCaseTimers function
 async function updateCaseTimers() {
-    if (!elements.lootboxCasesContainer) return;
+    // Skip if not on case select screen or too frequent updates
+    if (!elements.lootboxCaseSelectScreen || 
+        elements.lootboxCaseSelectScreen.style.display !== 'block' ||
+        Date.now() - lastCaseUpdateTime < 500) {
+        return;
+    }
+    
+    lastCaseUpdateTime = Date.now();
     
     try {
         const response = await fetch(`${API_BASE_URL}/api/cases/validate`);
@@ -458,82 +488,53 @@ async function updateCaseTimers() {
         
         caseElements.forEach((caseElement, index) => {
             const caseData = CONFIG.lootboxCases[index];
-            const serverCaseData = data.cases.find(c => c.caseId === caseData.id);
-            
-            if (!serverCaseData) return;
+            if (!caseData) return;
             
             const timerElement = caseElement.querySelector('.case-timer');
             if (!timerElement) return;
 
-            // Force a reflow to ensure updates are visible
-            caseElement.style.display = 'none';
-            caseElement.offsetHeight; // Trigger reflow
-            caseElement.style.display = '';
+            // Clone the element to force DOM update
+            const newTimerElement = timerElement.cloneNode(true);
+            timerElement.parentNode.replaceChild(newTimerElement, timerElement);
             
-            // Calculate time remaining
             const startTime = new Date(caseData.startTime);
             const endTime = new Date(caseData.endTime);
             const isActive = serverTime >= startTime && serverTime < endTime;
             const hasNotStarted = serverTime < startTime;
-            const hasEnded = serverTime >= endTime;
             
             if (isActive) {
-                // Case is currently active
-                caseElement.classList.remove('disabled-case');
-                caseElement.style.opacity = '1';
-                caseElement.style.pointerEvents = 'auto';
-                timerElement.className = 'case-timer active';
-                
                 const timeRemaining = endTime - serverTime;
                 const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
                 
-                timerElement.innerHTML = `
+                newTimerElement.className = 'case-timer active';
+                newTimerElement.innerHTML = `
                     <div>Available Now</div>
                     <div class="end-countdown">Ends in ${days}d ${hours}h ${minutes}m ${seconds}s</div>
                 `;
-                
-                // Update click handler
-                caseElement.onclick = () => selectLootboxCase(caseData);
             } else if (hasNotStarted) {
-                // Case hasn't started yet
-                caseElement.classList.add('disabled-case');
-                caseElement.style.opacity = '0.6';
-                caseElement.style.pointerEvents = 'none';
-                timerElement.className = 'case-timer not-started';
-                
                 const timeUntilStart = startTime - serverTime;
                 const days = Math.floor(timeUntilStart / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((timeUntilStart % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((timeUntilStart % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((timeUntilStart % (1000 * 60)) / 1000);
                 
-                timerElement.innerHTML = `
+                newTimerElement.className = 'case-timer not-started';
+                newTimerElement.innerHTML = `
                     <div>Starts in</div>
                     <div class="start-countdown">${days}d ${hours}h ${minutes}m ${seconds}s</div>
                 `;
-                
-                // Remove click handler
-                caseElement.onclick = null;
-            } else if (hasEnded) {
-                // Case has ended
-                caseElement.classList.add('disabled-case');
-                caseElement.style.opacity = '0.6';
-                caseElement.style.pointerEvents = 'none';
-                timerElement.className = 'case-timer expired';
-                timerElement.innerHTML = '<div>Expired</div>';
-                
-                // Remove click handler
-                caseElement.onclick = null;
+            } else {
+                newTimerElement.className = 'case-timer expired';
+                newTimerElement.innerHTML = '<div>Expired</div>';
             }
         });
     } catch (error) {
         console.error('Error updating case timers:', error);
     }
 }
-
 
 // ----------------------------------
 function loadAutoSellPreferences() {
@@ -1073,9 +1074,13 @@ function showLootboxCaseSelectScreen() {
     if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
     
-    // Force an immediate update when showing the select screen
     populateLootboxCases();
-    updateCaseTimers();
+    TimerManager.start();
+}
+
+function hideLootboxCaseSelectScreen() {
+    if (elements.lootboxCaseSelectScreen) elements.lootboxCaseSelectScreen.style.display = 'none';
+    TimerManager.stop();
 }
 
 function populateLootboxCases() {
@@ -2286,11 +2291,17 @@ if (elements.lootboxSpinBtn) elements.lootboxSpinBtn.addEventListener('click', s
 if (document.getElementById('mines-game-over-close')) {
     document.getElementById('mines-game-over-close').addEventListener('click', closeMinesGameOverPopup);
 }
-if (elements.backToMenuBtn) elements.backToMenuBtn.addEventListener('click', showGameSelectScreen);
+if (elements.backToMenuBtn) elements.backToMenuBtn.addEventListener('click', () => {
+    hideLootboxCaseSelectScreen();
+    showGameSelectScreen();
+});
 if (elements.minesBackToMenuBtn) elements.minesBackToMenuBtn.addEventListener('click', showGameSelectScreen);
 if (elements.lootboxBackToMenuBtn) elements.lootboxBackToMenuBtn.addEventListener('click', showGameSelectScreen);
 if (elements.inventoryBackToMenuBtn) elements.inventoryBackToMenuBtn.addEventListener('click', showGameSelectScreen);
-if (elements.lootboxCaseSelectBackBtn) elements.lootboxCaseSelectBackBtn.addEventListener('click', showGameSelectScreen);
+if (elements.lootboxCaseSelectBackBtn) elements.lootboxCaseSelectBackBtn.addEventListener('click', () => {
+    hideLootboxCaseSelectScreen();
+    showGameSelectScreen();
+});
 if (elements.lootboxChangeCaseBtn) elements.lootboxChangeCaseBtn.addEventListener('click', showLootboxCaseSelectScreen);
 
 document.getElementById('confirm-refill-btn')?.addEventListener('click', refillInstantSpins);
@@ -2330,16 +2341,14 @@ async function initGame() {
             updateInstantSpinDisplay();
         }
 
-        // Initialize auto-sell state
         setAutoSellEnabled(gameState.autoSellEnabled);
         
-        // Start the case timers updater with immediate first run
-        updateCaseTimers();
-        const timerInterval = setInterval(updateCaseTimers, 1000);
+        // Initialize but don't start timer yet
+        TimerManager.stop();
         
-        // Clear interval when leaving the page to prevent memory leaks
+        // Clean up on page unload
         window.addEventListener('beforeunload', () => {
-            clearInterval(timerInterval);
+            TimerManager.stop();
         });
         
     } catch (error) {
