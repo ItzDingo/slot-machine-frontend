@@ -1066,18 +1066,47 @@ function showLootboxCaseSelectScreen() {
     populateLootboxCases();
 }
 
+function populateLootboxCases() {
+    if (!elements.lootboxCasesContainer) return;
+    
+    // Clear container and show loading state
+    elements.lootboxCasesContainer.innerHTML = '<div class="loading-cases">Loading cases...</div>';
+    
+    // Create case elements for each case in CONFIG
+    CONFIG.lootboxCases.forEach(lootboxCase => {
+        const caseElement = document.createElement('div');
+        caseElement.className = 'lootbox-case';
+        caseElement.dataset.caseId = lootboxCase.id;
+        
+        caseElement.innerHTML = `
+            <img src="${lootboxCase.img}" alt="${lootboxCase.name}" class="lootbox-case-img">
+            <div class="lootbox-case-name">${lootboxCase.name}</div>
+            <div class="lootbox-case-price">${lootboxCase.cost} chips</div>
+            <div class="case-timer loading">
+                <div class="loading-dots">...</div>
+            </div>
+        `;
+        
+        elements.lootboxCasesContainer.appendChild(caseElement);
+    });
+    
+    // Now update with actual status
+    updateCaseTimers();
+}
+
 async function updateCaseTimers() {
     if (!elements.lootboxCasesContainer) return;
     
     try {
-        // Get case status from server
+        // Get server validation data
         const response = await fetch(`${API_BASE_URL}/api/cases/validate`);
-        if (!response.ok) return;
+        if (!response.ok) throw new Error('Failed to fetch case status');
         
         const data = await response.json();
         const serverTime = new Date(data.serverTime);
         const caseElements = elements.lootboxCasesContainer.querySelectorAll('.lootbox-case');
         
+        // Update each case
         CONFIG.lootboxCases.forEach((lootboxCase, index) => {
             const caseElement = caseElements[index];
             if (!caseElement) return;
@@ -1085,27 +1114,27 @@ async function updateCaseTimers() {
             const timerElement = caseElement.querySelector('.case-timer');
             if (!timerElement) return;
             
-            // Remove loading states
-            caseElement.classList.remove('loading-case');
-            timerElement.classList.remove('loading');
-            
             // Find matching server data
             const serverCaseData = data.cases.find(c => c.caseId === lootboxCase.id);
-            if (!serverCaseData) return;
+            if (!serverCaseData) {
+                timerElement.textContent = 'Unavailable';
+                return;
+            }
             
             // Convert to Date objects
             const startTime = new Date(serverCaseData.startTime);
             const endTime = new Date(serverCaseData.endTime);
+            
+            // Remove loading state
+            timerElement.classList.remove('loading');
             
             // Determine case state
             if (serverTime >= startTime && serverTime < endTime) {
                 // Case is active
                 caseElement.classList.remove('disabled-case');
                 caseElement.style.opacity = '1';
-                caseElement.style.cursor = 'pointer';
                 caseElement.style.pointerEvents = 'auto';
                 
-                timerElement.className = 'case-timer active';
                 const timeRemaining = endTime - serverTime;
                 const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -1113,21 +1142,19 @@ async function updateCaseTimers() {
                 const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
                 
                 timerElement.innerHTML = `
-                    <div>Available Now</div>
-                    <div class="end-countdown">Ends in ${days}d ${hours}h ${minutes}m ${seconds}s</div>
+                    <div class="case-status">Available Now</div>
+                    <div class="time-remaining">Ends in ${days}d ${hours}h ${minutes}m ${seconds}s</div>
                 `;
                 
-                // Update click handler
+                // Set click handler
                 caseElement.onclick = () => selectLootboxCase(lootboxCase);
             } 
             else if (serverTime < startTime) {
                 // Case hasn't started yet
                 caseElement.classList.add('disabled-case');
                 caseElement.style.opacity = '0.6';
-                caseElement.style.cursor = 'not-allowed';
                 caseElement.style.pointerEvents = 'none';
                 
-                timerElement.className = 'case-timer not-started';
                 const timeUntilStart = startTime - serverTime;
                 const days = Math.floor(timeUntilStart / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((timeUntilStart % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -1135,24 +1162,30 @@ async function updateCaseTimers() {
                 const seconds = Math.floor((timeUntilStart % (1000 * 60)) / 1000);
                 
                 timerElement.innerHTML = `
-                    <div>Coming Soon</div>
-                    <div class="start-countdown">Starts in ${days}d ${hours}h ${minutes}m ${seconds}s</div>
+                    <div class="case-status">Coming Soon</div>
+                    <div class="time-remaining">Starts in ${days}d ${hours}h ${minutes}m ${seconds}s</div>
                 `;
             } 
             else {
                 // Case has expired
                 caseElement.classList.add('disabled-case');
                 caseElement.style.opacity = '0.6';
-                caseElement.style.cursor = 'not-allowed';
                 caseElement.style.pointerEvents = 'none';
                 
-                timerElement.className = 'case-timer expired';
-                timerElement.innerHTML = '<div>Expired</div>';
+                timerElement.innerHTML = '<div class="case-status">Expired</div>';
             }
         });
         
     } catch (error) {
         console.error('Error updating case timers:', error);
+        // Show error state
+        const caseElements = elements.lootboxCasesContainer.querySelectorAll('.lootbox-case');
+        caseElements.forEach(caseElement => {
+            const timerElement = caseElement.querySelector('.case-timer');
+            if (timerElement) {
+                timerElement.innerHTML = '<div class="error">Failed to load</div>';
+            }
+        });
     }
 }
 
