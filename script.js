@@ -28,10 +28,10 @@ const CONFIG = {
             limitedTime: false, // Add this
             startTime: '2025-08-01T00:00:00', // Add start time (optional)
             endTime: '2025-08-15T23:59:59', // Add end time
-            playVideo: true, // Add this
-            video: 'spins/video3.mp4', // Add this
+            playVideo: false, // Add this
+            video: 'spins/video1.mp4', // Add this
             items: [
-                { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 1.07, value: 5000, quantity: 10 },
+                { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 1.07, value: 5000 },
                 { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 14.28, value: 15 },
                 { name: 'M4A1-S Night Terror', img: 'spins/M4A1-S-Night-Terror.png', rarity: 'epic', chance: 3.2, value: 700 },
                 { name: 'P2000 Lifted Spirits', img: 'spins/P2000-Lifted-Spirits.png', rarity: 'common', chance: 14.28, value: 5 },
@@ -139,8 +139,8 @@ const CONFIG = {
             limitedTime: true, // Add this
             startTime: '2025-08-03T00:00:00.000Z', // Full ISO format with milliseconds
             endTime: '2025-08-05T02:00:00.000Z',
-            playVideo: false, // Add this
-            video: 'spins/video1.mp4', // Add this
+            playVideo: true, // Add this
+            video: 'spins/video3.mp4', // Add this
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
                 { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 3, value: 340 },
