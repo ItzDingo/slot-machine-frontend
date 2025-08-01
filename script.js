@@ -77,9 +77,9 @@ const CONFIG = {
             name: 'Recoil Case',
             img: 'spins/case2.png',
             cost: 75,
-            limitedTime: false, // Add this
+            limitedTime: true, // Add this
             startTime: '2025-07-30T00:00:00', // Add start time (optional)
-            endTime: '2025-07-01T01:00:00', // Add end time
+            endTime: '2025-08-01T02:00:00', // Add end time
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
                 { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 3, value: 340 },
@@ -337,7 +337,8 @@ function checkAutoSell(rarity) {
 }
 
 function isCaseAvailable(caseItem) {
-    // For immediate client-side check (will be validated again server-side)
+    if (!caseItem.limitedTime) return true;
+    
     const now = new Date();
     const startTime = caseItem.startTime ? new Date(caseItem.startTime) : new Date(0);
     const endTime = new Date(caseItem.endTime);
@@ -362,31 +363,27 @@ async function validateCaseWithServer(caseItem) {
 }
 
 function getTimeRemaining(caseItem) {
-    if (!caseItem.limitedTime) return null;
+    if (!caseItem.limitedTime) return '';
     
     const now = new Date();
     const startTime = caseItem.startTime ? new Date(caseItem.startTime) : new Date(0);
     const endTime = new Date(caseItem.endTime);
-
-    // Always return the end time countdown if case is active
-    if (now >= startTime) {
-        const diff = endTime - now;
-        if (diff <= 0) return "Expired";
-        
+    
+    if (now < startTime) {
+        const diff = startTime - now;
         const days = Math.floor(diff / (1000 * 60 * 60 * 24));
         const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        
-        return `Ends in ${days}d ${hours}h ${minutes}m ${seconds}s`;
+        return `Starts in ${days}d ${hours}h`;
     }
     
-    // Before start time
-    const diff = startTime - now;
+    if (now >= endTime) return "Expired";
+    
+    const diff = endTime - now;
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return `Starts in ${days}d ${hours}h ${minutes}m`;
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    return `Ends in ${days}d ${hours}h ${minutes}m ${seconds}s`;
 }
 
 
@@ -1005,22 +1002,21 @@ function populateLootboxCases() {
     
     elements.lootboxCasesContainer.innerHTML = '';
     
-    // Get current time once at the start to ensure consistency
     const now = new Date();
     
     CONFIG.lootboxCases.forEach(lootboxCase => {
-        // Calculate all time-related values upfront
-        const startTime = lootboxCase.startTime ? new Date(lootboxCase.startTime) : new Date(0);
-        const endTime = new Date(lootboxCase.endTime);
-        const isAvailable = now >= startTime && now < endTime;
-        const timeRemaining = getTimeRemaining(lootboxCase);
+        // For non-limited cases, they're always available
+        const isAvailable = !lootboxCase.limitedTime || 
+                          (now >= (lootboxCase.startTime ? new Date(lootboxCase.startTime) : new Date(0)) && 
+                          now < new Date(lootboxCase.endTime));
         
         const caseElement = document.createElement('div');
-        caseElement.className = `lootbox-case ${!isAvailable ? 'disabled-case' : ''}`;
+        caseElement.className = `lootbox-case ${!isAvailable && lootboxCase.limitedTime ? 'disabled-case' : ''}`;
         
-        // Build timer HTML based on pre-calculated values
         let timerHtml = '';
+        // Only show timer for limited-time cases
         if (lootboxCase.limitedTime) {
+            const timeRemaining = getTimeRemaining(lootboxCase);
             if (isAvailable) {
                 timerHtml = `
                     <div class="case-timer active">
@@ -1029,6 +1025,7 @@ function populateLootboxCases() {
                     </div>
                 `;
             } else {
+                const startTime = lootboxCase.startTime ? new Date(lootboxCase.startTime) : new Date(0);
                 const timerClass = now < startTime ? 'not-started' : 'expired';
                 timerHtml = `<div class="case-timer ${timerClass}">${timeRemaining}</div>`;
             }
@@ -1041,22 +1038,28 @@ function populateLootboxCases() {
             ${timerHtml}
         `;
         
-        // Set interaction properties based on availability
         if (isAvailable) {
             caseElement.style.opacity = '1';
             caseElement.style.cursor = 'pointer';
             caseElement.style.pointerEvents = 'auto';
             caseElement.addEventListener('click', () => selectLootboxCase(lootboxCase));
         } else {
-            caseElement.style.opacity = '0.6';
-            caseElement.style.cursor = 'not-allowed';
-            caseElement.style.pointerEvents = 'none';
+            // Only apply disabled styles to limited-time cases
+            if (lootboxCase.limitedTime) {
+                caseElement.style.opacity = '0.6';
+                caseElement.style.cursor = 'not-allowed';
+                caseElement.style.pointerEvents = 'none';
+            } else {
+                caseElement.style.opacity = '1';
+                caseElement.style.cursor = 'pointer';
+                caseElement.style.pointerEvents = 'auto';
+                caseElement.addEventListener('click', () => selectLootboxCase(lootboxCase));
+            }
         }
         
         elements.lootboxCasesContainer.appendChild(caseElement);
     });
     
-    // Start the timer updates after initial render
     setTimeout(updateCaseTimers, 0);
 }
 
@@ -1288,29 +1291,33 @@ async function startLootboxSpin() {
 
 // Add this function to your script.js
 async function instantLootboxSpin() {
-    // 1. First check if case is available
-    const now = new Date();
+    // 1. Validate case availability
     const caseItem = gameState.lootboxGame.currentCase;
-    const startTime = caseItem.startTime ? new Date(caseItem.startTime) : new Date(0);
-    const endTime = new Date(caseItem.endTime);
+    const now = new Date();
     
-    if (now < startTime) {
-        showNotification("This case hasn't started yet!", false);
-        return;
+    // For limited cases, check time window
+    if (caseItem.limitedTime) {
+        const startTime = caseItem.startTime ? new Date(caseItem.startTime) : new Date(0);
+        const endTime = new Date(caseItem.endTime);
+        
+        if (now < startTime) {
+            showNotification("This case hasn't started yet!", false);
+            return;
+        }
+        
+        if (now >= endTime) {
+            showNotification("This case is no longer available!", false);
+            return;
+        }
     }
     
-    if (now >= endTime) {
-        showNotification("This case is no longer available!", false);
-        return;
-    }
-
-    // 2. Check if out of instant spins
+    // 2. Check instant spins remaining
     if ((gameState.instantSpins?.remaining || 0) <= 0) {
         updateInstantSpinDisplay(true);
         return;
     }
 
-    // 3. Check if enough chips for the case cost
+    // 3. Check chips balance
     if (gameState.chips < gameState.lootboxGame.currentCase.cost) {
         showNotification("Not enough chips!", false);
         return;
