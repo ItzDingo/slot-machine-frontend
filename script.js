@@ -693,11 +693,11 @@ async function refillInstantSpins() {
     }
 }
 
-function updateInstantSpinDisplay() {
+function updateInstantSpinDisplay(showPopup = false) {
     const instantSpinBtn = document.getElementById('lootbox-instant-spin-btn');
     if (!instantSpinBtn) return;
 
-    // Get the current remaining spins (prioritize server data if available)
+    // Get the current remaining spins
     let remaining;
     if (gameState.instantSpins && typeof gameState.instantSpins.remaining !== 'undefined') {
         remaining = gameState.instantSpins.remaining;
@@ -714,7 +714,10 @@ function updateInstantSpinDisplay() {
     // Update button state
     if (remaining <= 0) {
         instantSpinBtn.classList.add('disabled');
-        showRefillPopup();
+        // Only show popup if explicitly requested
+        if (showPopup) {
+            showRefillPopup();
+        }
     } else {
         instantSpinBtn.classList.remove('disabled');
     }
@@ -1269,7 +1272,7 @@ async function startLootboxSpin() {
 async function instantLootboxSpin() {
     // Check if out of instant spins
     if ((gameState.instantSpins?.remaining || 0) <= 0) {
-        showRefillPopup();
+        updateInstantSpinDisplay(true); // Pass true to show popup
         return;
     }
 
@@ -2031,7 +2034,7 @@ function handleSuccessfulLogin(user) {
     gameState.instantSpinsUsed = 0;
     
     // Rest of your existing code...
-    updateInstantSpinDisplay();
+    updateInstantSpinDisplay(false);
 
     const avatarSrc = user.avatar || 'assets/default-avatar.png';
     
