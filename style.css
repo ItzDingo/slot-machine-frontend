@@ -560,8 +560,10 @@ body {
 }
 
 .video-container video {
-    max-width: 100%;
-    max-height: 100%;
+    /* Ensure no native controls are shown */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
 /* Loading spinner for video buffering */
@@ -579,8 +581,25 @@ body {
     z-index: 1001;
 }
 
-@keyframes spin {
-    to { transform: translate(-50%, -50%) rotate(360deg); }
+/* Hide any browser-specific controls that might still appear */
+video::-webkit-media-controls {
+    display: none !important;
+}
+
+video::-webkit-media-controls-enclosure {
+    display: none !important;
+}
+
+video::-webkit-media-controls-panel {
+    display: none !important;
+}
+
+video::-webkit-media-controls-play-button {
+    display: none !important;
+}
+
+video::-webkit-media-controls-start-playback-button {
+    display: none !important;
 }
 
 #claim-btn {
@@ -2168,7 +2187,4 @@ body {
     .lootbox-case-name {
         font-size: 0.8rem;
     }
-
-    
-
 }
