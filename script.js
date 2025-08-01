@@ -1256,7 +1256,7 @@ async function startLootboxSpin() {
             track.style.transition = 'none';
             
             if (spinTime >= targetSpinTime && velocity <= minVelocity) {
-                const centerPos = currentPosition + containerCenter - 66;
+                const centerPos = currentPosition + containerCenter - 65;
                 const nearestIdx = Math.round(centerPos / itemWidth) % itemsPerLoop + middleStart;
                 const finalItem = allItems[nearestIdx >= allItems.length ? middleStart : nearestIdx];
                 const itemName = finalItem?.dataset.itemName || finalItem?.querySelector('img').alt;
