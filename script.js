@@ -31,8 +31,8 @@ const CONFIG = {
             playVideo: true, // Add this
             video: 'spins/video3.mp4', // Add this
             items: [
-                { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 1.07, value: 5000, quantity: 3 },
-                { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 14.28, value: 15, quantity: 1000 },
+                { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 1.07, value: 5000, quantity: 10 },
+                { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 14.28, value: 15, quantity: 10000 },
                 { name: 'M4A1-S Night Terror', img: 'spins/M4A1-S-Night-Terror.png', rarity: 'epic', chance: 3.2, value: 700 },
                 { name: 'P2000 Lifted Spirits', img: 'spins/P2000-Lifted-Spirits.png', rarity: 'common', chance: 14.28, value: 5 },
                 { name: 'USP-S Ticket to Hell', img: 'spins/USP-Ticket-to-Hell-Skin.png', rarity: 'epic', chance: 2.55, value: 285 },
@@ -679,14 +679,14 @@ async function getRandomLootboxItem(caseItems) {
     }
     
     if (availableItems.length === 0) {
-        // All limited items are maxed out, return a default item
-        return { 
-            name: 'Default Item', 
-            img: 'spins/default.png', 
-            rarity: 'common', 
-            value: 10 
-        };
-    }
+    console.warn('All limited items maxed out, using fallback');
+    return { 
+        name: 'MAX [MP40 COBRA]', 
+        img: 'assets/max.png',
+        rarity: 'common',
+        value: 0
+    };
+}
     
     const totalWeight = availableItems.reduce((sum, item) => sum + item.chance, 0);
     const random = Math.random() * totalWeight;
@@ -1545,25 +1545,8 @@ async function startLootboxSpin() {
 
 // Add this function to your script.js
 async function instantLootboxSpin() {
-    // 1. Validate case availability
+    // 1. Verify case availability
     const caseItem = gameState.lootboxGame.currentCase;
-    const now = new Date();
-    
-    // For limited cases, check time window
-    if (caseItem.limitedTime) {
-        const startTime = caseItem.startTime ? new Date(caseItem.startTime) : new Date(0);
-        const endTime = new Date(caseItem.endTime);
-        
-        if (now < startTime) {
-            showNotification("This case hasn't started yet!", false);
-            return;
-        }
-        
-        if (now >= endTime) {
-            showNotification("This case is no longer available!", false);
-            return;
-        }
-    }
     
     // 2. Check instant spins remaining
     if ((gameState.instantSpins?.remaining || 0) <= 0) {
@@ -1572,18 +1555,13 @@ async function instantLootboxSpin() {
     }
 
     // 3. Check chips balance
-    if (gameState.chips < gameState.lootboxGame.currentCase.cost) {
+    if (gameState.chips < caseItem.cost) {
         showNotification("Not enough chips!", false);
         return;
     }
 
-    if (isLootboxSpinning) {
-        showNotification("Please wait for current spin to finish", false);
-        return;
-    }
-
     try {
-        // 4. Deduct chips and use instant spin
+        // 4. Make the API call
         const spinResponse = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
             headers: { 
@@ -1592,7 +1570,7 @@ async function instantLootboxSpin() {
             },
             body: JSON.stringify({
                 userId: gameState.userId,
-                cost: gameState.lootboxGame.currentCase.cost,
+                cost: caseItem.cost,
                 isInstantSpin: true
             }),
             credentials: 'include'
@@ -1601,38 +1579,33 @@ async function instantLootboxSpin() {
         if (!spinResponse.ok) throw new Error('Instant spin failed');
         
         const spinData = await spinResponse.json();
+        
+        // 5. Update game state
         gameState.chips = spinData.newBalance;
         gameState.instantSpins = spinData.instantSpins;
-        
-        // Update UI
         updateCurrencyDisplay();
         updateInstantSpinDisplay();
 
-        // Get random item
-        const resultItem = getRandomLootboxItem(gameState.lootboxGame.currentCase.items);
+        // 6. Get random item
+        const resultItem = getRandomLootboxItem(caseItem.items);
         let finalReward = resultItem;
         
-        // Check for mythic (knife) items
+        // 7. Handle mythic items
         if (resultItem.rarity === 'mythic') {
-            finalReward = getRandomKnife(gameState.lootboxGame.currentCase.knifes);
+            finalReward = getRandomKnife(caseItem.knifes);
         }
 
-        // Check auto-sell settings
-        const shouldAutoSell = checkAutoSell(finalReward.rarity);
-        if (shouldAutoSell) {
+        // 8. Auto-sell or show popup
+        if (checkAutoSell(finalReward.rarity)) {
             await autoSellItem(finalReward);
             showNotification(`Auto-sold ${finalReward.name} for ${finalReward.value} chips`, true);
         } else {
-            // Show popup if not auto-sold
             showLootboxPopup(finalReward);
-            
-            // Play open sound
             if (openSound) {
                 openSound.currentTime = 0;
                 openSound.play().catch(e => console.warn('Open sound error:', e));
             }
         }
-
     } catch (error) {
         console.error('Instant spin error:', error);
         showNotification('Failed to process instant spin', false);
