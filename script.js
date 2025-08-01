@@ -695,18 +695,28 @@ async function refillInstantSpins() {
 
 function updateInstantSpinDisplay() {
     const instantSpinBtn = document.getElementById('lootbox-instant-spin-btn');
-    if (instantSpinBtn) {
-        // Use the remaining spins from gameState.instantSpins if available
-        const remaining = gameState.instantSpins?.remaining || (gameState.instantSpinLimit - gameState.instantSpinsUsed);
-        instantSpinBtn.textContent = `Instant Spin (${remaining}/${gameState.instantSpinLimit})`;
-        
-        if (remaining <= 0) {
-            instantSpinBtn.classList.add('disabled');
-            // Show refill popup when spins reach 0
-            showRefillPopup();
-        } else {
-            instantSpinBtn.classList.remove('disabled');
-        }
+    if (!instantSpinBtn) return;
+
+    // Get the current remaining spins (prioritize server data if available)
+    let remaining;
+    if (gameState.instantSpins && typeof gameState.instantSpins.remaining !== 'undefined') {
+        remaining = gameState.instantSpins.remaining;
+    } else {
+        remaining = gameState.instantSpinLimit - gameState.instantSpinsUsed;
+    }
+
+    // Ensure remaining doesn't go below 0
+    remaining = Math.max(0, remaining);
+
+    // Update button text
+    instantSpinBtn.textContent = `Instant Spin (${remaining}/${gameState.instantSpinLimit})`;
+    
+    // Update button state
+    if (remaining <= 0) {
+        instantSpinBtn.classList.add('disabled');
+        showRefillPopup();
+    } else {
+        instantSpinBtn.classList.remove('disabled');
     }
 }
 
