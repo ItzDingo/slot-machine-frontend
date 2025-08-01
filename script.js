@@ -465,9 +465,10 @@ async function updateCaseTimers() {
             const timerElement = caseElement.querySelector('.case-timer');
             if (!timerElement) return;
 
-            // Remove loading classes
-            caseElement.classList.remove('loading-case');
-            timerElement.classList.remove('loading');
+            // Force a reflow to ensure updates are visible
+            caseElement.style.display = 'none';
+            caseElement.offsetHeight; // Trigger reflow
+            caseElement.style.display = '';
             
             // Calculate time remaining
             const startTime = new Date(caseData.startTime);
@@ -494,8 +495,8 @@ async function updateCaseTimers() {
                     <div class="end-countdown">Ends in ${days}d ${hours}h ${minutes}m ${seconds}s</div>
                 `;
                 
-                // Add click handler only if case is active
-                caseElement.addEventListener('click', () => selectLootboxCase(caseData));
+                // Update click handler
+                caseElement.onclick = () => selectLootboxCase(caseData);
             } else if (hasNotStarted) {
                 // Case hasn't started yet
                 caseElement.classList.add('disabled-case');
@@ -513,13 +514,19 @@ async function updateCaseTimers() {
                     <div>Starts in</div>
                     <div class="start-countdown">${days}d ${hours}h ${minutes}m ${seconds}s</div>
                 `;
+                
+                // Remove click handler
+                caseElement.onclick = null;
             } else if (hasEnded) {
                 // Case has ended
                 caseElement.classList.add('disabled-case');
                 caseElement.style.opacity = '0.6';
                 caseElement.style.pointerEvents = 'none';
                 timerElement.className = 'case-timer expired';
-                timerElement.textContent = 'Expired';
+                timerElement.innerHTML = '<div>Expired</div>';
+                
+                // Remove click handler
+                caseElement.onclick = null;
             }
         });
     } catch (error) {
@@ -1066,7 +1073,9 @@ function showLootboxCaseSelectScreen() {
     if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
     if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
     
+    // Force an immediate update when showing the select screen
     populateLootboxCases();
+    updateCaseTimers();
 }
 
 function populateLootboxCases() {
@@ -2321,11 +2330,17 @@ async function initGame() {
             updateInstantSpinDisplay();
         }
 
-        // Add this line to initialize auto-sell state
+        // Initialize auto-sell state
         setAutoSellEnabled(gameState.autoSellEnabled);
         
-        // Start the case timers updater
-        setInterval(updateCaseTimers, 1000);
+        // Start the case timers updater with immediate first run
+        updateCaseTimers();
+        const timerInterval = setInterval(updateCaseTimers, 1000);
+        
+        // Clear interval when leaving the page to prevent memory leaks
+        window.addEventListener('beforeunload', () => {
+            clearInterval(timerInterval);
+        });
         
     } catch (error) {
         console.error('Initialization error:', error);
