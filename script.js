@@ -79,7 +79,7 @@ const CONFIG = {
             cost: 75,
             limitedTime: true, // Add this
             startTime: '2025-07-30T00:00:00', // Add start time (optional)
-            endTime: '2025-08-01T02:00:00', // Add end time
+            endTime: '2025-08-01T03:00:00', // Add end time
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
                 { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 3, value: 340 },
