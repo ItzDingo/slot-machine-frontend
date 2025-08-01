@@ -133,8 +133,8 @@ const CONFIG = {
             img: 'spins/case3.png',
             cost: 0,
             limitedTime: true, // Add this
-            startTime: '2025-08-03T00:00:00', // Add start time (optional)
-            endTime: '2025-08-05T02:00:00', // Add end time
+            startTime: '2025-08-03T00:00:00Z', // Add start time (optional)
+            endTime: '2025-08-05T02:00:00Z', // Add end time
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
                 { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 3, value: 340 },
@@ -468,21 +468,15 @@ function getTimeRemaining(caseItem) {
 let lastCaseUpdateTime = 0;
 
 async function updateCaseTimers() {
-    // Skip if not on case select screen or too frequent updates
-    if (!elements.lootboxCaseSelectScreen || 
-        elements.lootboxCaseSelectScreen.style.display !== 'block' ||
-        Date.now() - lastCaseUpdateTime < 500) {
-        return;
-    }
-    
-    lastCaseUpdateTime = Date.now();
+    if (!elements.lootboxCasesContainer) return;
     
     try {
         const response = await fetch(`${API_BASE_URL}/api/cases/validate`);
         if (!response.ok) return;
         
         const data = await response.json();
-        const serverTime = new Date(data.serverTime);
+        // Use server time for consistency
+        const now = new Date(data.serverTime);
         
         const caseElements = elements.lootboxCasesContainer.querySelectorAll('.lootbox-case');
         
@@ -493,17 +487,24 @@ async function updateCaseTimers() {
             const timerElement = caseElement.querySelector('.case-timer');
             if (!timerElement) return;
 
-            // Clone the element to force DOM update
+            // Force DOM update by cloning
             const newTimerElement = timerElement.cloneNode(true);
             timerElement.parentNode.replaceChild(newTimerElement, timerElement);
             
-            const startTime = new Date(caseData.startTime);
-            const endTime = new Date(caseData.endTime);
-            const isActive = serverTime >= startTime && serverTime < endTime;
-            const hasNotStarted = serverTime < startTime;
+            // Parse dates consistently (UTC)
+            const startTime = new Date(caseData.startTime + 'Z'); // Add 'Z' to force UTC
+            const endTime = new Date(caseData.endTime + 'Z');
+            
+            const isActive = now >= startTime && now < endTime;
+            const hasNotStarted = now < startTime;
+            const hasEnded = now >= endTime;
             
             if (isActive) {
-                const timeRemaining = endTime - serverTime;
+                caseElement.classList.remove('disabled-case');
+                caseElement.style.opacity = '1';
+                caseElement.style.pointerEvents = 'auto';
+                
+                const timeRemaining = endTime - now;
                 const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
@@ -514,8 +515,15 @@ async function updateCaseTimers() {
                     <div>Available Now</div>
                     <div class="end-countdown">Ends in ${days}d ${hours}h ${minutes}m ${seconds}s</div>
                 `;
-            } else if (hasNotStarted) {
-                const timeUntilStart = startTime - serverTime;
+                
+                caseElement.onclick = () => selectLootboxCase(caseData);
+            } 
+            else if (hasNotStarted) {
+                caseElement.classList.add('disabled-case');
+                caseElement.style.opacity = '0.6';
+                caseElement.style.pointerEvents = 'none';
+                
+                const timeUntilStart = startTime - now;
                 const days = Math.floor(timeUntilStart / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((timeUntilStart % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((timeUntilStart % (1000 * 60 * 60)) / (1000 * 60));
@@ -526,9 +534,17 @@ async function updateCaseTimers() {
                     <div>Starts in</div>
                     <div class="start-countdown">${days}d ${hours}h ${minutes}m ${seconds}s</div>
                 `;
-            } else {
+                
+                caseElement.onclick = null;
+            } 
+            else {
+                caseElement.classList.add('disabled-case');
+                caseElement.style.opacity = '0.6';
+                caseElement.style.pointerEvents = 'none';
                 newTimerElement.className = 'case-timer expired';
                 newTimerElement.innerHTML = '<div>Expired</div>';
+                
+                caseElement.onclick = null;
             }
         });
     } catch (error) {
