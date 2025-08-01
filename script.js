@@ -133,7 +133,7 @@ const CONFIG = {
             img: 'spins/case3.png',
             cost: 0,
             limitedTime: true, // Add this
-            startTime: '2025-08-03T00:00:00', // Add start time (optional)
+            startTime: '2025-08-02T00:00:00', // Add start time (optional)
             endTime: '2025-08-05T02:00:00', // Add end time
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
@@ -469,14 +469,21 @@ async function updateCaseTimers() {
             caseElement.classList.remove('loading-case');
             timerElement.classList.remove('loading');
             
-            if (serverCaseData.isActive) {
+            // Calculate time remaining
+            const startTime = new Date(caseData.startTime);
+            const endTime = new Date(caseData.endTime);
+            const isActive = serverTime >= startTime && serverTime < endTime;
+            const hasNotStarted = serverTime < startTime;
+            const hasEnded = serverTime >= endTime;
+            
+            if (isActive) {
+                // Case is currently active
                 caseElement.classList.remove('disabled-case');
                 caseElement.style.opacity = '1';
                 caseElement.style.pointerEvents = 'auto';
                 timerElement.className = 'case-timer active';
                 
-                // Format remaining time
-                const timeRemaining = serverCaseData.timeRemaining;
+                const timeRemaining = endTime - serverTime;
                 const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
@@ -489,21 +496,30 @@ async function updateCaseTimers() {
                 
                 // Add click handler only if case is active
                 caseElement.addEventListener('click', () => selectLootboxCase(caseData));
-            } else {
+            } else if (hasNotStarted) {
+                // Case hasn't started yet
                 caseElement.classList.add('disabled-case');
                 caseElement.style.opacity = '0.6';
                 caseElement.style.pointerEvents = 'none';
+                timerElement.className = 'case-timer not-started';
                 
-                if (serverTime < new Date(caseData.startTime)) {
-                    timerElement.className = 'case-timer not-started';
-                    const timeUntilStart = new Date(caseData.startTime) - serverTime;
-                    const days = Math.floor(timeUntilStart / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((timeUntilStart % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    timerElement.textContent = `Starts in ${days}d ${hours}h`;
-                } else {
-                    timerElement.className = 'case-timer expired';
-                    timerElement.textContent = 'Expired';
-                }
+                const timeUntilStart = startTime - serverTime;
+                const days = Math.floor(timeUntilStart / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeUntilStart % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeUntilStart % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeUntilStart % (1000 * 60)) / 1000);
+                
+                timerElement.innerHTML = `
+                    <div>Starts in</div>
+                    <div class="start-countdown">${days}d ${hours}h ${minutes}m ${seconds}s</div>
+                `;
+            } else if (hasEnded) {
+                // Case has ended
+                caseElement.classList.add('disabled-case');
+                caseElement.style.opacity = '0.6';
+                caseElement.style.pointerEvents = 'none';
+                timerElement.className = 'case-timer expired';
+                timerElement.textContent = 'Expired';
             }
         });
     } catch (error) {
@@ -1061,29 +1077,48 @@ function populateLootboxCases() {
     const now = new Date();
     
     CONFIG.lootboxCases.forEach(lootboxCase => {
-        // For non-limited cases, they're always available
+        const startTime = lootboxCase.startTime ? new Date(lootboxCase.startTime) : new Date(0);
+        const endTime = new Date(lootboxCase.endTime);
         const isAvailable = !lootboxCase.limitedTime || 
-                          (now >= (lootboxCase.startTime ? new Date(lootboxCase.startTime) : new Date(0)) && 
-                          now < new Date(lootboxCase.endTime));
+                          (now >= startTime && now < endTime);
+        const hasNotStarted = now < startTime;
         
         const caseElement = document.createElement('div');
         caseElement.className = `lootbox-case ${!isAvailable && lootboxCase.limitedTime ? 'disabled-case' : ''}`;
         
         let timerHtml = '';
-        // Only show timer for limited-time cases
         if (lootboxCase.limitedTime) {
-            const timeRemaining = getTimeRemaining(lootboxCase);
             if (isAvailable) {
+                // Active case
+                const timeRemaining = endTime - now;
+                const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+                
                 timerHtml = `
                     <div class="case-timer active">
                         <div>Available Now</div>
-                        <div class="end-countdown">${timeRemaining}</div>
+                        <div class="end-countdown">Ends in ${days}d ${hours}h ${minutes}m ${seconds}s</div>
+                    </div>
+                `;
+            } else if (hasNotStarted) {
+                // Not started yet
+                const timeUntilStart = startTime - now;
+                const days = Math.floor(timeUntilStart / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeUntilStart % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeUntilStart % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeUntilStart % (1000 * 60)) / 1000);
+                
+                timerHtml = `
+                    <div class="case-timer not-started">
+                        <div>Starts in</div>
+                        <div class="start-countdown">${days}d ${hours}h ${minutes}m ${seconds}s</div>
                     </div>
                 `;
             } else {
-                const startTime = lootboxCase.startTime ? new Date(lootboxCase.startTime) : new Date(0);
-                const timerClass = now < startTime ? 'not-started' : 'expired';
-                timerHtml = `<div class="case-timer ${timerClass}">${timeRemaining}</div>`;
+                // Expired
+                timerHtml = '<div class="case-timer expired">Expired</div>';
             }
         }
         
@@ -1096,21 +1131,11 @@ function populateLootboxCases() {
         
         if (isAvailable) {
             caseElement.style.opacity = '1';
-            caseElement.style.cursor = 'pointer';
             caseElement.style.pointerEvents = 'auto';
             caseElement.addEventListener('click', () => selectLootboxCase(lootboxCase));
         } else {
-            // Only apply disabled styles to limited-time cases
-            if (lootboxCase.limitedTime) {
-                caseElement.style.opacity = '0.6';
-                caseElement.style.cursor = 'not-allowed';
-                caseElement.style.pointerEvents = 'none';
-            } else {
-                caseElement.style.opacity = '1';
-                caseElement.style.cursor = 'pointer';
-                caseElement.style.pointerEvents = 'auto';
-                caseElement.addEventListener('click', () => selectLootboxCase(lootboxCase));
-            }
+            caseElement.style.opacity = '0.6';
+            caseElement.style.pointerEvents = 'none';
         }
         
         elements.lootboxCasesContainer.appendChild(caseElement);
