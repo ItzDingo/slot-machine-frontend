@@ -602,6 +602,10 @@ video::-webkit-media-controls-start-playback-button {
     display: none !important;
 }
 
+@keyframes spin {
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
 #claim-btn {
     background: linear-gradient(to bottom, var(--primary), #D4AF37);
     color: #000;
@@ -982,12 +986,20 @@ video::-webkit-media-controls-start-playback-button {
 }
 
 /* New rarity styles */
+.inventory-item.exclusive {
+    border: 2px solid var(--exclusive);
+}
+
 .lootbox-item.exclusive {
     border: 3px solid var(--exclusive);
     background: linear-gradient(135deg, 
         rgba(0, 255, 255, 0.3) 0%, 
         rgba(0, 200, 200, 0.3) 100%);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(0, 255, 255, 0.5);
+}
+
+.inventory-item.limited {
+    border: 2px solid var(--limited);
 }
 
 .lootbox-item.limited {
