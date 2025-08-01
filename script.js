@@ -126,6 +126,61 @@ const CONFIG = {
                 { name: 'Broken Fang Gloves Unhinged', img: 'spins/Broken-Fang-Gloves-Unhinged.png', rarity: 'mythic', chance: 0.00567, value: 18400 },
                 { name: 'Moto Gloves Smoke Out', img: 'spins/Moto-Gloves-Smoke-Out.png', rarity: 'mythic', chance: 0.00567, value: 18600 }
             ]
+        },
+        {
+            id: 'case3',
+            name: 'Predatory Cobra',
+            img: 'spins/case3.png',
+            cost: 100,
+            limitedTime: true, // Add this
+            startTime: '2025-08-02T00:00:00', // Add start time (optional)
+            endTime: '2025-08-05T02:00:00', // Add end time
+            items: [
+                { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
+                { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 3, value: 340 },
+                { name: 'UMP-45 Roadblock', img: 'spins/UMP-45-Roadblock.png', rarity: 'common', chance: 20, value: 0.5 },
+                { name: 'R8 Revolver Crazy 8', img: 'spins/R8-Revolver-Crazy-8.png', rarity: 'epic', chance: 3, value: 650 },
+                { name: 'M249 Downtown', img: 'spins/M249-Downtown.png', rarity: 'uncommon', chance: 10, value: 60 },
+                { name: 'Dual Berettas Flora Carnivora', img: 'spins/Dual-Berettas-Flora-Carnivora.png', rarity: 'epic', chance: 3, value: 595 },
+                { name: 'USP-S Printstream', img: 'spins/USP-S-Printstream.png', rarity: 'legendary', chance: 0.8, value: 8600 },
+                { name: 'M4A4 Poly Mag', img: 'spins/M4A4-Poly-Mag.png', rarity: 'uncommon', chance: 10.0, value: 75 },
+                { name: 'Negev Drop Me', img: 'spins/Negev-Drop-Me.png', rarity: 'common', chance: 20, value: 50 },
+                { name: 'AWP Chromatic Aberration', img: 'spins/AWP-Chromatic-Aberration.png', rarity: 'legendary', chance: 0.9, value: 14000 },
+                { name: 'Glock-18 Winterized', img: 'spins/Glock-18-Winterized.png', rarity: 'uncommon', chance: 10, value: 80 },
+                { name: 'FAMAS Meow-36', img: 'spins/FAMAS-Meow-36.png', rarity: 'common', chance: 20, value: 43 },
+                { name: 'AK-47 Ice Coaled', img: 'spins/AK-47-Ice-Coaled.png', rarity: 'epic', chance: 4, value: 120 },
+                { name: 'Galil AR Destroyer', img: 'spins/Galil-AR-Destroyer.png', rarity: 'common', chance: 20, value: 7 },
+                { name: 'MAC-10 Monkeyflage', img: 'spins/MAC-10-Monkeyflage.png', rarity: 'common', chance: 20, value: 20 },
+                { name: 'Sawed Off Kiss♥Love', img: 'spins/Sawed-Off-Kiss-Love.png', rarity: 'epic', chance: 3, value: 240 },
+                { name: 'P250 Visions', img: 'spins/P250-Visions.png', rarity: 'epic', chance: 3, value: 400 },
+                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.1, value: 0 }
+            ],
+            knifes: [
+                { name: 'Driver Gloves Snow Leopard', img: 'spins/Driver-Gloves-Snow-Leopard.png', rarity: 'mythic', chance: 0.00567, value: 95000 },
+                { name: 'Specialist Gloves Field Agent', img: 'spins/Specialist-Gloves-Field-Agent.png', rarity: 'mythic', chance: 0.00567, value: 21000 },
+                { name: 'Driver Gloves Black Tie', img: 'spins/Driver-Gloves-Black-Tie.png', rarity: 'mythic', chance: 0.00567, value: 20000 },
+                { name: 'Sport Gloves Scarlet Shamagh', img: 'spins/Sport-Gloves-Scarlet-Shamagh.png', rarity: 'mythic', chance: 0.00567, value: 20000 },
+                { name: 'Hand Wraps CAUTION', img: 'spins/Hand-Wraps-CAUTION.png', rarity: 'mythic', chance: 0.00567, value: 17000 },
+                { name: 'Specialist Gloves Lt Commander', img: 'spins/Specialist-Gloves-Lt-Commander.png', rarity: 'mythic', chance: 0.00567, value: 23000 },
+                { name: 'Sport Gloves Slingshot', img: 'spins/Sport-Gloves-Slingshot.png', rarity: 'mythic', chance: 0.00567, value: 60000 },
+                { name: 'Broken Fang Gloves Yellow banded', img: 'spins/Broken-Fang-Gloves-Yellow-banded.png', rarity: 'mythic', chance: 0.00567, value: 24800 },
+                { name: 'Hand Wraps Constrictor', img: 'spins/Hand-Wraps-Constrictor.png', rarity: 'mythic', chance: 0.00567, value: 18210 },
+                { name: 'Specialist Gloves Marble Fade', img: 'spins/Specialist-Gloves-Marble-Fade.png', rarity: 'mythic', chance: 0.00567, value: 30000 },
+                { name: 'Moto Gloves Finish Line', img: 'spins/Moto-Gloves-Finish-Line.png', rarity: 'mythic', chance: 0.00567, value: 18880 },
+                { name: 'Moto Gloves Blood Pressure', img: 'spins/Moto-Gloves-Blood-Pressure.png', rarity: 'mythic', chance: 0.00567, value: 19800 },
+                { name: 'Hand Wraps Desert Shamagh', img: 'spins/Hand-Wraps-Desert-Shamagh.png', rarity: 'mythic', chance: 0.00567, value: 14000 },
+                { name: 'Specialist Gloves Tiger Strike', img: 'spins/Specialist-Gloves-Tiger-Strike.png', rarity: 'mythic', chance: 0.00567, value: 27000 },
+                { name: 'Broken Fang Gloves Jade', img: 'spins/Broken-Fang-Gloves-Jade.png', rarity: 'mythic', chance: 0.00567, value: 19999 },
+                { name: 'Driver Gloves Rezan the Red', img: 'spins/Driver-Gloves-Rezan-the-Red.png', rarity: 'mythic', chance: 0.00567, value: 18700 },
+                { name: 'Hand Wraps Giraffe', img: 'spins/Hand-Wraps-Giraffe.png', rarity: 'mythic', chance: 0.00567, value: 15000 },
+                { name: 'Sport Gloves Big Game', img: 'spins/Sport-Gloves-Big-Game.png', rarity: 'mythic', chance: 0.00567, value: 19000 },
+                { name: 'Broken Fang Gloves Needle Point', img: 'spins/Broken-Fang-Gloves-Needle-Point.png', rarity: 'mythic', chance: 0.00567, value: 17999 },
+                { name: 'Driver Gloves Queen Jaguar', img: 'spins/Driver-Gloves-Queen-Jaguar.png', rarity: 'mythic', chance: 0.00567, value: 25000 },
+                { name: 'Moto Gloves 3rd Commando Company', img: 'spins/Moto-Gloves-3rd-Commando-Company.png', rarity: 'mythic', chance: 0.00567, value: 17000 },
+                { name: 'Sport Gloves Nocts', img: 'spins/Sport-Gloves-Nocts.png', rarity: 'mythic', chance: 0.00567, value: 45000 },
+                { name: 'Broken Fang Gloves Unhinged', img: 'spins/Broken-Fang-Gloves-Unhinged.png', rarity: 'mythic', chance: 0.00567, value: 18400 },
+                { name: 'Moto Gloves Smoke Out', img: 'spins/Moto-Gloves-Smoke-Out.png', rarity: 'mythic', chance: 0.00567, value: 18600 }
+            ]
         }
     ],
     payouts: {
@@ -1256,7 +1311,7 @@ async function startLootboxSpin() {
             track.style.transition = 'none';
             
             if (spinTime >= targetSpinTime && velocity <= minVelocity) {
-                const centerPos = currentPosition + containerCenter - 65;
+                const centerPos = currentPosition + containerCenter - 66;
                 const nearestIdx = Math.round(centerPos / itemWidth) % itemsPerLoop + middleStart;
                 const finalItem = allItems[nearestIdx >= allItems.length ? middleStart : nearestIdx];
                 const itemName = finalItem?.dataset.itemName || finalItem?.querySelector('img').alt;
