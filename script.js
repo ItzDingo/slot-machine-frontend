@@ -77,7 +77,7 @@ const CONFIG = {
             name: 'Recoil Case',
             img: 'spins/case2.png',
             cost: 75,
-            limitedTime: true, // Add this
+            limitedTime: false, // Add this
             startTime: '2025-07-30T00:00:00', // Add start time (optional)
             endTime: '2025-07-01T01:00:00', // Add end time
             items: [
