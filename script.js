@@ -28,9 +28,11 @@ const CONFIG = {
             limitedTime: false, // Add this
             startTime: '2025-08-01T00:00:00', // Add start time (optional)
             endTime: '2025-08-15T23:59:59', // Add end time
+            playVideo: true, // Add this
+            video: 'spins/video3.mp4', // Add this
             items: [
-                { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 1.07, value: 5000 },
-                { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 14.28, value: 15 },
+                { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 1.07, value: 5000, quantity: 3 },
+                { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 14.28, value: 15, quantity: 0 },
                 { name: 'M4A1-S Night Terror', img: 'spins/M4A1-S-Night-Terror.png', rarity: 'epic', chance: 3.2, value: 700 },
                 { name: 'P2000 Lifted Spirits', img: 'spins/P2000-Lifted-Spirits.png', rarity: 'common', chance: 14.28, value: 5 },
                 { name: 'USP-S Ticket to Hell', img: 'spins/USP-Ticket-to-Hell-Skin.png', rarity: 'epic', chance: 2.55, value: 285 },
@@ -80,6 +82,8 @@ const CONFIG = {
             limitedTime: false, // Add this
             startTime: '2025-07-30T00:00:00', // Add start time (optional)
             endTime: '2025-08-01T02:00:00', // Add end time
+            playVideo: false, // Add this
+            video: 'spins/video2.mp4', // Add this
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
                 { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 3, value: 340 },
@@ -135,6 +139,8 @@ const CONFIG = {
             limitedTime: true, // Add this
             startTime: '2025-08-03T00:00:00.000Z', // Full ISO format with milliseconds
             endTime: '2025-08-05T02:00:00.000Z',
+            playVideo: false, // Add this
+            video: 'spins/video1.mp4', // Add this
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
                 { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 3, value: 340 },
@@ -408,12 +414,56 @@ const TimerManager = {
 const spinSound = new Audio('spins/spin.mp3');
 const openSound = new Audio('spins/open.mp3');
 
-
 function checkAutoSell(rarity) {
     if (!gameState.autoSellEnabled) return false;
     const checkbox = document.getElementById(`auto-sell-${rarity}`);
     return checkbox ? checkbox.checked : false;
 }
+
+function playCaseVideo(videoSrc) {
+    return new Promise((resolve) => {
+        const videoContainer = document.createElement('div');
+        videoContainer.className = 'video-container';
+        videoContainer.style.position = 'fixed';
+        videoContainer.style.top = '0';
+        videoContainer.style.left = '0';
+        videoContainer.style.width = '100%';
+        videoContainer.style.height = '100%';
+        videoContainer.style.backgroundColor = 'black';
+        videoContainer.style.zIndex = '1000';
+        videoContainer.style.display = 'flex';
+        videoContainer.style.justifyContent = 'center';
+        videoContainer.style.alignItems = 'center';
+        
+        const video = document.createElement('video');
+        video.src = videoSrc;
+        video.style.maxWidth = '100%';
+        video.style.maxHeight = '100%';
+        video.controls = false;
+        video.autoplay = true;
+        video.muted = false;
+        
+        // Exit fullscreen and resolve when video ends or is clicked
+        const handleEnd = () => {
+            videoContainer.remove();
+            resolve();
+        };
+        
+        video.addEventListener('ended', handleEnd);
+        videoContainer.addEventListener('click', handleEnd);
+        
+        videoContainer.appendChild(video);
+        document.body.appendChild(videoContainer);
+        
+        // Try to enter fullscreen
+        if (video.requestFullscreen) {
+            video.requestFullscreen().catch(err => {
+                console.log('Fullscreen error:', err);
+            });
+        }
+    });
+}
+
 function isCaseAvailable(caseItem) {
     // If case is not limited, it's always available
     if (!caseItem.limitedTime) return true;
@@ -606,19 +656,50 @@ function getRandomSymbol() {
 }
 
 
-function getRandomLootboxItem(caseItems) {
-    const totalWeight = caseItems.reduce((sum, item) => sum + item.chance, 0);
+async function getRandomLootboxItem(caseItems) {
+    // First filter out items that have reached their global limit
+    const availableItems = [];
+    
+    for (const item of caseItems) {
+        if (item.quantity) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/items/check-availability?itemName=${encodeURIComponent(item.name)}`);
+                const data = await response.json();
+                
+                if (data.available) {
+                    availableItems.push(item);
+                }
+            } catch (error) {
+                console.error('Error checking item availability:', error);
+                availableItems.push(item);
+            }
+        } else {
+            availableItems.push(item);
+        }
+    }
+    
+    if (availableItems.length === 0) {
+        // All limited items are maxed out, return a default item
+        return { 
+            name: 'Default Item', 
+            img: 'spins/default.png', 
+            rarity: 'common', 
+            value: 10 
+        };
+    }
+    
+    const totalWeight = availableItems.reduce((sum, item) => sum + item.chance, 0);
     const random = Math.random() * totalWeight;
     let cumulativeWeight = 0;
     
-    for (const item of caseItems) {
+    for (const item of availableItems) {
         cumulativeWeight += item.chance;
         if (random <= cumulativeWeight) {
             return item;
         }
     }
     
-    return caseItems[0];
+    return availableItems[0];
 }
 
 function getRandomKnife(knives) {
@@ -677,6 +758,52 @@ function initializeLootboxItems() {
     track.style.transform = 'translateX(0px)';
     track.style.transition = 'none';
     track.style.opacity = '1';
+}
+
+function updateCaseLimitedItemStatus(caseItem) {
+    if (!elements.lootboxScreen) return;
+    
+    const statusContainer = document.createElement('div');
+    statusContainer.className = 'limited-item-status';
+    statusContainer.style.margin = '10px 0';
+    statusContainer.style.padding = '10px';
+    statusContainer.style.backgroundColor = '#ff000033';
+    statusContainer.style.borderRadius = '5px';
+    statusContainer.style.textAlign = 'center';
+    
+    // Check all limited items in this case
+    const limitedItems = caseItem.items.filter(item => item.quantity);
+    
+    if (limitedItems.length === 0) {
+        return; // No limited items in this case
+    }
+    
+    // Check availability for each limited item
+    limitedItems.forEach(async (item) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/items/check-availability?itemName=${encodeURIComponent(item.name)}`);
+            const data = await response.json();
+            
+            if (!data.available) {
+                const itemStatus = document.createElement('div');
+                itemStatus.textContent = `Maximum quantity of ${item.name} (${data.currentQuantity}/${item.quantity}) reached`;
+                statusContainer.appendChild(itemStatus);
+            }
+        } catch (error) {
+            console.error('Error checking item status:', error);
+        }
+    });
+    
+    // Only add container if we have status messages
+    if (statusContainer.children.length > 0) {
+        const existingStatus = document.querySelector('.limited-item-status');
+        if (existingStatus) existingStatus.remove();
+        
+        const lootboxContainer = document.querySelector('.lootbox-container');
+        if (lootboxContainer) {
+            lootboxContainer.insertBefore(statusContainer, lootboxContainer.firstChild);
+        }
+    }
 }
 
 // Modify the claimLootboxWin function to look like this:
@@ -1179,13 +1306,22 @@ function populateLootboxCases() {
     setTimeout(updateCaseTimers, 0);
 }
 
-function selectLootboxCase(selectedCase) {
+async function selectLootboxCase(selectedCase) {
     gameState.lootboxGame.currentCase = selectedCase;
+    
+    if (selectedCase.playVideo && selectedCase.video) {
+        try {
+            await playCaseVideo(selectedCase.video);
+        } catch (error) {
+            console.error('Video playback error:', error);
+        }
+    }
     
     if (elements.lootboxCaseSelectScreen) elements.lootboxCaseSelectScreen.style.display = 'none';
     if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'block';
     
     initializeLootboxItems();
+    updateCaseLimitedItemStatus(selectedCase); // Add this
 }
 
 async function startLootboxSpin() {
@@ -1371,7 +1507,7 @@ async function startLootboxSpin() {
             track.style.transition = 'none';
             
             if (spinTime >= targetSpinTime && velocity <= minVelocity) {
-                const centerPos = currentPosition + containerCenter - 66;
+                const centerPos = currentPosition + containerCenter - 65;
                 const nearestIdx = Math.round(centerPos / itemWidth) % itemsPerLoop + middleStart;
                 const finalItem = allItems[nearestIdx >= allItems.length ? middleStart : nearestIdx];
                 const itemName = finalItem?.dataset.itemName || finalItem?.querySelector('img').alt;
