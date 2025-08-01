@@ -1751,16 +1751,16 @@ function updateInventoryDisplay() {
     const filteredInventory = gameState.inventory.filter(item => item.rarity !== 'garbage');
     elements.inventoryTotalItems.textContent = `${filteredInventory.length} items`;
 
-    const rarityOrder = ['mythic', 'legendary', 'epic', 'uncommon', 'common', 'exclusive', 'limited'];
+    const rarityOrder = ['limited', 'mythic', 'exclusive', 'legendary', 'epic', 'uncommon', 'common'];
 
     const rarityNames = {
+        limited: 'Limited',
         mythic: 'Special item',
+        exclusive: 'Exclusive',
         legendary: 'Covert',
         epic: 'Classified',
         uncommon: 'Restricted',
-        common: 'Mil-Spec',
-        exclusive: 'exclusive',
-        limited: 'limited'
+        common: 'Mil-Spec'
     };
 
     const sortedInventory = [...filteredInventory].sort((a, b) => {
@@ -1769,11 +1769,11 @@ function updateInventoryDisplay() {
 
     sortedInventory.forEach(item => {
         const itemElement = document.createElement('div');
-itemElement.className = `inventory-item ${item.rarity}`; // Apply rarity class
+itemElement.className = `inventory-item ${item.rarity}`;
 itemElement.innerHTML = `
     <img src="${item.img}" alt="${item.name}" class="inventory-item-img">
     <div class="inventory-item-name">${item.name}</div>
-    <div class="inventory-item-rarity">${rarityNames[item.rarity] || item.rarity}</div>
+    <div class="inventory-item-rarity ${item.rarity}">${rarityNames[item.rarity] || item.rarity}</div>
     ${item.quantity ? `<div class="inventory-item-count">${item.quantity}</div>` : ''}
 `;
         itemElement.addEventListener('click', () => showSellPanel(item));
