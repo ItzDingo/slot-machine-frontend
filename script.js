@@ -31,7 +31,7 @@ const CONFIG = {
             playVideo: true, // Add this
             video: 'spins/video3.mp4', // Add this
             items: [
-                { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 1.07, value: 5000 },
+                { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 1.07, value: 5000, quantity: 10 },
                 { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 14.28, value: 15 },
                 { name: 'M4A1-S Night Terror', img: 'spins/M4A1-S-Night-Terror.png', rarity: 'epic', chance: 3.2, value: 700 },
                 { name: 'P2000 Lifted Spirits', img: 'spins/P2000-Lifted-Spirits.png', rarity: 'common', chance: 14.28, value: 5 },
@@ -450,9 +450,12 @@ function playCaseVideo(videoSrc) {
         video.src = videoSrc;
         video.style.maxWidth = '100%';
         video.style.maxHeight = '100%';
-        video.controls = false;
+        video.controls = false; // Explicitly disable controls
         video.autoplay = true;
-        video.muted = false;
+        video.muted = false; // Ensure video plays without requiring user interaction
+        video.playsInline = true; // For iOS compatibility
+        video.setAttribute('playsinline', ''); // Alternative for older iOS
+        video.setAttribute('webkit-playsinline', ''); // For some older browsers
         
         // Exit fullscreen and resolve when video ends or is clicked
         const handleEnd = () => {
@@ -466,10 +469,20 @@ function playCaseVideo(videoSrc) {
         videoContainer.appendChild(video);
         document.body.appendChild(videoContainer);
         
-        // Try to enter fullscreen
+        // Try to enter fullscreen (may not work without user gesture)
         if (video.requestFullscreen) {
             video.requestFullscreen().catch(err => {
                 console.log('Fullscreen error:', err);
+            });
+        }
+        
+        // Ensure video plays even if autoplay is blocked
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                // Autoplay was prevented, mute and try again
+                video.muted = true;
+                video.play();
             });
         }
     });
