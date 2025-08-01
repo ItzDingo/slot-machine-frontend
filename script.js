@@ -79,7 +79,7 @@ const CONFIG = {
             cost: 75,
             limitedTime: true, // Add this
             startTime: '2025-07-30T00:00:00', // Add start time (optional)
-            endTime: '2025-08-01T02:00:00', // Add end time
+            endTime: '2025-08-01T03:00:00', // Add end time
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
                 { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 3, value: 340 },
@@ -412,10 +412,14 @@ async function updateCaseTimers() {
             const timerElement = caseElement.querySelector('.case-timer');
             if (!timerElement) return;
 
+            // Remove loading classes
+            caseElement.classList.remove('loading-case');
+            timerElement.classList.remove('loading');
+            
             if (serverCaseData.isActive) {
                 caseElement.classList.remove('disabled-case');
                 caseElement.style.opacity = '1';
-                caseElement.style.cursor = 'pointer';
+                caseElement.style.pointerEvents = 'auto';
                 timerElement.className = 'case-timer active';
                 
                 // Format remaining time
@@ -429,10 +433,13 @@ async function updateCaseTimers() {
                     <div>Available Now</div>
                     <div class="end-countdown">Ends in ${days}d ${hours}h ${minutes}m ${seconds}s</div>
                 `;
+                
+                // Add click handler only if case is active
+                caseElement.addEventListener('click', () => selectLootboxCase(caseData));
             } else {
                 caseElement.classList.add('disabled-case');
                 caseElement.style.opacity = '0.6';
-                caseElement.style.cursor = 'not-allowed';
+                caseElement.style.pointerEvents = 'none';
                 
                 if (serverTime < new Date(caseData.startTime)) {
                     timerElement.className = 'case-timer not-started';
@@ -998,15 +1005,20 @@ function populateLootboxCases() {
     
     elements.lootboxCasesContainer.innerHTML = '';
     
+    // Get current time once at the start to ensure consistency
+    const now = new Date();
+    
     CONFIG.lootboxCases.forEach(lootboxCase => {
-        const isAvailable = isCaseAvailable(lootboxCase);
-        const timeRemaining = getTimeRemaining(lootboxCase);
-        const now = new Date();
+        // Calculate all time-related values upfront
         const startTime = lootboxCase.startTime ? new Date(lootboxCase.startTime) : new Date(0);
+        const endTime = new Date(lootboxCase.endTime);
+        const isAvailable = now >= startTime && now < endTime;
+        const timeRemaining = getTimeRemaining(lootboxCase);
         
         const caseElement = document.createElement('div');
         caseElement.className = `lootbox-case ${!isAvailable ? 'disabled-case' : ''}`;
         
+        // Build timer HTML based on pre-calculated values
         let timerHtml = '';
         if (lootboxCase.limitedTime) {
             if (isAvailable) {
@@ -1029,15 +1041,23 @@ function populateLootboxCases() {
             ${timerHtml}
         `;
         
+        // Set interaction properties based on availability
         if (isAvailable) {
+            caseElement.style.opacity = '1';
+            caseElement.style.cursor = 'pointer';
+            caseElement.style.pointerEvents = 'auto';
             caseElement.addEventListener('click', () => selectLootboxCase(lootboxCase));
         } else {
             caseElement.style.opacity = '0.6';
             caseElement.style.cursor = 'not-allowed';
+            caseElement.style.pointerEvents = 'none';
         }
         
         elements.lootboxCasesContainer.appendChild(caseElement);
     });
+    
+    // Start the timer updates after initial render
+    setTimeout(updateCaseTimers, 0);
 }
 
 function selectLootboxCase(selectedCase) {
@@ -1284,13 +1304,13 @@ async function instantLootboxSpin() {
         return;
     }
 
-    // Check if out of instant spins
+    // 2. Check if out of instant spins
     if ((gameState.instantSpins?.remaining || 0) <= 0) {
         updateInstantSpinDisplay(true);
         return;
     }
 
-    // Add check for enough chips
+    // 3. Check if enough chips for the case cost
     if (gameState.chips < gameState.lootboxGame.currentCase.cost) {
         showNotification("Not enough chips!", false);
         return;
@@ -1302,7 +1322,7 @@ async function instantLootboxSpin() {
     }
 
     try {
-        // First, use an instant spin and deduct chips
+        // 4. Deduct chips and use instant spin
         const spinResponse = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
             headers: { 
@@ -1327,13 +1347,36 @@ async function instantLootboxSpin() {
         updateCurrencyDisplay();
         updateInstantSpinDisplay();
 
-        // Rest of your existing code...
+        // Get random item
+        const resultItem = getRandomLootboxItem(gameState.lootboxGame.currentCase.items);
+        let finalReward = resultItem;
+        
+        // Check for mythic (knife) items
+        if (resultItem.rarity === 'mythic') {
+            finalReward = getRandomKnife(gameState.lootboxGame.currentCase.knifes);
+        }
+
+        // Check auto-sell settings
+        const shouldAutoSell = checkAutoSell(finalReward.rarity);
+        if (shouldAutoSell) {
+            await autoSellItem(finalReward);
+            showNotification(`Auto-sold ${finalReward.name} for ${finalReward.value} chips`, true);
+        } else {
+            // Show popup if not auto-sold
+            showLootboxPopup(finalReward);
+            
+            // Play open sound
+            if (openSound) {
+                openSound.currentTime = 0;
+                openSound.play().catch(e => console.warn('Open sound error:', e));
+            }
+        }
+
     } catch (error) {
         console.error('Instant spin error:', error);
         showNotification('Failed to process instant spin', false);
     }
 }
-
 
 // Add this function to handle auto-selling
 async function autoSellItem(item) {
