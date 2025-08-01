@@ -696,11 +696,14 @@ async function refillInstantSpins() {
 function updateInstantSpinDisplay() {
     const instantSpinBtn = document.getElementById('lootbox-instant-spin-btn');
     if (instantSpinBtn) {
+        // Use the remaining spins from gameState.instantSpins if available
         const remaining = gameState.instantSpins?.remaining || (gameState.instantSpinLimit - gameState.instantSpinsUsed);
-        instantSpinBtn.textContent = `Instant Spin (${remaining}/25)`;
+        instantSpinBtn.textContent = `Instant Spin (${remaining}/${gameState.instantSpinLimit})`;
         
         if (remaining <= 0) {
             instantSpinBtn.classList.add('disabled');
+            // Show refill popup when spins reach 0
+            showRefillPopup();
         } else {
             instantSpinBtn.classList.remove('disabled');
         }
@@ -1255,7 +1258,7 @@ async function startLootboxSpin() {
 // Add this function to your script.js
 async function instantLootboxSpin() {
     // Check if out of instant spins
-    if (gameState.instantSpinsUsed >= gameState.instantSpinLimit) {
+    if ((gameState.instantSpins?.remaining || 0) <= 0) {
         showRefillPopup();
         return;
     }
@@ -2014,6 +2017,12 @@ function handleSuccessfulLogin(user) {
         remaining: 25,
         lastRefill: new Date()
     };
+    gameState.instantSpinLimit = 25;
+    gameState.instantSpinsUsed = 0;
+    
+    // Rest of your existing code...
+    updateInstantSpinDisplay();
+
     const avatarSrc = user.avatar || 'assets/default-avatar.png';
     
     if (elements.usernameDisplay) elements.usernameDisplay.textContent = user.username;
