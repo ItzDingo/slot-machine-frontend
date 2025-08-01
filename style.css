@@ -187,6 +187,16 @@ body {
     box-shadow: 0 0 15px rgba(255, 87, 51, 0.7);
 }
 
+#inventory-btn {
+    background: linear-gradient(to bottom, #1a5fb4, #0d4b9a);
+    color: white;
+}
+
+#inventory-btn:hover {
+    background: linear-gradient(to bottom, #0d4b9a, #0a3d7d);
+    box-shadow: 0 0 15px rgba(26, 95, 180, 0.7);
+}
+
 /* Slot Machine Game */
 .game-container {
     display: none;
