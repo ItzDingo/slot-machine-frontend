@@ -160,7 +160,7 @@ const CONFIG = {
             knifes: [
                 { name: 'Motor Bike Cobra Skin', img: 'spins/Motor_BikeCobra.png', rarity: 'limited', chance: 0.001, value: 30000 },
                 { name: 'Cobra Guardian Backpack Skin', img: 'spins/Cobra_Guardian.png', rarity: 'limited', chance: 0.1, value: 15000 },
-                { name: 'Predatory Cobra', img: 'spins/case3.png', rarity: 'limited', chance: 0.0001, value: 75000, quantity: 5 }
+                { name: 'Predatory Cobra', img: 'spins/case3.png', rarity: 'limited', chance: 0.0001, value: 75000 }
             ]
         }
     ],
@@ -727,14 +727,8 @@ async function getRandomLootboxItem(caseItems) {
     }
     
     if (availableItems.length === 0) {
-    console.warn('All limited items maxed out, using fallback');
-    return { 
-        name: 'MAX [MP40 COBRA]', 
-        img: 'assets/max.png',
-        rarity: 'common',
-        value: 0
-    };
-}
+        throw new Error('All limited items in this case are maxed out');
+    }
     
     const totalWeight = availableItems.reduce((sum, item) => sum + item.chance, 0);
     const random = Math.random() * totalWeight;
@@ -2672,6 +2666,7 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
+
 
 
 
