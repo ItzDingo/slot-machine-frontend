@@ -145,7 +145,7 @@ const CONFIG = {
             endTime: '2025-08-03T16:00:00.000Z',
             playVideo: true, // Add this
             video: 'spins/video3.mp4', // Add this
-            mythicVideo: true,  // Set to true for cases that should play video for mythic items
+            mythicVideo: false,  // Set to true for cases that should play video for mythic items
             mythicVideoFile: 'spins/limited3.mp4',
             items: [
                 { name: 'Evolution Stone', img: 'spins/Evolution_Stone.png', rarity: 'exclusive', chance: 0.1, value: 5000 },
@@ -155,7 +155,7 @@ const CONFIG = {
                 { name: 'Venomous Fang Upgrade Token', img: 'spins/Venomous_Fang.png', rarity: 'uncommon', chance: 10, value: 100 },
                 { name: 'Magic Cube Fragment', img: 'spins/Cube_Fragment.png', rarity: 'epic', chance: 2, value: 2500 },
                 { name: 'Elite Pass Access', img: 'spins/Elite_Pass.png', rarity: 'exclusive', chance: 0.5, value: 5000 },
-                { name: 'Special Item', img: 'spins/congratulations.png', rarity: 'mythic', chance: 0.001, value: 0 }
+                { name: 'Limited Item', img: 'spins/congratulations.png', rarity: 'mythic', chance: 0.001, value: 0 }
             ],
             knifes: [
                 { name: 'Motor Bike Cobra Skin', img: 'spins/Motor_BikeCobra.png', rarity: 'limited', chance: 0.001, value: 30000 },
@@ -728,7 +728,7 @@ async function getRandomLootboxItem(caseItems) {
     
     if (availableItems.length === 0) {
         throw new Error('All limited items in this case are maxed out');
-    }
+}
     
     const totalWeight = availableItems.reduce((sum, item) => sum + item.chance, 0);
     const random = Math.random() * totalWeight;
@@ -1459,17 +1459,32 @@ async function startLootboxSpin() {
         const track = document.getElementById('lootbox-items-track');
         const container = track.parentElement;
         
-        // Determine result item
-        const resultItem = getRandomLootboxItem(caseItem.items);
+        // Determine result item with validation
+        const resultItem = await getRandomLootboxItem(caseItem.items);
+        if (!resultItem || !resultItem.name || !resultItem.img) {
+            throw new Error('Invalid result item selected');
+        }
         console.log('Target item:', resultItem.name, 'Rarity:', resultItem.rarity);
         
-        // Build item track
+        // Build item track with validation
         track.innerHTML = '';
         const itemsPool = [];
         
-        caseItem.items.forEach(item => {
+        // Filter out invalid items before creating the pool
+        const validItems = caseItem.items.filter(item => 
+            item && item.name && item.img && item.rarity
+        );
+        
+        if (validItems.length === 0) {
+            throw new Error('Case contains no valid items');
+        }
+        
+        // Create weighted pool only with valid items
+        validItems.forEach(item => {
             const count = Math.max(1, Math.floor(item.chance * 10));
-            for (let i = 0; i < count; i++) itemsPool.push(item);
+            for (let i = 0; i < count; i++) {
+                itemsPool.push(item);
+            }
         });
 
         // Shuffle items
@@ -1484,10 +1499,14 @@ async function startLootboxSpin() {
             singleLoop[Math.floor(Math.random() * singleLoop.length)] = resultItem;
         }
 
+        // Create the spinning display with additional validation
         for (let loop = 0; loop < 3; loop++) {
             singleLoop.forEach(item => {
+                // Skip if item is invalid
+                if (!item || !item.name || !item.img) return;
+                
                 const itemElement = document.createElement('div');
-                itemElement.className = `lootbox-item ${item.rarity}`;
+                itemElement.className = `lootbox-item ${item.rarity || 'common'}`;
                 itemElement.innerHTML = `<img src="${item.img}" alt="${item.name}">`;
                 itemElement.dataset.itemName = item.name;
                 itemElement.style.minWidth = '120px';
@@ -1555,8 +1574,15 @@ async function startLootboxSpin() {
                 const itemName = finalItem?.dataset.itemName || finalItem?.querySelector('img').alt;
                 
                 let finalReward = caseItem.items.find(i => i.name === itemName) || resultItem;
+                if (!finalReward || !finalReward.name) {
+                    finalReward = resultItem; // Fallback to the original result
+                }
+                
                 if (finalReward.rarity === 'mythic') {
-                    finalReward = getRandomKnife(caseItem.knifes);
+                    const knife = getRandomKnife(caseItem.knifes);
+                    if (knife && knife.name) {
+                        finalReward = knife;
+                    }
                 }
 
                 setTimeout(() => {
@@ -1584,6 +1610,7 @@ async function startLootboxSpin() {
         resetLootboxSpinState();
     }
 }
+
 
 // Add this function to your script.js
 async function instantLootboxSpin() {
@@ -1904,7 +1931,8 @@ function updateInventoryDisplay() {
         legendary: 'Covert',
         epic: 'Classified',
         uncommon: 'Restricted',
-        common: 'Mil-Spec'
+        common: 'Mil-Spec',
+        garbage: 'Garbage'
     };
 
     const sortedInventory = [...filteredInventory].sort((a, b) => {
@@ -2666,7 +2694,3 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
-
-
-
-
