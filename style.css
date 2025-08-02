@@ -602,6 +602,52 @@ video::-webkit-media-controls-start-playback-button {
     display: none !important;
 }
 
+
+.mythic-video-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    z-index: 2000; /* Higher than other elements */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Hide all video controls */
+.mythic-video-container video::-webkit-media-controls {
+    display: none !important;
+}
+
+.mythic-video-container video::-webkit-media-controls-enclosure {
+    display: none !important;
+}
+
+.mythic-video-container video::-webkit-media-controls-panel {
+    display: none !important;
+}
+
+.mythic-video-container video::-webkit-media-controls-play-button {
+    display: none !important;
+}
+
+.mythic-video-container video::-webkit-media-controls-start-playback-button {
+    display: none !important;
+}
+
+/* Prevent any pointer events on controls */
+.mythic-video-container video::-webkit-media-controls-timeline,
+.mythic-video-container video::-webkit-media-controls-current-time-display,
+.mythic-video-container video::-webkit-media-controls-time-remaining-display,
+.mythic-video-container video::-webkit-media-controls-mute-button,
+.mythic-video-container video::-webkit-media-controls-toggle-closed-captions-button,
+.mythic-video-container video::-webkit-media-controls-fullscreen-button {
+    pointer-events: none;
+    display: none !important;
+}
+
 @keyframes spin {
     to { transform: translate(-50%, -50%) rotate(360deg); }
 }
