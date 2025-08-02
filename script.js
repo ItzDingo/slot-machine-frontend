@@ -141,7 +141,7 @@ const CONFIG = {
             img: 'spins/case3.png',
             cost: 100,
             limitedTime: true, // Add this
-            startTime: '2025-08-01T16:00:00.000Z', // Full ISO format with milliseconds
+            startTime: '2025-08-02T16:00:00.000Z', // Full ISO format with milliseconds
             endTime: '2025-08-03T16:00:00.000Z',
             playVideo: true, // Add this
             video: 'spins/video3.mp4', // Add this
@@ -160,7 +160,7 @@ const CONFIG = {
             knifes: [
                 { name: 'Motor Bike Cobra Skin', img: 'spins/Motor_BikeCobra.png', rarity: 'limited', chance: 0.001, value: 30000 },
                 { name: 'Cobra Guardian Backpack Skin', img: 'spins/Cobra_Guardian.png', rarity: 'limited', chance: 0.1, value: 15000 },
-                { name: 'Predatory Cobra', img: 'spins/case3.png', rarity: 'limited', chance: 0.0001, value: 75000 }
+                { name: 'Predatory Cobra', img: 'spins/case3.png', rarity: 'limited', chance: 0.0001, value: 75000, quantity: 5 }
             ]
         }
     ],
@@ -2672,5 +2672,6 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
+
 
 
