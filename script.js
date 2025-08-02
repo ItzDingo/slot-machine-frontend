@@ -158,9 +158,9 @@ const CONFIG = {
                 { name: 'Special Item', img: 'spins/congratulations.png', rarity: 'mythic', chance: 0.001, value: 0 }
             ],
             knifes: [
-                { name: 'Motor Bike Cobra Skin', img: 'spins/Motor_BikeCobra.png', rarity: 'limited', chance: 0.001, value: 0 },
-                { name: 'Cobra Guardian Backpack Skin', img: 'spins/Cobra_Guardian.png', rarity: 'limited', chance: 0.1, value: 0 },
-                { name: 'Predatory Cobra', img: 'spins/case3.png', rarity: 'limited', chance: 0.0001, value: 0 }
+                { name: 'Motor Bike Cobra Skin', img: 'spins/Motor_BikeCobra.png', rarity: 'limited', chance: 0.001, value: 30000 },
+                { name: 'Cobra Guardian Backpack Skin', img: 'spins/Cobra_Guardian.png', rarity: 'limited', chance: 0.1, value: 15000 },
+                { name: 'Predatory Cobra', img: 'spins/case3.png', rarity: 'limited', chance: 0.0001, value: 75000 }
             ]
         }
     ],
@@ -2672,4 +2672,5 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
+
 
