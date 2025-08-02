@@ -30,6 +30,8 @@ const CONFIG = {
             endTime: '2025-08-15T23:59:59', // Add end time
             playVideo: false, // Add this
             video: 'spins/video1.mp4', // Add this
+            mythicVideo: false,  // Set to true for cases that should play video for mythic items
+            mythicVideoFile: 'spins/limited1.mp4',  // Path to the video file
             items: [
                 { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 1.07, value: 5000 },
                 { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 14.28, value: 15 },
@@ -84,6 +86,8 @@ const CONFIG = {
             endTime: '2025-08-01T02:00:00', // Add end time
             playVideo: false, // Add this
             video: 'spins/video2.mp4', // Add this
+            mythicVideo: false,  // Set to true for cases that should play video for mythic items
+            mythicVideoFile: 'spins/limited2.mp4',
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
                 { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 3, value: 340 },
@@ -135,57 +139,28 @@ const CONFIG = {
             id: 'case3',
             name: 'Predatory Cobra [LIMITED]',
             img: 'spins/case3.png',
-            cost: 0,
+            cost: 100,
             limitedTime: true, // Add this
-            startTime: '2025-08-02T16:00:00.000Z', // Full ISO format with milliseconds
+            startTime: '2025-08-01T16:00:00.000Z', // Full ISO format with milliseconds
             endTime: '2025-08-03T16:00:00.000Z',
             playVideo: true, // Add this
             video: 'spins/video3.mp4', // Add this
+            mythicVideo: true,  // Set to true for cases that should play video for mythic items
+            mythicVideoFile: 'spins/limited3.mp4',
             items: [
-                { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
-                { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 3, value: 340 },
-                { name: 'UMP-45 Roadblock', img: 'spins/UMP-45-Roadblock.png', rarity: 'common', chance: 20, value: 0.5 },
-                { name: 'R8 Revolver Crazy 8', img: 'spins/R8-Revolver-Crazy-8.png', rarity: 'epic', chance: 3, value: 650 },
-                { name: 'M249 Downtown', img: 'spins/M249-Downtown.png', rarity: 'uncommon', chance: 10, value: 60 },
-                { name: 'Dual Berettas Flora Carnivora', img: 'spins/Dual-Berettas-Flora-Carnivora.png', rarity: 'epic', chance: 3, value: 595 },
-                { name: 'USP-S Printstream', img: 'spins/USP-S-Printstream.png', rarity: 'legendary', chance: 0.8, value: 8600 },
-                { name: 'M4A4 Poly Mag', img: 'spins/M4A4-Poly-Mag.png', rarity: 'uncommon', chance: 10.0, value: 75 },
-                { name: 'Negev Drop Me', img: 'spins/Negev-Drop-Me.png', rarity: 'common', chance: 20, value: 50 },
-                { name: 'AWP Chromatic Aberration', img: 'spins/AWP-Chromatic-Aberration.png', rarity: 'legendary', chance: 0.9, value: 14000 },
-                { name: 'Glock-18 Winterized', img: 'spins/Glock-18-Winterized.png', rarity: 'uncommon', chance: 10, value: 80 },
-                { name: 'FAMAS Meow-36', img: 'spins/FAMAS-Meow-36.png', rarity: 'common', chance: 20, value: 43 },
-                { name: 'AK-47 Ice Coaled', img: 'spins/AK-47-Ice-Coaled.png', rarity: 'epic', chance: 4, value: 120 },
-                { name: 'Galil AR Destroyer', img: 'spins/Galil-AR-Destroyer.png', rarity: 'common', chance: 20, value: 7 },
-                { name: 'MAC-10 Monkeyflage', img: 'spins/MAC-10-Monkeyflage.png', rarity: 'common', chance: 20, value: 20 },
-                { name: 'Sawed Off Kiss♥Love', img: 'spins/Sawed-Off-Kiss-Love.png', rarity: 'epic', chance: 3, value: 240 },
-                { name: 'P250 Visions', img: 'spins/P250-Visions.png', rarity: 'epic', chance: 3, value: 400 },
-                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.1, value: 0 }
+                { name: 'Evolution Stone', img: 'spins/Evolution_Stone.png', rarity: 'exclusive', chance: 0.1, value: 5000 },
+                { name: 'Golden Coin Case', img: 'spins/Golden_Coin.png', rarity: 'common', chance: 20, value: 50 },
+                { name: 'Golden Ticket', img: 'spins/GoldRV.png', rarity: 'common', chance: 20, value: 50 },
+                { name: 'Name Change Card', img: 'spins/Name_Change_Card.png', rarity: 'epic', chance: 2, value: 2500 },
+                { name: 'Venomous Fang Upgrade Token', img: 'spins/Venomous_Fang.png', rarity: 'uncommon', chance: 10, value: 100 },
+                { name: 'Magic Cube Fragment', img: 'spins/Cube_Fragment.png', rarity: 'epic', chance: 2, value: 2500 },
+                { name: 'Elite Pass Access', img: 'spins/Elite_Pass.png', rarity: 'exclusive', chance: 0.5, value: 5000 },
+                { name: 'Special Item', img: 'spins/congratulations.png', rarity: 'mythic', chance: 100, value: 0 }
             ],
             knifes: [
-                { name: 'Driver Gloves Snow Leopard', img: 'spins/Driver-Gloves-Snow-Leopard.png', rarity: 'mythic', chance: 0.00567, value: 95000 },
-                { name: 'Specialist Gloves Field Agent', img: 'spins/Specialist-Gloves-Field-Agent.png', rarity: 'mythic', chance: 0.00567, value: 21000 },
-                { name: 'Driver Gloves Black Tie', img: 'spins/Driver-Gloves-Black-Tie.png', rarity: 'mythic', chance: 0.00567, value: 20000 },
-                { name: 'Sport Gloves Scarlet Shamagh', img: 'spins/Sport-Gloves-Scarlet-Shamagh.png', rarity: 'mythic', chance: 0.00567, value: 20000 },
-                { name: 'Hand Wraps CAUTION', img: 'spins/Hand-Wraps-CAUTION.png', rarity: 'mythic', chance: 0.00567, value: 17000 },
-                { name: 'Specialist Gloves Lt Commander', img: 'spins/Specialist-Gloves-Lt-Commander.png', rarity: 'mythic', chance: 0.00567, value: 23000 },
-                { name: 'Sport Gloves Slingshot', img: 'spins/Sport-Gloves-Slingshot.png', rarity: 'mythic', chance: 0.00567, value: 60000 },
-                { name: 'Broken Fang Gloves Yellow banded', img: 'spins/Broken-Fang-Gloves-Yellow-banded.png', rarity: 'mythic', chance: 0.00567, value: 24800 },
-                { name: 'Hand Wraps Constrictor', img: 'spins/Hand-Wraps-Constrictor.png', rarity: 'mythic', chance: 0.00567, value: 18210 },
-                { name: 'Specialist Gloves Marble Fade', img: 'spins/Specialist-Gloves-Marble-Fade.png', rarity: 'mythic', chance: 0.00567, value: 30000 },
-                { name: 'Moto Gloves Finish Line', img: 'spins/Moto-Gloves-Finish-Line.png', rarity: 'mythic', chance: 0.00567, value: 18880 },
-                { name: 'Moto Gloves Blood Pressure', img: 'spins/Moto-Gloves-Blood-Pressure.png', rarity: 'mythic', chance: 0.00567, value: 19800 },
-                { name: 'Hand Wraps Desert Shamagh', img: 'spins/Hand-Wraps-Desert-Shamagh.png', rarity: 'mythic', chance: 0.00567, value: 14000 },
-                { name: 'Specialist Gloves Tiger Strike', img: 'spins/Specialist-Gloves-Tiger-Strike.png', rarity: 'mythic', chance: 0.00567, value: 27000 },
-                { name: 'Broken Fang Gloves Jade', img: 'spins/Broken-Fang-Gloves-Jade.png', rarity: 'mythic', chance: 0.00567, value: 19999 },
-                { name: 'Driver Gloves Rezan the Red', img: 'spins/Driver-Gloves-Rezan-the-Red.png', rarity: 'mythic', chance: 0.00567, value: 18700 },
-                { name: 'Hand Wraps Giraffe', img: 'spins/Hand-Wraps-Giraffe.png', rarity: 'mythic', chance: 0.00567, value: 15000 },
-                { name: 'Sport Gloves Big Game', img: 'spins/Sport-Gloves-Big-Game.png', rarity: 'mythic', chance: 0.00567, value: 19000 },
-                { name: 'Broken Fang Gloves Needle Point', img: 'spins/Broken-Fang-Gloves-Needle-Point.png', rarity: 'mythic', chance: 0.00567, value: 17999 },
-                { name: 'Driver Gloves Queen Jaguar', img: 'spins/Driver-Gloves-Queen-Jaguar.png', rarity: 'mythic', chance: 0.00567, value: 25000 },
-                { name: 'Moto Gloves 3rd Commando Company', img: 'spins/Moto-Gloves-3rd-Commando-Company.png', rarity: 'mythic', chance: 0.00567, value: 17000 },
-                { name: 'Sport Gloves Nocts', img: 'spins/Sport-Gloves-Nocts.png', rarity: 'mythic', chance: 0.00567, value: 45000 },
-                { name: 'Broken Fang Gloves Unhinged', img: 'spins/Broken-Fang-Gloves-Unhinged.png', rarity: 'mythic', chance: 0.00567, value: 18400 },
-                { name: 'Moto Gloves Smoke Out', img: 'spins/Moto-Gloves-Smoke-Out.png', rarity: 'mythic', chance: 0.00567, value: 18600 }
+                { name: 'Motor Bike Cobra Skin', img: 'spins/Motor_BikeCobra.png', rarity: 'limited', chance: 0.001, value: 0 },
+                { name: 'Cobra Guardian Backpack Skin', img: 'spins/Cobra_Guardian.png', rarity: 'limited', chance: 0.1, value: 0 },
+                { name: 'Predatory Cobra', img: 'spins/case3.png', rarity: 'limited', chance: 0.0001, value: 0 }
             ]
         }
     ],
@@ -481,6 +456,55 @@ function playCaseVideo(videoSrc) {
         if (playPromise !== undefined) {
             playPromise.catch(error => {
                 // Autoplay was prevented, mute and try again
+                video.muted = true;
+                video.play();
+            });
+        }
+    });
+}
+
+function playMythicVideo(videoSrc) {
+    return new Promise((resolve) => {
+        const videoContainer = document.createElement('div');
+        videoContainer.className = 'mythic-video-container';
+        
+        const video = document.createElement('video');
+        video.src = videoSrc;
+        video.autoplay = true;
+        video.muted = false;
+        video.playsInline = true;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
+        
+        // Disable all controls
+        video.controls = false;
+        video.disablePictureInPicture = true;
+        video.disableRemotePlayback = true;
+        
+        // Style the video to fill the container
+        video.style.width = '100%';
+        video.style.height = '100%';
+        video.style.objectFit = 'contain';
+        
+        // Handle video end
+        const handleEnd = () => {
+            videoContainer.remove();
+            resolve();
+        };
+        
+        video.addEventListener('ended', handleEnd);
+        
+        // Prevent any right-click menu
+        videoContainer.addEventListener('contextmenu', (e) => e.preventDefault());
+        
+        videoContainer.appendChild(video);
+        document.body.appendChild(videoContainer);
+        
+        // Try to play the video
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                // If autoplay fails, mute and try again
                 video.muted = true;
                 video.play();
             });
@@ -1594,7 +1618,10 @@ async function instantLootboxSpin() {
             return;
         }
 
-        // 3. Make API call
+        // 3. Make API call with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
         const spinResponse = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
             headers: { 
@@ -1606,10 +1633,15 @@ async function instantLootboxSpin() {
                 cost: caseItem.cost,
                 isInstantSpin: true
             }),
-            credentials: 'include'
+            credentials: 'include',
+            signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
-        if (!spinResponse.ok) throw new Error('Spin failed');
+        if (!spinResponse.ok) {
+            const errorData = await spinResponse.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Spin failed');
+        }
 
         const spinData = await spinResponse.json();
         gameState.chips = spinData.newBalance;
@@ -1617,33 +1649,89 @@ async function instantLootboxSpin() {
         updateCurrencyDisplay();
         updateInstantSpinDisplay();
 
-        // 4. Get random item
-        const resultItem = await getRandomLootboxItem(caseItem.items);
-        if (!resultItem) {
-            throw new Error("No item was selected");
+        // 4. Get random item with availability check
+        let resultItem;
+        try {
+            resultItem = await getRandomLootboxItem(caseItem.items);
+            if (!resultItem) {
+                throw new Error("No available items in this case");
+            }
+        } catch (error) {
+            console.error("Item selection error:", error);
+            // Refund the spin cost if item selection fails
+            gameState.chips += caseItem.cost;
+            updateCurrencyDisplay();
+            throw new Error("Failed to select an item - your chips have been refunded");
         }
 
         let finalReward = resultItem;
+        // Handle mythic items (knives)
         if (resultItem.rarity === 'mythic') {
-            finalReward = getRandomKnife(caseItem.knifes);
+            try {
+                finalReward = getRandomKnife(caseItem.knifes);
+                if (!finalReward) {
+                    throw new Error("No knives available");
+                }
+            } catch (error) {
+                console.error("Knife selection error:", error);
+                // Fallback to original mythic item if knife selection fails
+                showNotification("Special item unlocked!", true);
+            }
         }
 
         // 5. Show popup or auto-sell
         if (checkAutoSell(finalReward.rarity)) {
-            await autoSellItem(finalReward);
-            showNotification(`Auto-sold ${finalReward.name} for ${finalReward.value} chips`, true);
+            try {
+                await autoSellItem(finalReward);
+                showNotification(`Auto-sold ${finalReward.name} for ${finalReward.value} chips`, true);
+            } catch (error) {
+                console.error("Auto-sell failed:", error);
+                // If auto-sell fails, add to inventory instead
+                showNotification(`Couldn't auto-sell - ${finalReward.name} added to inventory`, false);
+                await addToInventory(finalReward);
+            }
         } else {
-            showLootboxPopup(finalReward);
+            // Check for mythic video before showing popup
+            if (finalReward.rarity === 'mythic' && caseItem.mythicVideo && caseItem.mythicVideoFile) {
+                try {
+                    await playMythicVideo(caseItem.mythicVideoFile);
+                } catch (error) {
+                    console.error("Mythic video playback failed:", error);
+                    // Continue to show popup even if video fails
+                }
+            }
+            
+            await showLootboxPopup(finalReward);
+            
+            // Play sound with better error handling
             if (openSound) {
-                openSound.currentTime = 0;
-                openSound.play().catch(e => console.warn('Open sound error:', e));
+                try {
+                    openSound.currentTime = 0;
+                    await openSound.play();
+                } catch (error) {
+                    console.warn('Open sound error:', error);
+                    // Fallback to muted playback
+                    openSound.muted = true;
+                    openSound.play().catch(e => console.warn('Muted open sound error:', e));
+                }
             }
         }
     } catch (error) {
         console.error('Instant spin error:', error);
-        showNotification('Failed to process instant spin', false);
+        showNotification(error.message || 'Failed to process instant spin', false);
+        
+        // Additional error recovery if needed
+        if (error.name === 'AbortError') {
+            showNotification("Spin timed out - please try again", false);
+        }
     } finally {
         gameState.isSpinning = false;
+        
+        // Force UI update if still stuck
+        if (elements.lootboxSpinBtn) {
+            elements.lootboxSpinBtn.disabled = false;
+            elements.lootboxSpinBtn.textContent = "SPIN";
+        }
     }
 }
 
@@ -1694,26 +1782,58 @@ function resetLootboxSpinState() {
     console.log('Lootbox spin state fully reset');
 }
 
-function showLootboxPopup(item) {
+async function showLootboxPopup(item) {
     if (!elements.lootboxPopup || !elements.lootboxItemWon || !elements.lootboxItemName || !elements.lootboxRarity) return;
     
+    // Check if this is a mythic item and case has mythic video enabled
+    const currentCase = gameState.lootboxGame.currentCase;
+    if (item.rarity === 'mythic' && currentCase.mythicVideo && currentCase.mythicVideoFile) {
+        try {
+            // Create loading indicator
+            const loadingContainer = document.createElement('div');
+            loadingContainer.className = 'video-loading-container';
+            loadingContainer.innerHTML = `
+                <div class="video-loading-spinner"></div>
+                <div class="video-loading-text">Loading special reward...</div>
+            `;
+            document.body.appendChild(loadingContainer);
+            
+            // Play the video and wait for it to finish
+            await playMythicVideo(currentCase.mythicVideoFile);
+            
+            // Remove loading indicator
+            loadingContainer.remove();
+        } catch (error) {
+            console.error('Mythic video playback error:', error);
+            // Remove loading indicator if it exists
+            const loadingContainer = document.querySelector('.video-loading-container');
+            if (loadingContainer) loadingContainer.remove();
+        }
+    }
+    
+    // Set up the popup content
     elements.lootboxItemWon.innerHTML = `<img src="${item.img}" alt="${item.name}">`;
     elements.lootboxItemName.textContent = item.name;
     
+    // Rarity name mapping
     const nameMap = {
-    common: "MIL-SPEC",
-    uncommon: "RESTRICTED",
-    epic: "CLASSIFIED",
-    legendary: "COVERT",
-    mythic: "SPECIAL ITEM"
-};
-elements.lootboxRarity.textContent = nameMap[item.rarity] || item.rarity.toUpperCase();
+        common: "MIL-SPEC",
+        uncommon: "RESTRICTED",
+        epic: "CLASSIFIED",
+        legendary: "COVERT",
+        exclusive: "EXCLUSIVE",
+        mythic: "SPECIAL ITEM",
+        limited: "LIMITED"
+    };
     
+    // Set rarity display text and classes
+    elements.lootboxRarity.textContent = nameMap[item.rarity] || item.rarity.toUpperCase();
     elements.lootboxItemWon.className = 'lootbox-item-won';
     elements.lootboxItemWon.classList.add(item.rarity);
     elements.lootboxRarity.className = 'lootbox-rarity';
     elements.lootboxRarity.classList.add(item.rarity);
     
+    // Store the current item in game state
     gameState.lootboxGame.currentItem = {
         name: item.name,
         img: item.img,
@@ -1721,17 +1841,47 @@ elements.lootboxRarity.textContent = nameMap[item.rarity] || item.rarity.toUpper
         value: item.value || 0
     };
     
-    
+    // Handle sound effects
     if (spinSound && !spinSound.paused) {
         spinSound.pause();
         spinSound.currentTime = 0;
     }
+    
     if (openSound) {
-        openSound.currentTime = 0;
-        openSound.play().catch(e => console.warn('Open sound error:', e));
+        try {
+            openSound.currentTime = 0;
+            await openSound.play();
+        } catch (error) {
+            console.warn('Open sound error:', error);
+            // Fallback to muted playback if autoplay fails
+            openSound.muted = true;
+            openSound.play().catch(e => console.warn('Muted open sound error:', e));
+        }
     }
-
+    
+    // Add special animation for mythic items
+    if (item.rarity === 'mythic') {
+        elements.lootboxItemWon.style.animation = 'mythicGlow 2s infinite alternate';
+    } else {
+        elements.lootboxItemWon.style.animation = '';
+    }
+    
+    // Show the popup
     elements.lootboxPopup.style.display = 'flex';
+    
+    // Add a subtle entrance animation
+    elements.lootboxPopup.style.animation = 'popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+    
+    // Add a backdrop blur effect
+    const backdrop = document.createElement('div');
+    backdrop.className = 'popup-backdrop';
+    elements.lootboxPopup.parentNode.insertBefore(backdrop, elements.lootboxPopup);
+    
+    // Close backdrop when clicked
+    backdrop.addEventListener('click', () => {
+        elements.lootboxPopup.style.display = 'none';
+        backdrop.remove();
+    });
 }
 
 // Inventory Functions
@@ -2522,4 +2672,3 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
-
