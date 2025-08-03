@@ -1652,7 +1652,8 @@ async function instantLootboxSpin() {
             body: JSON.stringify({
                 userId: gameState.userId,
                 cost: caseItem.cost,
-                isInstantSpin: true
+                isInstantSpin: true,
+                caseId: caseItem.id
             }),
             credentials: 'include',
             signal: controller.signal
@@ -2694,4 +2695,3 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
-
