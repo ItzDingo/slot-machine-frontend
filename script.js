@@ -142,7 +142,7 @@ const CONFIG = {
             cost: 100,
             limitedTime: true, // Add this
             startTime: '2025-08-02T16:00:00.000Z', // Full ISO format with milliseconds
-            endTime: '2025-08-03T16:00:00.000Z',
+            endTime: '2025-08-04T15:00:00.000Z',
             playVideo: true, // Add this
             video: 'spins/video3.mp4', // Add this
             mythicVideo: false,  // Set to true for cases that should play video for mythic items
@@ -2694,3 +2694,4 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
+
