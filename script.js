@@ -1624,7 +1624,25 @@ async function instantLootboxSpin() {
         gameState.isSpinning = true;
         const caseItem = gameState.lootboxGame.currentCase;
         
-        // 1. Check spins remaining
+        // 1. Check if case is limited and expired (client-side check first)
+        if (caseItem.limitedTime) {
+            const now = new Date();
+            const endTime = new Date(caseItem.endTime);
+            if (now >= endTime) {
+                showNotification("This limited case has expired!", false);
+                // Disable instant spin button for this case
+                const instantSpinBtn = document.getElementById('lootbox-instant-spin-btn');
+                if (instantSpinBtn) {
+                    instantSpinBtn.disabled = true;
+                    instantSpinBtn.classList.add('disabled');
+                    instantSpinBtn.title = "This case has expired";
+                }
+                gameState.isSpinning = false;
+                return;
+            }
+        }
+
+        // 2. Check spins remaining
         const spinsLeft = gameState.instantSpins?.remaining || 0;
         if (spinsLeft <= 0) {
             updateInstantSpinDisplay(true);
@@ -1632,14 +1650,14 @@ async function instantLootboxSpin() {
             return;
         }
 
-        // 2. Check chips balance
+        // 3. Check chips balance
         if (gameState.chips < caseItem.cost) {
             showNotification("Not enough chips!", false);
             gameState.isSpinning = false;
             return;
         }
 
-        // 3. Make API call with timeout
+        // 4. Make API call with timeout
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
         
@@ -1653,7 +1671,7 @@ async function instantLootboxSpin() {
                 userId: gameState.userId,
                 cost: caseItem.cost,
                 isInstantSpin: true,
-                caseId: caseItem.id
+                caseId: caseItem.id // Important for server-side validation
             }),
             credentials: 'include',
             signal: controller.signal
@@ -1662,6 +1680,21 @@ async function instantLootboxSpin() {
 
         if (!spinResponse.ok) {
             const errorData = await spinResponse.json().catch(() => ({}));
+            
+            // Special handling for expired cases (server-side validation)
+            if (errorData.caseExpired) {
+                showNotification("This limited case has expired!", false);
+                // Disable instant spin button for this case
+                const instantSpinBtn = document.getElementById('lootbox-instant-spin-btn');
+                if (instantSpinBtn) {
+                    instantSpinBtn.disabled = true;
+                    instantSpinBtn.classList.add('disabled');
+                    instantSpinBtn.title = "This case has expired";
+                }
+                gameState.isSpinning = false;
+                return;
+            }
+            
             throw new Error(errorData.message || 'Spin failed');
         }
 
@@ -1671,7 +1704,7 @@ async function instantLootboxSpin() {
         updateCurrencyDisplay();
         updateInstantSpinDisplay();
 
-        // 4. Get random item with availability check
+        // 5. Get random item with availability check
         let resultItem;
         try {
             resultItem = await getRandomLootboxItem(caseItem.items);
@@ -1701,7 +1734,7 @@ async function instantLootboxSpin() {
             }
         }
 
-        // 5. Show popup or auto-sell
+        // 6. Show popup or auto-sell
         if (checkAutoSell(finalReward.rarity)) {
             try {
                 await autoSellItem(finalReward);
@@ -1752,7 +1785,7 @@ async function instantLootboxSpin() {
         // Force UI update if still stuck
         if (elements.lootboxSpinBtn) {
             elements.lootboxSpinBtn.disabled = false;
-            elements.lootboxSpinBtn.textContent = "SPIN";
+            elements.lootboxSpinBtn.textContent = `INSTANT SPIN (${gameState.instantSpins?.remaining || 0}/${gameState.instantSpinLimit})`;
         }
     }
 }
