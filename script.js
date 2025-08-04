@@ -33,27 +33,27 @@ const CONFIG = {
             mythicVideo: false,  // Set to true for cases that should play video for mythic items
             mythicVideoFile: 'spins/limited1.mp4',  // Path to the video file
             items: [
-                { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 1.07, value: 5000 },
-                { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 14.28, value: 15 },
-                { name: 'M4A1-S Night Terror', img: 'spins/M4A1-S-Night-Terror.png', rarity: 'epic', chance: 3.2, value: 700 },
-                { name: 'P2000 Lifted Spirits', img: 'spins/P2000-Lifted-Spirits.png', rarity: 'common', chance: 14.28, value: 5 },
-                { name: 'USP-S Ticket to Hell', img: 'spins/USP-Ticket-to-Hell-Skin.png', rarity: 'epic', chance: 2.55, value: 285 },
+                { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 0.8, value: 3600 },
+                { name: 'SCAR20 Poultrygeist', img: 'spins/SCAR-20-Poultrygeist-Skin.png', rarity: 'common', chance: 30, value: 15 },
+                { name: 'M4A1-S Night Terror', img: 'spins/M4A1-S-Night-Terror.png', rarity: 'epic', chance: 2.5, value: 500 },
+                { name: 'P2000 Lifted Spirits', img: 'spins/P2000-Lifted-Spirits.png', rarity: 'common', chance: 30, value: 5 },
+                { name: 'USP-S Ticket to Hell', img: 'spins/USP-Ticket-to-Hell-Skin.png', rarity: 'epic', chance: 2.5, value: 225 },
                 { name: 'MAG-7 Foresight', img: 'spins/MAG-7-Foresight-Skin.png', rarity: 'common', chance: 14.28, value: 45 },
-                { name: 'G3SG1 Dream Glade', img: 'spins/G3SG1-Dream-Glade-Skin.png', rarity: 'uncommon', chance: 11.28, value: 55 },
-                { name: 'AK-47 Nightwish', img: 'spins/AK-47-Nightwish-Skin.png', rarity: 'legendary', chance: 0.32, value: 9000 },
-                { name: 'XM1014 Zombie Offensive', img: 'spins/XM1014-Zombie-Offensive-Skin.png', rarity: 'uncommon', chance: 11.28, value: 100 },
-                { name: 'MP9 Starlight Protector', img: 'spins/MP9-Starlight-Protector-Skin.png', rarity: 'legendary', chance: 0.32, value: 3001 },
-                { name: 'PP-Bizon Space Cat', img: 'spins/PP-Bizon-Space-Cat-Skin.png', rarity: 'uncommon', chance: 14.28, value: 47 },
-                { name: 'Dual Berettas Melondrama', img: 'spins/Dual-Berettas-Melondrama-Skin.png', rarity: 'legendary', chance: 1.07, value: 7000 },
-                { name: 'Five SeveN Scrawl', img: 'spins/Five-SeveN-Scrawl-Skin.png', rarity: 'common', chance: 11.28, value: 50 },
-                { name: 'FAMAS Rapid Eye Movement', img: 'spins/FAMAS-Rapid-Eye-Movement-Skin.png', rarity: 'legendary', chance: 1.07, value: 6000 },
-                { name: 'MAC-10 Ensnared', img: 'spins/MAC-10-Ensnared-Skin.png', rarity: 'common', chance: 14.28, value: 1 },
-                { name: 'MP5-SD Necro Jr', img: 'spins/MP5-SD-Necro-Jr-Skin.png', rarity: 'common', chance: 14.28, value: 3 },
+                { name: 'G3SG1 Dream Glade', img: 'spins/G3SG1-Dream-Glade-Skin.png', rarity: 'uncommon', chance: 10, value: 55 },
+                { name: 'AK-47 Nightwish', img: 'spins/AK-47-Nightwish-Skin.png', rarity: 'legendary', chance: 0.3, value: 4000 },
+                { name: 'XM1014 Zombie Offensive', img: 'spins/XM1014-Zombie-Offensive-Skin.png', rarity: 'uncommon', chance: 10, value: 100 },
+                { name: 'MP9 Starlight Protector', img: 'spins/MP9-Starlight-Protector-Skin.png', rarity: 'legendary', chance: 0.3, value: 2000 },
+                { name: 'PP-Bizon Space Cat', img: 'spins/PP-Bizon-Space-Cat-Skin.png', rarity: 'uncommon', chance: 10, value: 47 },
+                { name: 'Dual Berettas Melondrama', img: 'spins/Dual-Berettas-Melondrama-Skin.png', rarity: 'legendary', chance: 0.3, value: 1900 },
+                { name: 'Five SeveN Scrawl', img: 'spins/Five-SeveN-Scrawl-Skin.png', rarity: 'common', chance: 30, value: 50 },
+                { name: 'FAMAS Rapid Eye Movement', img: 'spins/FAMAS-Rapid-Eye-Movement-Skin.png', rarity: 'legendary', chance: 0.3, value: 1600 },
+                { name: 'MAC-10 Ensnared', img: 'spins/MAC-10-Ensnared-Skin.png', rarity: 'common', chance: 30, value: 1 },
+                { name: 'MP5-SD Necro Jr', img: 'spins/MP5-SD-Necro-Jr-Skin.png', rarity: 'common', chance: 30, value: 3 },
                 { name: 'Sawed Off Spirit Board', img: 'spins/Sawed-Off-Spirit-Board-Skin.png', rarity: 'uncommon', chance: 10, value: 75 },
-                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.3, value: 0 }
+                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.01, value: 0 }
             ],
             knifes: [
-                { name: 'Butterfly Knife Black Laminate', img: 'spins/Butterfly-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.000567, value: 10000 },
+                { name: 'Butterfly Knife Black Laminate', img: 'spins/Butterfly-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.000567, value: 15000 },
                 { name: 'Huntsman Knife Black Laminate', img: 'spins/Huntsman-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.000567, value: 17000 },
                 { name: 'Bowie Knife Bright Water', img: 'spins/Bowie-Knife-Bright-Water-Skin.png', rarity: 'mythic', chance: 0.000567, value: 14000 },
                 { name: 'Butterfly Knife Lore', img: 'spins/Butterfly-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.000567, value: 35000 },
@@ -71,8 +71,8 @@ const CONFIG = {
                 { name: 'Bowie Knife Lore', img: 'spins/Bowie-Knife-Lore-Skin.png', rarity: 'mythic', chance: 0.000567, value: 15555 },
                 { name: 'Bowie Knife Black Laminate', img: 'spins/Bowie-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.000567, value: 8000 },
                 { name: 'Falchion Knife Autotronic', img: 'spins/Falchion-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.000567, value: 15000 },
-                { name: 'Bowie Knife Autotronic', img: 'spins/Bowie-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.000567, value: 9000 },
-                { name: 'Bowie Knife Freehand', img: 'spins/Bowie-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.000567, value: 10000 },
+                { name: 'Bowie Knife Autotronic', img: 'spins/Bowie-Knife-Autotronic-Skin.png', rarity: 'mythic', chance: 0.000567, value: 15600 },
+                { name: 'Bowie Knife Freehand', img: 'spins/Bowie-Knife-Freehand-Skin.png', rarity: 'mythic', chance: 0.000567, value: 13000 },
                 { name: 'Falchion Knife Black Laminate', img: 'spins/Falchion-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.000567, value: 11000 }
             ]
         },
@@ -89,24 +89,24 @@ const CONFIG = {
             mythicVideo: false,  // Set to true for cases that should play video for mythic items
             mythicVideoFile: 'spins/limited2.mp4',
             items: [
-                { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.9, value: 800 },
-                { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 3, value: 340 },
-                { name: 'UMP-45 Roadblock', img: 'spins/UMP-45-Roadblock.png', rarity: 'common', chance: 20, value: 0.5 },
-                { name: 'R8 Revolver Crazy 8', img: 'spins/R8-Revolver-Crazy-8.png', rarity: 'epic', chance: 3, value: 650 },
+                { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.5, value: 450 },
+                { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 2.5, value: 300 },
+                { name: 'UMP-45 Roadblock', img: 'spins/UMP-45-Roadblock.png', rarity: 'common', chance: 30, value: 0.5 },
+                { name: 'R8 Revolver Crazy 8', img: 'spins/R8-Revolver-Crazy-8.png', rarity: 'epic', chance: 2.5, value: 300 },
                 { name: 'M249 Downtown', img: 'spins/M249-Downtown.png', rarity: 'uncommon', chance: 10, value: 60 },
-                { name: 'Dual Berettas Flora Carnivora', img: 'spins/Dual-Berettas-Flora-Carnivora.png', rarity: 'epic', chance: 3, value: 595 },
-                { name: 'USP-S Printstream', img: 'spins/USP-S-Printstream.png', rarity: 'legendary', chance: 0.8, value: 8600 },
-                { name: 'M4A4 Poly Mag', img: 'spins/M4A4-Poly-Mag.png', rarity: 'uncommon', chance: 10.0, value: 75 },
-                { name: 'Negev Drop Me', img: 'spins/Negev-Drop-Me.png', rarity: 'common', chance: 20, value: 50 },
-                { name: 'AWP Chromatic Aberration', img: 'spins/AWP-Chromatic-Aberration.png', rarity: 'legendary', chance: 0.9, value: 14000 },
+                { name: 'Dual Berettas Flora Carnivora', img: 'spins/Dual-Berettas-Flora-Carnivora.png', rarity: 'epic', chance: 2.5, value: 595 },
+                { name: 'USP-S Printstream', img: 'spins/USP-S-Printstream.png', rarity: 'legendary', chance: 0.8, value: 3000 },
+                { name: 'M4A4 Poly Mag', img: 'spins/M4A4-Poly-Mag.png', rarity: 'uncommon', chance: 10, value: 75 },
+                { name: 'Negev Drop Me', img: 'spins/Negev-Drop-Me.png', rarity: 'common', chance: 30, value: 50 },
+                { name: 'AWP Chromatic Aberration', img: 'spins/AWP-Chromatic-Aberration.png', rarity: 'legendary', chance: 0.8, value: 4000 },
                 { name: 'Glock-18 Winterized', img: 'spins/Glock-18-Winterized.png', rarity: 'uncommon', chance: 10, value: 80 },
-                { name: 'FAMAS Meow-36', img: 'spins/FAMAS-Meow-36.png', rarity: 'common', chance: 20, value: 43 },
-                { name: 'AK-47 Ice Coaled', img: 'spins/AK-47-Ice-Coaled.png', rarity: 'epic', chance: 4, value: 120 },
-                { name: 'Galil AR Destroyer', img: 'spins/Galil-AR-Destroyer.png', rarity: 'common', chance: 20, value: 7 },
-                { name: 'MAC-10 Monkeyflage', img: 'spins/MAC-10-Monkeyflage.png', rarity: 'common', chance: 20, value: 20 },
-                { name: 'Sawed Off Kiss♥Love', img: 'spins/Sawed-Off-Kiss-Love.png', rarity: 'epic', chance: 3, value: 240 },
-                { name: 'P250 Visions', img: 'spins/P250-Visions.png', rarity: 'epic', chance: 3, value: 400 },
-                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.1, value: 0 }
+                { name: 'FAMAS Meow-36', img: 'spins/FAMAS-Meow-36.png', rarity: 'common', chance: 30, value: 43 },
+                { name: 'AK-47 Ice Coaled', img: 'spins/AK-47-Ice-Coaled.png', rarity: 'epic', chance: 2.5, value: 120 },
+                { name: 'Galil AR Destroyer', img: 'spins/Galil-AR-Destroyer.png', rarity: 'common', chance: 30, value: 7 },
+                { name: 'MAC-10 Monkeyflage', img: 'spins/MAC-10-Monkeyflage.png', rarity: 'common', chance: 30, value: 20 },
+                { name: 'Sawed Off Kiss♥Love', img: 'spins/Sawed-Off-Kiss-Love.png', rarity: 'epic', chance: 2.5, value: 240 },
+                { name: 'P250 Visions', img: 'spins/P250-Visions.png', rarity: 'epic', chance: 2.5, value: 260 },
+                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.01, value: 0 }
             ],
             knifes: [
                 { name: 'Driver Gloves Snow Leopard', img: 'spins/Driver-Gloves-Snow-Leopard.png', rarity: 'mythic', chance: 0.000567, value: 95000 },
@@ -137,6 +137,81 @@ const CONFIG = {
         },
         {
             id: 'case3',
+            name: 'Kilowatt/Huntsman Case',
+            img: 'spins/case4.png',
+            cost: 100,
+            limitedTime: false, // Add this
+            startTime: '2025-07-30T00:00:00', // Add start time (optional)
+            endTime: '2025-08-01T02:00:00', // Add end time
+            playVideo: false, // Add this
+            video: 'spins/video3.mp4', // Add this
+            mythicVideo: false,  // Set to true for cases that should play video for mythic items
+            mythicVideoFile: 'spins/limited3.mp4',
+            items: [
+                { name: 'AK-47 Inheritance', img: 'spins/AK-47 Inheritance.png', rarity: 'legendary', chance: 0.8, value: 5000 },
+                { name: 'AWP Chrome Cannon', img: 'spins/AWP Chrome Cannon.png', rarity: 'legendary', chance: 0.8, value: 3800 },
+                { name: 'M4A1-S Black Lotus', img: 'spins/M4A1-S Black Lotus.png', rarity: 'epic', chance: 2.5, value: 400 },
+                { name: 'USP-S Jawbreaker', img: 'spins/USP-S Jawbreaker.png', rarity: 'epic', chance: 2.5, value: 500 },
+                { name: 'Zeus x27 Olympus', img: 'spins/Zeus x27 Olympus.png', rarity: 'epic', chance: 2.5, value: 300 },
+                { name: 'M4A4 Etch Lord', img: 'spins/M4A4 Etch Lord.png', rarity: 'uncommon', chance: 10, value: 70 },
+                { name: 'Glock-18 Block-18', img: 'spins/Glock-18 Block-18 Skin.png', rarity: 'uncommon', chance: 10, value: 120 },
+                { name: 'MP7 Just Smile', img: 'spins/MP7 Just Smile Skin.png', rarity: 'epic', chance: 2.5, value: 320 },
+                { name: 'Five-SeveN Hybrid', img: 'spins/Five-SeveN Hybrid.png', rarity: 'uncommon', chance: 10, value: 70 },
+                { name: 'Sawed-Off Analog Input', img: 'spins/Sawed-Off Analog Input.png', rarity: 'uncommon', chance: 10, value: 150 },
+                { name: 'MAC-10 Light Box', img: 'spins/MAC-10 Light Box.png', rarity: 'common', chance: 30, value: 20 },
+                { name: 'SSG 08 Dezastre', img: 'spins/SSG 08 Dezastre.png', rarity: 'common', chance: 30, value: 5 },
+                { name: 'UMP-45 Motorized', img: 'spins/UMP-45 Motorized.png', rarity: 'common', chance: 30, value: 27 },
+                { name: 'Tec-9 Slag', img: 'spins/Tec-9 Slag.png', rarity: 'epic', chance: 2.5, value: 270 },
+                { name: 'Nova Dark Sigil', img: 'spins/Nova Dark Sigil.png', rarity: 'common', chance: 30, value: 55 },
+                { name: 'Dual Berettas Hideout', img: 'spins/Dual Berettas Hideout.png', rarity: 'common', chance: 30, value: 17 },
+                { name: 'M4A4 Desert-Strike', img: 'spins/M4A4 Desert-Strike.png', rarity: 'legendary', chance: 0.8, value: 3200 },
+                { name: 'M4A1-S Atomic Alloy', img: 'spins/M4A1-S Atomic Alloy.png', rarity: 'epic', chance: 2.5, value: 570 },
+                { name: 'USP-S Caiman', img: 'spins/USP-S Caiman.png', rarity: 'epic', chance: 2.5, value: 700 },
+                { name: 'PP-Bizon Antique', img: 'spins/PP-Bizon Antique.png', rarity: 'epic', chance: 2.5, value: 450 },
+                { name: 'MAC-10 Tatter', img: 'spins/MAC-10 Tatter.png', rarity: 'uncommon', chance: 10, value: 60 },
+                { name: 'AUG Torque', img: 'spins/AUG Torque.png', rarity: 'common', chance: 30, value: 44 },
+                { name: 'P90 Module', img: 'spins/P90 Module.png', rarity: 'common', chance: 30, value: 14 },
+                { name: 'CZ75-Auto Twist', img: 'spins/CZ75-Auto Twist.png', rarity: 'uncommon', chance: 10, value: 1 },
+                { name: 'Tec-9 Isaac', img: 'spins/Tec-9 Isaac.png', rarity: 'epic', chance: 2, value: 600 },
+                { name: 'SSG 08 Slashed', img: 'spins/SSG 08 Slashed.png', rarity: 'common', chance: 30, value: 0.3 },
+                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.01, value: 0 }
+            ],
+            knifes: [
+                { name: 'Kukri Knife Urban Masked', img: 'spins/Kukri Knife Urban Masked.png', rarity: 'mythic', chance: 0.000567, value: 25000 },
+                { name: 'Huntsman Knife Case Hardened', img: 'spins/Huntsman Knife Case Hardened.png', rarity: 'mythic', chance: 0.000567, value: 21000 },
+                { name: 'Kukri Knife Blue Steel', img: 'spins/Kukri Knife Blue Steel.png', rarity: 'mythic', chance: 0.000567, value: 22000 },
+                { name: 'Kukri Knife Fade', img: 'spins/Kukri Knife Fade.png', rarity: 'mythic', chance: 0.000567, value: 80000 },
+                { name: 'Huntsman Knife Crimson Web', img: 'spins/Huntsman Knife Crimson Web.png', rarity: 'mythic', chance: 0.000567, value: 30000 },
+                { name: 'Kukri Knife Boreal Forest', img: 'spins/Kukri Knife Boreal Forest.png', rarity: 'mythic', chance: 0.000567, value: 15000 },
+                { name: 'Kukri Knife Crimson Web', img: 'spins/Kukri Knife Crimson Web.png', rarity: 'mythic', chance: 0.000567, value: 20000 },
+                { name: 'Huntsman Knife Night', img: 'spins/Huntsman Knife Night.png', rarity: 'mythic', chance: 0.000567, value: 35000 },
+                { name: 'Kukri Knife Scorched', img: 'spins/Kukri Knife Scorched.png', rarity: 'mythic', chance: 0.000567, value: 29000 },
+                { name: 'Huntsman Knife Slaughter', img: 'spins/Huntsman Knife Slaughter.png', rarity: 'mythic', chance: 0.000567, value: 40000 },
+                { name: 'Kukri Knife ★ (Vanilla)', img: 'spins/Kukri Knife Vanilla.png', rarity: 'mythic', chance: 0.000567, value: 50000 },
+                { name: 'Huntsman Knife Fade', img: 'spins/Huntsman Knife Fade.png', rarity: 'mythic', chance: 0.000567, value: 65000 }
+            ]
+        },
+        {
+            id: 'case4',
+            name: '???',
+            img: 'spins/nun.png',
+            cost: 0,
+            limitedTime: true, // Add this
+            startTime: '2025-08-07T00:00:00', // Add start time (optional)
+            endTime: '2025-08-09T14:00:00', // Add end time
+            playVideo: false, // Add this
+            video: 'spins/video4.mp4', // Add this
+            mythicVideo: false,  // Set to true for cases that should play video for mythic items
+            mythicVideoFile: 'spins/limited4.mp4',
+            items: [
+                { name: 'Nothing You Bitch', img: 'spins/default.png', rarity: 'epic', chance: 2.5, value: 0 }
+            ],
+            knifes: [
+                { name: 'Y3tek 3sba', img: 'spins/default.png', rarity: 'mythic', chance: 0.1, value: 0 }
+            ]
+        },
+        {
+            id: 'case5',
             name: 'Predatory Cobra [LIMITED]',
             img: 'spins/case3.png',
             cost: 100,
@@ -144,13 +219,13 @@ const CONFIG = {
             startTime: '2025-08-02T16:00:00.000Z', // Full ISO format with milliseconds
             endTime: '2025-08-04T15:00:00.000Z',
             playVideo: true, // Add this
-            video: 'spins/video3.mp4', // Add this
+            video: 'spins/video5.mp4', // Add this
             mythicVideo: false,  // Set to true for cases that should play video for mythic items
-            mythicVideoFile: 'spins/limited3.mp4',
+            mythicVideoFile: 'spins/limited5.mp4',
             items: [
                 { name: 'Evolution Stone', img: 'spins/Evolution_Stone.png', rarity: 'exclusive', chance: 0.1, value: 5000 },
                 { name: 'Golden Coin Case', img: 'spins/Golden_Coin.png', rarity: 'common', chance: 20, value: 50 },
-                { name: 'Golden Ticket', img: 'spins/GoldRV.png', rarity: 'common', chance: 20, value: 50 },
+                { name: 'Golden Ticket', img: 'spins/GoldRV.png', rarity: 'common', chance: 20, value: 50 },    
                 { name: 'Name Change Card', img: 'spins/Name_Change_Card.png', rarity: 'epic', chance: 2, value: 2500 },
                 { name: 'Venomous Fang Upgrade Token', img: 'spins/Venomous_Fang.png', rarity: 'uncommon', chance: 10, value: 100 },
                 { name: 'Magic Cube Fragment', img: 'spins/Cube_Fragment.png', rarity: 'epic', chance: 2, value: 2500 },
