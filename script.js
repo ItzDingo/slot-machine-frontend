@@ -1609,103 +1609,84 @@ async function startLootboxSpin() {
     }
 }
 
-
 async function instantLootboxSpin() {
-    // Check if already spinning
+    // Prevent multiple simultaneous spins
     if (gameState.isSpinning) {
         console.log("Spin already in progress");
         return;
     }
     
-    // Define caseItem at the top level to prevent undefined reference errors
+    gameState.isSpinning = true;
     const caseItem = gameState.lootboxGame.currentCase;
     
     try {
-        gameState.isSpinning = true;
-        
         // 1. Validate case exists
         if (!caseItem) {
             throw new Error("No case selected");
         }
 
-        // 2. Enhanced spin tracking
+        // 2. Check spins remaining
         const spinsLeft = gameState.instantSpins?.remaining ?? 
                         (gameState.instantSpinLimit - (gameState.instantSpinsUsed || 0));
         
         if (spinsLeft <= 0) {
             updateInstantSpinDisplay(true);
-            gameState.isSpinning = false;
             return;
         }
 
-        // 3. Case-specific validation for Case 2
-        if (caseItem.id === 'case2') {
-            if (!isCaseAvailable(caseItem)) {
-                throw new Error("Case 2 is not currently available");
-            }
-            
-            if (!caseItem.items || caseItem.items.length === 0) {
-                throw new Error("Case 2 contains no valid items");
-            }
+        // 3. Validate case availability with server
+        const validationResponse = await fetch(`${API_BASE_URL}/api/cases/validate-spin`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                caseId: caseItem.id
+            }),
+            credentials: 'include'
+        });
+
+        if (!validationResponse.ok) {
+            throw new Error("Failed to validate case");
         }
 
-        // 4. Cost handling
-        const spinCost = caseItem.cost || CONFIG.lootboxCost;
-        if (gameState.chips < spinCost) {
-            showNotification("Not enough chips!", false);
-            gameState.isSpinning = false;
-            return;
+        const validationData = await validationResponse.json();
+        if (!validationData.valid) {
+            throw new Error(validationData.error || "This case is not currently available");
         }
 
-        // 5. Enhanced API call with better error handling
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => {
-            controller.abort();
-            // Ensure caseItem is available in timeout
-            if (caseItem?.id === 'case2') {
-                gameState.chips += spinCost;
-                updateCurrencyDisplay();
-            }
-        }, 10000);
+        // 4. Check item availability
+        const availableItems = caseItem.items.filter(item => 
+            !item.quantity || checkItemAvailable(item.name)
+        );
         
-        let spinResponse;
-        try {
-            spinResponse = await fetch(`${API_BASE_URL}/api/spin`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: gameState.userId,
-                    cost: spinCost,
-                    isInstantSpin: true,
-                    caseId: caseItem.id,
-                    caseVersion: caseItem.version || 1,
-                    isCase2: caseItem.id === 'case2' // Flag for backend
-                }),
-                credentials: 'include',
-                signal: controller.signal
-            });
-        } catch (error) {
-            clearTimeout(timeoutId);
-            if (error.name === 'AbortError') {
-                throw new Error("Spin timed out" + 
-                    (caseItem.id === 'case2' ? " - your chips have been refunded" : ""));
-            }
-            throw error;
+        if (availableItems.length === 0) {
+            throw new Error("No available items in this case");
         }
-        clearTimeout(timeoutId);
+
+        // 5. Process spin
+        const spinCost = caseItem.cost || CONFIG.lootboxCost;
+        
+        const spinResponse = await fetch(`${API_BASE_URL}/api/spin`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: gameState.userId,
+                cost: spinCost,
+                isInstantSpin: true,
+                caseId: caseItem.id
+            }),
+            credentials: 'include',
+            signal: AbortSignal.timeout(10000) // 10 second timeout
+        });
 
         if (!spinResponse.ok) {
             const errorData = await spinResponse.json().catch(() => ({}));
-            // Auto-refund for Case 2
-            if (caseItem.id === 'case2') {
-                gameState.chips += spinCost;
-                updateCurrencyDisplay();
-            }
-            throw new Error(errorData.message || 'Spin failed' + 
-                (caseItem.id === 'case2' ? ' - your chips have been refunded' : ''));
+            throw new Error(errorData.error || 'Spin failed');
         }
 
         const spinData = await spinResponse.json();
@@ -1721,87 +1702,73 @@ async function instantLootboxSpin() {
         updateCurrencyDisplay();
         updateInstantSpinDisplay();
 
-        // 6. Item selection with Case 2 safeguards
-        let resultItem;
-        try {
-            resultItem = await getRandomLootboxItem(caseItem.items);
-            
-            if (!resultItem || !resultItem.name) {
-                if (caseItem.id === 'case2') {
-                    gameState.chips += spinCost;
-                    updateCurrencyDisplay();
-                }
-                throw new Error("No valid items available" + 
-                    (caseItem.id === 'case2' ? " - chips refunded" : ""));
-            }
-        } catch (error) {
-            console.error("Item selection error:", error);
-            if (caseItem.id === 'case2') {
-                gameState.chips += spinCost;
-                updateCurrencyDisplay();
-            }
-            throw error;
+        // 6. Get and process reward
+        const resultItem = await getRandomLootboxItem(availableItems);
+        if (!resultItem || !resultItem.name) {
+            throw new Error("Failed to select a valid item");
         }
 
-        // 7. Reward processing
         let finalReward = resultItem;
         
-        // Handle mythic items (knives) with Case 2 fallback
-        if (resultItem.rarity === 'mythic') {
-            try {
-                const knife = getRandomKnife(caseItem.knifes);
-                if (knife && knife.name) {
-                    finalReward = knife;
-                } else if (caseItem.id === 'case2') {
-                    console.warn("No knives available in Case 2, using original reward");
-                }
-            } catch (error) {
-                console.error("Knife selection error:", error);
-                if (caseItem.id === 'case2') {
-                    showNotification("Special item unlocked!", true);
-                }
+        // Handle mythic items (knives)
+        if (resultItem.rarity === 'mythic' && caseItem.knifes?.length > 0) {
+            const knife = getRandomKnife(caseItem.knifes);
+            if (knife && knife.name) {
+                finalReward = knife;
             }
         }
 
-        // 8. Final reward handling
+        // 7. Handle reward
         if (checkAutoSell(finalReward.rarity)) {
-            try {
-                await autoSellItem(finalReward);
-                showNotification(`Auto-sold ${finalReward.name} for ${finalReward.value} chips`, true);
-            } catch (error) {
-                console.error("Auto-sell failed:", error);
-                if (caseItem.id === 'case2') {
-                    await addToInventory(finalReward);
-                    showNotification(`${finalReward.name} added to inventory`, false);
-                }
-            }
+            await autoSellItem(finalReward);
+            showNotification(`Auto-sold ${finalReward.name} for ${finalReward.value} chips`, true);
         } else {
-            // Special handling for mythic items
+            // Play mythic video if applicable
             if (finalReward.rarity === 'mythic' && caseItem.mythicVideo && caseItem.mythicVideoFile) {
                 try {
                     await playMythicVideo(caseItem.mythicVideoFile);
                 } catch (error) {
-                    console.error("Mythic video failed:", error);
-                    if (caseItem.id === 'case2') {
-                        showNotification("Special reward unlocked!", true);
-                    }
+                    console.error("Mythic video playback error:", error);
                 }
             }
             
+            // Show the reward popup
             await showLootboxPopup(finalReward);
             
-            // Sound handling
+            // Play sound effect
             if (openSound) {
                 try {
                     openSound.currentTime = 0;
                     await openSound.play();
                 } catch (error) {
-                    console.warn('Sound error:', error);
-                    if (caseItem.id === 'case2') {
-                        openSound.muted = true;
-                        openSound.play().catch(e => console.warn('Muted playback failed:', e));
-                    }
+                    console.warn('Sound playback error:', error);
+                    // Fallback to muted playback
+                    openSound.muted = true;
+                    openSound.play().catch(e => console.warn('Muted playback failed:', e));
                 }
+            }
+            
+            // Add to inventory if not auto-sold
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/inventory/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: gameState.userId,
+                        item: finalReward
+                    }),
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to add item to inventory');
+                }
+            } catch (error) {
+                console.error('Inventory add error:', error);
+                showNotification('Failed to save item to inventory', false);
             }
         }
     } catch (error) {
@@ -1809,18 +1776,7 @@ async function instantLootboxSpin() {
         showNotification(error.message || 'Failed to process instant spin', false);
     } finally {
         gameState.isSpinning = false;
-        
-        // Force UI update
-        const instantSpinBtn = document.getElementById('lootbox-instant-spin-btn');
-        if (instantSpinBtn) {
-            instantSpinBtn.disabled = false;
-            const counter = instantSpinBtn.querySelector('.instant-spin-counter');
-            if (counter) {
-                const remaining = gameState.instantSpins?.remaining ?? 
-                                (gameState.instantSpinLimit - (gameState.instantSpinsUsed || 0));
-                counter.textContent = `(${Math.max(0, remaining)}/${gameState.instantSpinLimit})`;
-            }
-        }
+        updateInstantSpinDisplay();
     }
 }
 
@@ -2773,4 +2729,3 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
-
