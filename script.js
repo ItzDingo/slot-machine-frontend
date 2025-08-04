@@ -179,7 +179,6 @@ const CONFIG = {
         maxBet: 10000000000000000000000000000000,
         minMines: 1,
         maxMines: 10,
-        mineLossPercentage: 0.99,
         getGridSize: function(minesCount) {
             if (minesCount <= 6) return 5;
             if (minesCount <= 9) return 6;
@@ -2465,7 +2464,6 @@ async function endMinesGame(isWin) {
     gameState.minesGame.gameActive = false;
     if (elements.minesCashoutBtn) elements.minesCashoutBtn.disabled = true;
     
-    // Reveal all mines
     if (elements.minesGrid) {
         gameState.minesGame.minePositions.forEach(pos => {
             const cell = elements.minesGrid.children[pos];
@@ -2476,12 +2474,11 @@ async function endMinesGame(isWin) {
         });
     }
     
-    try {
-        if (isWin) {
-            // Win logic remains the same
-            gameState.minesStats.wins++;
-            gameState.minesStats.totalWins += gameState.minesGame.currentWin;
-            
+    if (isWin) {
+        gameState.minesStats.wins++;
+        gameState.minesStats.totalWins += gameState.minesGame.currentWin;
+        
+        try {
             const response = await fetch(`${API_BASE_URL}/api/win`, {
                 method: 'POST',
                 headers: { 
@@ -2502,48 +2499,18 @@ async function endMinesGame(isWin) {
             if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "You Won!";
             if (elements.minesGameOverAmount) {
                 elements.minesGameOverAmount.textContent = `+${gameState.minesGame.currentWin.toFixed(4)}`;
-                elements.minesGameOverAmount.className = 'amount-won';
             }
-            if (elements.minesGameOverKept) {
-                elements.minesGameOverKept.style.display = 'none';
-            }
-        } else {
-            // Send the FULL bet amount to the backend
-            const response = await fetch(`${API_BASE_URL}/api/mines/loss`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: gameState.userId,
-                    amount: gameState.minesGame.betAmount, // Send full bet amount
-                    minesCount: gameState.minesGame.minesCount,
-                    revealedCells: gameState.minesGame.revealedCells
-                }),
-                credentials: 'include'
-            });
-
-            const data = await response.json();
-            gameState.chips = data.newBalance;
-            updateCurrencyDisplay();
-            
-            // Update UI with the amounts from the response
-            if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "Game Over!";
-            if (elements.minesGameOverAmount) {
-                elements.minesGameOverAmount.textContent = `-${data.amountLost.toFixed(4)}`;
-                elements.minesGameOverAmount.className = 'amount-lost';
-            }
-            if (elements.minesGameOverKept) {
-                elements.minesGameOverKept.textContent = `You kept: ${data.amountKept.toFixed(4)} chips`;
-                elements.minesGameOverKept.style.display = 'block';
-            }
+            if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'flex';
+        } catch (error) {
+            console.error('Win claim error:', error);
+            showNotification('Failed to claim win', false);
         }
-        
+    } else {
+        if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "Game Over!";
+        if (elements.minesGameOverAmount) {
+            elements.minesGameOverAmount.textContent = `-${gameState.minesGame.betAmount.toFixed(4)}`;
+        }
         if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'flex';
-    } catch (error) {
-        console.error('Game end error:', error);
-        showNotification('Failed to process game result', false);
     }
 }
 
