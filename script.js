@@ -2465,6 +2465,7 @@ async function endMinesGame(isWin) {
     gameState.minesGame.gameActive = false;
     if (elements.minesCashoutBtn) elements.minesCashoutBtn.disabled = true;
     
+    // Show all mines on the grid
     if (elements.minesGrid) {
         gameState.minesGame.minePositions.forEach(pos => {
             const cell = elements.minesGrid.children[pos];
@@ -2477,6 +2478,7 @@ async function endMinesGame(isWin) {
     
     try {
         if (isWin) {
+            // Win logic remains the same
             gameState.minesStats.wins++;
             gameState.minesStats.totalWins += gameState.minesGame.currentWin;
             
@@ -2501,16 +2503,29 @@ async function endMinesGame(isWin) {
             if (elements.minesGameOverAmount) {
                 elements.minesGameOverAmount.textContent = `+${gameState.minesGame.currentWin.toFixed(4)}`;
             }
+            if (elements.minesGameOverKept) {
+                elements.minesGameOverKept.textContent = ''; // Clear kept amount on win
+            }
         } else {
-            // Calculate 1% of the bet to keep (lose 99%)
-            const amountToKeep = gameState.minesGame.betAmount * (1 - CONFIG.mines.mineLossPercentage);
-            const amountLost = gameState.minesGame.betAmount - amountToKeep;
+            // Calculate amounts (player keeps 1%)
+            const originalBet = gameState.minesGame.betAmount;
+            const amountToKeep = originalBet * 0.01; // 1% of original bet
+            const amountLost = originalBet - amountToKeep; // 99% of original bet
             
             // Update stats
             gameState.minesStats.losses++;
             gameState.minesStats.totalLosses += amountLost;
             
-            // Update player's balance (they keep 1%)
+            // Update UI before making the API call
+            if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "Game Over!";
+            if (elements.minesGameOverAmount) {
+                elements.minesGameOverAmount.textContent = `-${amountLost.toFixed(4)}`;
+            }
+            if (elements.minesGameOverKept) {
+                elements.minesGameOverKept.textContent = `You kept: ${amountToKeep.toFixed(4)} chips`;
+            }
+            
+            // Update player's balance via API
             const response = await fetch(`${API_BASE_URL}/api/mines/loss`, {
                 method: 'POST',
                 headers: { 
@@ -2530,11 +2545,6 @@ async function endMinesGame(isWin) {
             const data = await response.json();
             gameState.chips = data.newBalance;
             updateCurrencyDisplay();
-            
-            if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "Game Over!";
-            if (elements.minesGameOverAmount) {
-                elements.minesGameOverAmount.textContent = `-${amountLost.toFixed(4)} (Kept ${amountToKeep.toFixed(4)})`;
-            }
         }
         
         if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'flex';
