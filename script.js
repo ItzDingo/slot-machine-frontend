@@ -155,7 +155,7 @@ const CONFIG = {
                 { name: 'Venomous Fang Upgrade Token', img: 'spins/Venomous_Fang.png', rarity: 'uncommon', chance: 10, value: 100 },
                 { name: 'Magic Cube Fragment', img: 'spins/Cube_Fragment.png', rarity: 'epic', chance: 2, value: 2500 },
                 { name: 'Elite Pass Access', img: 'spins/Elite_Pass.png', rarity: 'exclusive', chance: 0.5, value: 5000 },
-                { name: 'Limited Item', img: 'spins/congratulations.png', rarity: 'mythic', chance: 100, value: 0 }
+                { name: 'Limited Item', img: 'spins/congratulations.png', rarity: 'mythic', chance: 0.01, value: 0 }
             ],
             knifes: [
                 { name: 'Motor Bike Cobra Skin', img: 'spins/Motor_BikeCobra.png', rarity: 'limited', chance: 0.001, value: 30000 },
@@ -2773,3 +2773,4 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
+
