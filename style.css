@@ -1132,6 +1132,14 @@ video::-webkit-media-controls-start-playback-button {
     overflow: hidden;
 }
 
+.instant-spin-text {
+    margin-right: 5px;
+}
+
+.instant-spin-counter {
+    font-weight: bold;
+}
+
 .lootbox-spin-button::before {
     content: '';
     position: absolute;
