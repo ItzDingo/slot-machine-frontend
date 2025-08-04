@@ -2508,16 +2508,15 @@ async function endMinesGame(isWin) {
                 elements.minesGameOverKept.style.display = 'none';
             }
         } else {
-            // Calculate amounts correctly
-            const originalBet = gameState.minesGame.betAmount;
-            const amountLost = originalBet * 0.99; // Lose 99%
-            const amountKept = originalBet * 0.01; // Keep 1%
+            // Calculate amounts correctly - we only lose 99% and keep 1%
+            const amountLost = gameState.minesGame.betAmount * 0.99;
+            const amountKept = gameState.minesGame.betAmount * 0.01;
             
             // Update stats
             gameState.minesStats.losses++;
             gameState.minesStats.totalLosses += amountLost;
             
-            // Send to server
+            // Send to server - we only subtract the 99% loss
             const response = await fetch(`${API_BASE_URL}/api/mines/loss`, {
                 method: 'POST',
                 headers: { 
@@ -2526,7 +2525,7 @@ async function endMinesGame(isWin) {
                 },
                 body: JSON.stringify({
                     userId: gameState.userId,
-                    amount: amountLost, // The 99% we're taking
+                    amount: amountLost, // Only the 99% we're losing
                     minesCount: gameState.minesGame.minesCount,
                     revealedCells: gameState.minesGame.revealedCells
                 }),
