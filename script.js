@@ -513,10 +513,8 @@ function playMythicVideo(videoSrc) {
 }
 
 function isCaseAvailable(caseItem) {
-    // If case is not limited, it's always available
     if (!caseItem.limitedTime) return true;
     
-    // For limited cases, check time window
     const now = new Date();
     const startTime = caseItem.startTime ? new Date(caseItem.startTime) : new Date(0);
     const endTime = new Date(caseItem.endTime);
@@ -1000,7 +998,9 @@ async function refillInstantSpins() {
 
 function updateInstantSpinDisplay(showPopup = false) {
     const instantSpinBtn = document.getElementById('lootbox-instant-spin-btn');
-    if (!instantSpinBtn) return;
+    const instantSpinCounter = instantSpinBtn ? instantSpinBtn.querySelector('.instant-spin-counter') : null;
+    
+    if (!instantSpinCounter) return;
 
     // Get the current remaining spins
     let remaining;
@@ -1010,16 +1010,14 @@ function updateInstantSpinDisplay(showPopup = false) {
         remaining = gameState.instantSpinLimit - gameState.instantSpinsUsed;
     }
 
-    // Ensure remaining doesn't go below 0
     remaining = Math.max(0, remaining);
-
-    // Update button text
-    instantSpinBtn.textContent = `Instant Spin (${remaining}/${gameState.instantSpinLimit})`;
+    
+    // Update only the instant spin counter
+    instantSpinCounter.textContent = `(${remaining}/${gameState.instantSpinLimit})`;
     
     // Update button state
     if (remaining <= 0) {
         instantSpinBtn.classList.add('disabled');
-        // Only show popup if explicitly requested
         if (showPopup) {
             showRefillPopup();
         }
@@ -1624,42 +1622,44 @@ async function instantLootboxSpin() {
         gameState.isSpinning = true;
         const caseItem = gameState.lootboxGame.currentCase;
         
-        // 1. Check if case is limited and expired (client-side check first)
-        if (caseItem.limitedTime) {
-            const now = new Date();
-            const endTime = new Date(caseItem.endTime);
-            if (now >= endTime) {
-                showNotification("This limited case has expired!", false);
-                // Disable instant spin button for this case
-                const instantSpinBtn = document.getElementById('lootbox-instant-spin-btn');
-                if (instantSpinBtn) {
-                    instantSpinBtn.disabled = true;
-                    instantSpinBtn.classList.add('disabled');
-                    instantSpinBtn.title = "This case has expired";
-                }
-                gameState.isSpinning = false;
-                return;
-            }
-        }
-
-        // 2. Check spins remaining
-        const spinsLeft = gameState.instantSpins?.remaining || 0;
+        // 1. Enhanced spin tracking with case-specific checks
+        const spinsLeft = gameState.instantSpins?.remaining ?? 
+                        (gameState.instantSpinLimit - (gameState.instantSpinsUsed || 0));
+        
         if (spinsLeft <= 0) {
             updateInstantSpinDisplay(true);
             gameState.isSpinning = false;
             return;
         }
 
-        // 3. Check chips balance
-        if (gameState.chips < caseItem.cost) {
+        // 2. Case-specific validation for Case 2
+        if (caseItem.id === 'case2') {
+            // Check if case is available
+            if (!isCaseAvailable(caseItem)) {
+                showNotification("Case 2 is not currently available", false);
+                gameState.isSpinning = false;
+                return;
+            }
+            
+            // Validate case items
+            if (!caseItem.items || caseItem.items.length === 0) {
+                showNotification("Case 2 contains no valid items", false);
+                gameState.isSpinning = false;
+                return;
+            }
+        }
+
+        // 3. Cost handling with case-specific checks
+        const spinCost = caseItem.cost || CONFIG.lootboxCost;
+        if (gameState.chips < spinCost) {
             showNotification("Not enough chips!", false);
             gameState.isSpinning = false;
             return;
         }
 
-        // 4. Make API call with timeout
+        // 4. Enhanced API call with case-specific handling
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
         
         const spinResponse = await fetch(`${API_BASE_URL}/api/spin`, {
             method: 'POST',
@@ -1669,9 +1669,10 @@ async function instantLootboxSpin() {
             },
             body: JSON.stringify({
                 userId: gameState.userId,
-                cost: caseItem.cost,
+                cost: spinCost,
                 isInstantSpin: true,
-                caseId: caseItem.id // Important for server-side validation
+                caseId: caseItem.id,
+                caseVersion: caseItem.version || 1 // Add version tracking
             }),
             credentials: 'include',
             signal: controller.signal
@@ -1680,94 +1681,118 @@ async function instantLootboxSpin() {
 
         if (!spinResponse.ok) {
             const errorData = await spinResponse.json().catch(() => ({}));
+            const errorMsg = errorData.message || 'Spin failed';
             
-            // Special handling for expired cases (server-side validation)
-            if (errorData.caseExpired) {
-                showNotification("This limited case has expired!", false);
-                // Disable instant spin button for this case
-                const instantSpinBtn = document.getElementById('lootbox-instant-spin-btn');
-                if (instantSpinBtn) {
-                    instantSpinBtn.disabled = true;
-                    instantSpinBtn.classList.add('disabled');
-                    instantSpinBtn.title = "This case has expired";
-                }
-                gameState.isSpinning = false;
-                return;
+            // Case 2 specific error handling
+            if (caseItem.id === 'case2') {
+                gameState.chips += spinCost; // Refund immediately for Case 2
+                updateCurrencyDisplay();
+                throw new Error(`${errorMsg} - Your chips have been refunded`);
             }
-            
-            throw new Error(errorData.message || 'Spin failed');
+            throw new Error(errorMsg);
         }
 
         const spinData = await spinResponse.json();
         gameState.chips = spinData.newBalance;
-        gameState.instantSpins = spinData.instantSpins;
+        
+        // Enhanced spin tracking
+        if (typeof spinData.instantSpins === 'object') {
+            gameState.instantSpins = spinData.instantSpins;
+        } else {
+            gameState.instantSpinsUsed = (gameState.instantSpinsUsed || 0) + 1;
+        }
+        
         updateCurrencyDisplay();
         updateInstantSpinDisplay();
 
-        // 5. Get random item with availability check
+        // 5. Robust item selection with case-specific handling
         let resultItem;
         try {
             resultItem = await getRandomLootboxItem(caseItem.items);
+            
+            // Additional validation for Case 2
+            if (caseItem.id === 'case2' && (!resultItem || !resultItem.name)) {
+                gameState.chips += spinCost; // Refund for Case 2
+                updateCurrencyDisplay();
+                throw new Error("Invalid item in Case 2 - chips refunded");
+            }
+            
             if (!resultItem) {
                 throw new Error("No available items in this case");
             }
         } catch (error) {
             console.error("Item selection error:", error);
-            // Refund the spin cost if item selection fails
-            gameState.chips += caseItem.cost;
-            updateCurrencyDisplay();
-            throw new Error("Failed to select an item - your chips have been refunded");
+            // Auto-refund for Case 2
+            if (caseItem.id === 'case2') {
+                gameState.chips += spinCost;
+                updateCurrencyDisplay();
+            }
+            throw new Error(error.message);
         }
 
+        // 6. Enhanced reward handling with case-specific logic
         let finalReward = resultItem;
-        // Handle mythic items (knives)
+        
+        // Mythic item handling with Case 2 fallback
         if (resultItem.rarity === 'mythic') {
             try {
-                finalReward = getRandomKnife(caseItem.knifes);
-                if (!finalReward) {
-                    throw new Error("No knives available");
+                const knife = getRandomKnife(caseItem.knifes);
+                if (knife && knife.name) {
+                    finalReward = knife;
+                } else if (caseItem.id === 'case2') {
+                    // Case 2 specific fallback
+                    console.warn("No knives available in Case 2, using original reward");
                 }
             } catch (error) {
                 console.error("Knife selection error:", error);
-                // Fallback to original mythic item if knife selection fails
-                showNotification("Special item unlocked!", true);
+                if (caseItem.id === 'case2') {
+                    showNotification("Special item unlocked!", true);
+                }
             }
         }
 
-        // 6. Show popup or auto-sell
+        // 7. Reward processing with enhanced case handling
         if (checkAutoSell(finalReward.rarity)) {
             try {
                 await autoSellItem(finalReward);
                 showNotification(`Auto-sold ${finalReward.name} for ${finalReward.value} chips`, true);
             } catch (error) {
                 console.error("Auto-sell failed:", error);
-                // If auto-sell fails, add to inventory instead
-                showNotification(`Couldn't auto-sell - ${finalReward.name} added to inventory`, false);
-                await addToInventory(finalReward);
+                // Case 2 specific handling
+                if (caseItem.id === 'case2') {
+                    await addToInventory(finalReward);
+                    showNotification(`${finalReward.name} added to inventory`, false);
+                }
             }
         } else {
-            // Check for mythic video before showing popup
-            if (finalReward.rarity === 'mythic' && caseItem.mythicVideo && caseItem.mythicVideoFile) {
-                try {
-                    await playMythicVideo(caseItem.mythicVideoFile);
-                } catch (error) {
-                    console.error("Mythic video playback failed:", error);
-                    // Continue to show popup even if video fails
+            // Special handling for Case 2 mythic items
+            if (finalReward.rarity === 'mythic') {
+                if (caseItem.mythicVideo && caseItem.mythicVideoFile) {
+                    try {
+                        await playMythicVideo(caseItem.mythicVideoFile);
+                    } catch (error) {
+                        console.error("Mythic video failed:", error);
+                        if (caseItem.id === 'case2') {
+                            // Case 2 fallback
+                            showNotification("Special reward unlocked!", true);
+                        }
+                    }
                 }
             }
             
             await showLootboxPopup(finalReward);
             
-            // Play sound with better error handling
+            // Sound handling with Case 2 fallback
             if (openSound) {
                 try {
                     openSound.currentTime = 0;
                     await openSound.play();
                 } catch (error) {
-                    console.warn('Open sound error:', error);
-                    // Fallback to muted playback
-                    openSound.muted = true;
-                    openSound.play().catch(e => console.warn('Muted open sound error:', e));
+                    console.warn('Sound error:', error);
+                    if (caseItem.id === 'case2') {
+                        openSound.muted = true;
+                        openSound.play().catch(e => console.warn('Muted playback failed:', e));
+                    }
                 }
             }
         }
@@ -1775,19 +1800,34 @@ async function instantLootboxSpin() {
         console.error('Instant spin error:', error);
         showNotification(error.message || 'Failed to process instant spin', false);
         
-        // Additional error recovery if needed
+        // Case 2 specific timeout handling
         if (error.name === 'AbortError') {
             showNotification("Spin timed out - please try again", false);
+            if (caseItem.id === 'case2') {
+                gameState.chips += caseItem.cost;
+                updateCurrencyDisplay();
+            }
         }
     } finally {
         gameState.isSpinning = false;
         
-        // Force UI update if still stuck
+        // Force UI update with case-specific text
         if (elements.lootboxSpinBtn) {
             elements.lootboxSpinBtn.disabled = false;
-            elements.lootboxSpinBtn.textContent = `INSTANT SPIN (${gameState.instantSpins?.remaining || 0}/${gameState.instantSpinLimit})`;
+            elements.lootboxSpinBtn.textContent = caseItem.id === 'case2' ? "SPIN (CASE 2)" : "SPIN";
         }
     }
+}
+
+// Add this helper function if not already present
+function isCaseAvailable(caseItem) {
+    if (!caseItem.limitedTime) return true;
+    
+    const now = new Date();
+    const startTime = caseItem.startTime ? new Date(caseItem.startTime) : new Date(0);
+    const endTime = new Date(caseItem.endTime);
+    
+    return now >= startTime && now < endTime;
 }
 
 // Add this function to handle auto-selling
