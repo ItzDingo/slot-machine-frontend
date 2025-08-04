@@ -179,6 +179,7 @@ const CONFIG = {
         maxBet: 10000000000000000000000000000000,
         minMines: 1,
         maxMines: 10,
+        mineLossPercentage: 0.99,
         getGridSize: function(minesCount) {
             if (minesCount <= 6) return 5;
             if (minesCount <= 9) return 6;
@@ -2474,11 +2475,11 @@ async function endMinesGame(isWin) {
         });
     }
     
-    if (isWin) {
-        gameState.minesStats.wins++;
-        gameState.minesStats.totalWins += gameState.minesGame.currentWin;
-        
-        try {
+    try {
+        if (isWin) {
+            gameState.minesStats.wins++;
+            gameState.minesStats.totalWins += gameState.minesGame.currentWin;
+            
             const response = await fetch(`${API_BASE_URL}/api/win`, {
                 method: 'POST',
                 headers: { 
@@ -2500,17 +2501,46 @@ async function endMinesGame(isWin) {
             if (elements.minesGameOverAmount) {
                 elements.minesGameOverAmount.textContent = `+${gameState.minesGame.currentWin.toFixed(4)}`;
             }
-            if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'flex';
-        } catch (error) {
-            console.error('Win claim error:', error);
-            showNotification('Failed to claim win', false);
+        } else {
+            // Calculate 1% of the bet to keep (lose 99%)
+            const amountToKeep = gameState.minesGame.betAmount * (1 - CONFIG.mines.mineLossPercentage);
+            const amountLost = gameState.minesGame.betAmount - amountToKeep;
+            
+            // Update stats
+            gameState.minesStats.losses++;
+            gameState.minesStats.totalLosses += amountLost;
+            
+            // Update player's balance (they keep 1%)
+            const response = await fetch(`${API_BASE_URL}/api/mines/loss`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: gameState.userId,
+                    amount: amountLost,
+                    keptAmount: amountToKeep,
+                    minesCount: gameState.minesGame.minesCount,
+                    revealedCells: gameState.minesGame.revealedCells
+                }),
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+            gameState.chips = data.newBalance;
+            updateCurrencyDisplay();
+            
+            if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "Game Over!";
+            if (elements.minesGameOverAmount) {
+                elements.minesGameOverAmount.textContent = `-${amountLost.toFixed(4)} (Kept ${amountToKeep.toFixed(4)})`;
+            }
         }
-    } else {
-        if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "Game Over!";
-        if (elements.minesGameOverAmount) {
-            elements.minesGameOverAmount.textContent = `-${gameState.minesGame.betAmount.toFixed(4)}`;
-        }
+        
         if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'flex';
+    } catch (error) {
+        console.error('Game end error:', error);
+        showNotification('Failed to process game result', false);
     }
 }
 
