@@ -1980,7 +1980,7 @@ video::-webkit-media-controls-start-playback-button {
 }
 
 .win-popup .amount-kept {
-    color: #4dff4d;
+    color: #ffe603;
     font-size: 16px;
     margin-bottom: 20px;
 }
@@ -2357,3 +2357,4 @@ video::-webkit-media-controls-start-playback-button {
         font-size: 0.8rem;
     }
 }
+
