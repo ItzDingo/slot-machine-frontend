@@ -1962,6 +1962,44 @@ video::-webkit-media-controls-start-playback-button {
     margin: 1rem 0;
 }
 
+
+/* Add to your CSS */
+.win-popup .mines-game-over-content {
+    text-align: center;
+    padding: 20px;
+    background: #1a1a2e;
+    border-radius: 10px;
+    width: 300px;
+}
+
+.win-popup .amount-lost {
+    color: #ff4d4d;
+    font-size: 24px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.win-popup .amount-kept {
+    color: #4dff4d;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.win-popup #mines-game-over-close {
+    background: #4a4a8a;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+}
+
+.win-popup #mines-game-over-close:hover {
+    background: #5a5a9a;
+}
+
 #mines-game-over-close {
     background: var(--secondary);
     color: white;
