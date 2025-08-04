@@ -2508,15 +2508,7 @@ async function endMinesGame(isWin) {
                 elements.minesGameOverKept.style.display = 'none';
             }
         } else {
-            // Calculate amounts correctly - we only lose 99% and keep 1%
-            const amountLost = gameState.minesGame.betAmount * 0.99;
-            const amountKept = gameState.minesGame.betAmount * 0.01;
-            
-            // Update stats
-            gameState.minesStats.losses++;
-            gameState.minesStats.totalLosses += amountLost;
-            
-            // Send to server - we only subtract the 99% loss
+            // Send the FULL bet amount to the backend
             const response = await fetch(`${API_BASE_URL}/api/mines/loss`, {
                 method: 'POST',
                 headers: { 
@@ -2525,7 +2517,7 @@ async function endMinesGame(isWin) {
                 },
                 body: JSON.stringify({
                     userId: gameState.userId,
-                    amount: amountLost, // Only the 99% we're losing
+                    amount: gameState.minesGame.betAmount, // Send full bet amount
                     minesCount: gameState.minesGame.minesCount,
                     revealedCells: gameState.minesGame.revealedCells
                 }),
@@ -2536,14 +2528,14 @@ async function endMinesGame(isWin) {
             gameState.chips = data.newBalance;
             updateCurrencyDisplay();
             
-            // Update UI
+            // Update UI with the amounts from the response
             if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "Game Over!";
             if (elements.minesGameOverAmount) {
-                elements.minesGameOverAmount.textContent = `-${amountLost.toFixed(4)}`;
+                elements.minesGameOverAmount.textContent = `-${data.amountLost.toFixed(4)}`;
                 elements.minesGameOverAmount.className = 'amount-lost';
             }
             if (elements.minesGameOverKept) {
-                elements.minesGameOverKept.textContent = `You kept: ${amountKept.toFixed(4)} chips`;
+                elements.minesGameOverKept.textContent = `You kept: ${data.amountKept.toFixed(4)} chips`;
                 elements.minesGameOverKept.style.display = 'block';
             }
         }
