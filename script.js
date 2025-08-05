@@ -2470,14 +2470,14 @@ function revealMineCell(index) {
     );
     
     gameState.minesGame.currentWin = parseFloat(
-        (gameState.minesGame.betAmount * gameState.minesGame.multiplier).toFixed(4)
+        (gameState.minesGame.betAmount * (gameState.minesGame.multiplier - 1)).toFixed(4)
     );
     
     if (elements.minesCurrentWin) {
         elements.minesCurrentWin.textContent = gameState.minesGame.currentWin.toFixed(4);
     }
     if (elements.minesMultiplier) {
-        elements.minesMultiplier.textContent = `${gameState.minesGame.multiplier.toFixed(4)}x`;
+        elements.minesMultiplier.textContent = `${(gameState.minesGame.multiplier - 1).toFixed(4)}x`;
     }
     
     if (gameState.minesGame.revealedCells >= 2 && elements.minesCashoutBtn) {
@@ -2512,10 +2512,7 @@ function cashoutMinesGame() {
         return;
     }
     
-    // Calculate and show the net profit before ending the game
-    const netProfit = gameState.minesGame.currentWin - gameState.minesGame.betAmount;
-    showNotification(`Cashing out with ${netProfit.toFixed(4)} profit!`, true);
-    
+    showNotification(`Cashing out with ${gameState.minesGame.currentWin.toFixed(4)} profit!`, true);
     endMinesGame(true);
 }
 
@@ -2538,9 +2535,7 @@ async function endMinesGame(isWin) {
         gameState.minesStats.totalWins += gameState.minesGame.currentWin;
         
         try {
-            // Calculate net win (currentWin includes the original bet)
-            const netWin = gameState.minesGame.currentWin - gameState.minesGame.betAmount;
-            
+            // Now currentWin is already just the profit
             const response = await fetch(`${API_BASE_URL}/api/win`, {
                 method: 'POST',
                 headers: { 
@@ -2549,7 +2544,7 @@ async function endMinesGame(isWin) {
                 },
                 body: JSON.stringify({
                     userId: gameState.userId,
-                    amount: netWin // Only add the profit, not the full currentWin
+                    amount: gameState.minesGame.currentWin
                 }),
                 credentials: 'include'
             });
@@ -2560,7 +2555,7 @@ async function endMinesGame(isWin) {
             
             if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "You Won!";
             if (elements.minesGameOverAmount) {
-                elements.minesGameOverAmount.textContent = `+${netWin.toFixed(4)}`;
+                elements.minesGameOverAmount.textContent = `+${gameState.minesGame.currentWin.toFixed(4)}`;
             }
             if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'flex';
         } catch (error) {
