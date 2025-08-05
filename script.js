@@ -2389,24 +2389,6 @@ async function startNewMinesGame() {
     
     gameState.minesStats.totalGames++;
     updateMinesStats();
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/spin`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                userId: gameState.userId,
-                cost: betAmount
-            }),
-            credentials: 'include'
-        });
-
-        const data = await response.json();
-        gameState.chips = data.newBalance;
-        updateCurrencyDisplay();
         
         gameState.minesGame.betAmount = betAmount;
         gameState.minesGame.minesCount = minesCount;
@@ -2430,11 +2412,6 @@ async function startNewMinesGame() {
             }),
             credentials: 'include'
         });
-    } catch (error) {
-        console.error('Mines game start error:', error);
-        showNotification('Failed to start mines game', false);
-        setupMinesGameUI();
-    }
 }
 
 function createMinesGrid() {
@@ -2535,6 +2512,10 @@ function cashoutMinesGame() {
         return;
     }
     
+    // Calculate and show the net profit before ending the game
+    const netProfit = gameState.minesGame.currentWin - gameState.minesGame.betAmount;
+    showNotification(`Cashing out with ${netProfit.toFixed(4)} profit!`, true);
+    
     endMinesGame(true);
 }
 
@@ -2557,6 +2538,9 @@ async function endMinesGame(isWin) {
         gameState.minesStats.totalWins += gameState.minesGame.currentWin;
         
         try {
+            // Calculate net win (currentWin includes the original bet)
+            const netWin = gameState.minesGame.currentWin - gameState.minesGame.betAmount;
+            
             const response = await fetch(`${API_BASE_URL}/api/win`, {
                 method: 'POST',
                 headers: { 
@@ -2565,7 +2549,7 @@ async function endMinesGame(isWin) {
                 },
                 body: JSON.stringify({
                     userId: gameState.userId,
-                    amount: gameState.minesGame.currentWin
+                    amount: netWin // Only add the profit, not the full currentWin
                 }),
                 credentials: 'include'
             });
@@ -2576,7 +2560,7 @@ async function endMinesGame(isWin) {
             
             if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "You Won!";
             if (elements.minesGameOverAmount) {
-                elements.minesGameOverAmount.textContent = `+${gameState.minesGame.currentWin.toFixed(4)}`;
+                elements.minesGameOverAmount.textContent = `+${netWin.toFixed(4)}`;
             }
             if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'flex';
         } catch (error) {
@@ -2584,11 +2568,39 @@ async function endMinesGame(isWin) {
             showNotification('Failed to claim win', false);
         }
     } else {
-        if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "Game Over!";
-        if (elements.minesGameOverAmount) {
-            elements.minesGameOverAmount.textContent = `-${gameState.minesGame.betAmount.toFixed(4)}`;
+        // When losing, only take 99% of the bet
+        const lossAmount = gameState.minesGame.betAmount * 0.99;
+        const returnedAmount = gameState.minesGame.betAmount * 0.01;
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/spin`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: gameState.userId,
+                    cost: lossAmount
+                }),
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+            gameState.chips = data.newBalance;
+            updateCurrencyDisplay();
+            
+            gameState.minesStats.totalGamesPlayed++;
+            
+            if (elements.minesGameOverMessage) elements.minesGameOverMessage.textContent = "Game Over!";
+            if (elements.minesGameOverAmount) {
+                elements.minesGameOverAmount.textContent = `-${lossAmount.toFixed(4)} (returned ${returnedAmount.toFixed(4)})`;
+            }
+            if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'flex';
+        } catch (error) {
+            console.error('Loss deduction error:', error);
+            showNotification('Failed to process loss', false);
         }
-        if (elements.minesGameOverPopup) elements.minesGameOverPopup.style.display = 'flex';
     }
 }
 
@@ -2848,5 +2860,3 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
-
-
