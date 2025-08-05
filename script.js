@@ -171,9 +171,9 @@ const CONFIG = {
                 { name: 'MAC-10 Tatter', img: 'spins/MAC-10 Tatter.png', rarity: 'uncommon', chance: 10, value: 60 },
                 { name: 'AUG Torque', img: 'spins/AUG Torque.png', rarity: 'common', chance: 30, value: 44 },
                 { name: 'P90 Module', img: 'spins/P90 Module.png', rarity: 'common', chance: 30, value: 14 },
-                { name: 'CZ75-Auto Twist', img: 'spins/CZ75-Auto Twist.png', rarity: 'uncommon', chance: 10, value: 1 },
+                { name: 'CZ75-Auto Twist', img: 'spins/CZ75-Auto Twist.png', rarity: 'uncommon', chance: 10, value: 85 },
                 { name: 'Tec-9 Isaac', img: 'spins/Tec-9 Isaac.png', rarity: 'epic', chance: 2, value: 600 },
-                { name: 'SSG 08 Slashed', img: 'spins/SSG 08 Slashed.png', rarity: 'common', chance: 30, value: 0.3 },
+                { name: 'SSG 08 Slashed', img: 'spins/SSG 08 Slashed.png', rarity: 'common', chance: 30, value: 5 },
                 { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.01, value: 0 }
             ],
             knifes: [
@@ -2845,3 +2845,4 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
+
