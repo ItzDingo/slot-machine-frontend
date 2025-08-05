@@ -2369,14 +2369,6 @@ async function setupMinesGameUI() {
     }
     
     updateMinesStats();
-    
-    // Add visual reset effect
-    if (elements.minesGameScreen) {
-        elements.minesGameScreen.classList.add('game-reset');
-        setTimeout(() => {
-            elements.minesGameScreen.classList.remove('game-reset');
-        }, 300);
-    }
 }
 
 function updateMinesStats() {
@@ -3057,3 +3049,4 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
+
