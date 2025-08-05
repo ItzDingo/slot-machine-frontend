@@ -106,7 +106,7 @@ const CONFIG = {
                 { name: 'MAC-10 Monkeyflage', img: 'spins/MAC-10-Monkeyflage.png', rarity: 'common', chance: 30, value: 20 },
                 { name: 'Sawed Off Kiss♥Love', img: 'spins/Sawed-Off-Kiss-Love.png', rarity: 'epic', chance: 2.5, value: 240 },
                 { name: 'P250 Visions', img: 'spins/P250-Visions.png', rarity: 'epic', chance: 2.5, value: 260 },
-                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 100, value: 0 }
+                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.5, value: 0 }
             ],
             knifes: [
                 { name: 'Driver Gloves Snow Leopard', img: 'spins/Driver-Gloves-Snow-Leopard.png', rarity: 'mythic', chance: 0.000567, value: 95000 },
@@ -2845,5 +2845,6 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
+
 
 
