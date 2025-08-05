@@ -2131,16 +2131,6 @@ video::-webkit-media-controls-start-playback-button {
     border-radius: 3px;
 }
 
-/*==== ANIMATIONS ====*/
-
-@keyframes quickFade {
-    0% { background-color: rgba(100, 200, 255, 0.1); }
-    100% { background-color: transparent; }
-}
-
-.game-reset {
-    animation: quickFade 0.3s ease-out;
-}
 
 /* Animation for smooth appearance */
 @keyframes fadeIn {
@@ -2412,3 +2402,4 @@ video::-webkit-media-controls-start-playback-button {
         font-size: 0.8rem;
     }
 }
+
