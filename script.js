@@ -50,7 +50,7 @@ const CONFIG = {
                 { name: 'MAC-10 Ensnared', img: 'spins/MAC-10-Ensnared-Skin.png', rarity: 'common', chance: 30, value: 1 },
                 { name: 'MP5-SD Necro Jr', img: 'spins/MP5-SD-Necro-Jr-Skin.png', rarity: 'common', chance: 30, value: 3 },
                 { name: 'Sawed Off Spirit Board', img: 'spins/Sawed-Off-Spirit-Board-Skin.png', rarity: 'uncommon', chance: 10, value: 75 },
-                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.01, value: 0 }
+                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.1, value: 0 }
             ],
             knifes: [
                 { name: 'Butterfly Knife Black Laminate', img: 'spins/Butterfly-Knife-Black-Laminate-Skin.png', rarity: 'mythic', chance: 0.000567, value: 15000 },
@@ -106,7 +106,7 @@ const CONFIG = {
                 { name: 'MAC-10 Monkeyflage', img: 'spins/MAC-10-Monkeyflage.png', rarity: 'common', chance: 30, value: 20 },
                 { name: 'Sawed Off Kiss♥Love', img: 'spins/Sawed-Off-Kiss-Love.png', rarity: 'epic', chance: 2.5, value: 240 },
                 { name: 'P250 Visions', img: 'spins/P250-Visions.png', rarity: 'epic', chance: 2.5, value: 260 },
-                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 100, value: 0 }
+                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.1, value: 0 }
             ],
             knifes: [
                 { name: 'Driver Gloves Snow Leopard', img: 'spins/Driver-Gloves-Snow-Leopard.png', rarity: 'mythic', chance: 0.000567, value: 95000 },
@@ -145,8 +145,8 @@ const CONFIG = {
             endTime: '2025-08-01T02:00:00', // Add end time
             playVideo: false, // Add this
             video: 'spins/video3.mp4', // Add this
-            mythicVideo: false,  // Set to true for cases that should play video for mythic items
-            mythicVideoFile: 'spins/limited3.mp4',
+            mythicVideo: true,  // Set to true for cases that should play video for mythic items
+            mythicVideoFile: 'spins/limited1.mp4',
             items: [
                 { name: 'AK-47 Inheritance', img: 'spins/AK-47 Inheritance.png', rarity: 'legendary', chance: 0.8, value: 5000 },
                 { name: 'AWP Chrome Cannon', img: 'spins/AWP Chrome Cannon.png', rarity: 'legendary', chance: 0.8, value: 3800 },
@@ -174,7 +174,7 @@ const CONFIG = {
                 { name: 'CZ75-Auto Twist', img: 'spins/CZ75-Auto Twist.png', rarity: 'uncommon', chance: 10, value: 1 },
                 { name: 'Tec-9 Isaac', img: 'spins/Tec-9 Isaac.png', rarity: 'epic', chance: 2, value: 600 },
                 { name: 'SSG 08 Slashed', img: 'spins/SSG 08 Slashed.png', rarity: 'common', chance: 30, value: 0.3 },
-                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.01, value: 0 }
+                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.1, value: 0 }
             ],
             knifes: [
                 { name: 'Kukri Knife Urban Masked', img: 'spins/Kukri Knife Urban Masked.png', rarity: 'mythic', chance: 0.000567, value: 25000 },
@@ -2848,3 +2848,4 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
+
