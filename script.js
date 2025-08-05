@@ -30,7 +30,7 @@ const CONFIG = {
             endTime: '2025-08-15T23:59:59', // Add end time
             playVideo: false, // Add this
             video: 'spins/video1.mp4', // Add this
-            mythicVideo: false,  // Set to true for cases that should play video for mythic items
+            mythicVideo: true,  // Set to true for cases that should play video for mythic items
             mythicVideoFile: 'spins/limited1.mp4',  // Path to the video file
             items: [
                 { name: 'MP7 Abyssal Apparition', img: 'spins/MP7-Abyssal-Apparition.png', rarity: 'legendary', chance: 0.8, value: 3600 },
@@ -106,7 +106,7 @@ const CONFIG = {
                 { name: 'MAC-10 Monkeyflage', img: 'spins/MAC-10-Monkeyflage.png', rarity: 'common', chance: 30, value: 20 },
                 { name: 'Sawed Off Kiss♥Love', img: 'spins/Sawed-Off-Kiss-Love.png', rarity: 'epic', chance: 2.5, value: 240 },
                 { name: 'P250 Visions', img: 'spins/P250-Visions.png', rarity: 'epic', chance: 2.5, value: 260 },
-                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.5, value: 0 }
+                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 100, value: 0 }
             ],
             knifes: [
                 { name: 'Driver Gloves Snow Leopard', img: 'spins/Driver-Gloves-Snow-Leopard.png', rarity: 'mythic', chance: 0.000567, value: 95000 },
@@ -171,9 +171,9 @@ const CONFIG = {
                 { name: 'MAC-10 Tatter', img: 'spins/MAC-10 Tatter.png', rarity: 'uncommon', chance: 10, value: 60 },
                 { name: 'AUG Torque', img: 'spins/AUG Torque.png', rarity: 'common', chance: 30, value: 44 },
                 { name: 'P90 Module', img: 'spins/P90 Module.png', rarity: 'common', chance: 30, value: 14 },
-                { name: 'CZ75-Auto Twist', img: 'spins/CZ75-Auto Twist.png', rarity: 'uncommon', chance: 10, value: 85 },
+                { name: 'CZ75-Auto Twist', img: 'spins/CZ75-Auto Twist.png', rarity: 'uncommon', chance: 10, value: 1 },
                 { name: 'Tec-9 Isaac', img: 'spins/Tec-9 Isaac.png', rarity: 'epic', chance: 2, value: 600 },
-                { name: 'SSG 08 Slashed', img: 'spins/SSG 08 Slashed.png', rarity: 'common', chance: 30, value: 5 },
+                { name: 'SSG 08 Slashed', img: 'spins/SSG 08 Slashed.png', rarity: 'common', chance: 30, value: 0.3 },
                 { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.01, value: 0 }
             ],
             knifes: [
@@ -1839,13 +1839,15 @@ async function instantLootboxSpin() {
             }
         } else {
             // Play mythic video if applicable
-            if (finalReward.rarity === 'mythic' && caseItem.mythicVideo && caseItem.mythicVideoFile) {
-                try {
-                    await playMythicVideo(caseItem.mythicVideoFile);
-                } catch (error) {
-                    console.error("Mythic video playback error:", error);
-                }
-            }
+            // Play mythic video if applicable
+if (finalReward.rarity === 'mythic' && caseItem.mythicVideo && caseItem.mythicVideoFile) {
+    try {
+        await playMythicVideo(caseItem.mythicVideoFile);
+    } catch (error) {
+        console.error("Mythic video playback error:", error);
+    }
+}
+
             
             // Show the reward popup
             await showLootboxPopup(finalReward);
@@ -1982,6 +1984,7 @@ async function showLootboxPopup(item) {
             if (loadingContainer) loadingContainer.remove();
         }
     }
+    
     
     // Set up the popup content
     elements.lootboxItemWon.innerHTML = `<img src="${item.img}" alt="${item.name}">`;
@@ -2845,6 +2848,3 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
-
-
-
