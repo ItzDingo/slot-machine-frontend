@@ -86,8 +86,8 @@ const CONFIG = {
             endTime: '2025-08-01T02:00:00', // Add end time
             playVideo: false, // Add this
             video: 'spins/video2.mp4', // Add this
-            mythicVideo: false,  // Set to true for cases that should play video for mythic items
-            mythicVideoFile: 'spins/limited2.mp4',
+            mythicVideo: true,  // Set to true for cases that should play video for mythic items
+            mythicVideoFile: 'spins/limited1.mp4',
             items: [
                 { name: 'P90 Vent Rush', img: 'spins/P90-Vent-Rush.png', rarity: 'epic', chance: 2.5, value: 450 },
                 { name: 'SG-553 DragonTech', img: 'spins/SG-553-Dragon-Tech.png', rarity: 'epic', chance: 2.5, value: 300 },
@@ -106,7 +106,7 @@ const CONFIG = {
                 { name: 'MAC-10 Monkeyflage', img: 'spins/MAC-10-Monkeyflage.png', rarity: 'common', chance: 30, value: 20 },
                 { name: 'Sawed Off Kiss♥Love', img: 'spins/Sawed-Off-Kiss-Love.png', rarity: 'epic', chance: 2.5, value: 240 },
                 { name: 'P250 Visions', img: 'spins/P250-Visions.png', rarity: 'epic', chance: 2.5, value: 260 },
-                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.01, value: 0 }
+                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 100, value: 0 }
             ],
             knifes: [
                 { name: 'Driver Gloves Snow Leopard', img: 'spins/Driver-Gloves-Snow-Leopard.png', rarity: 'mythic', chance: 0.000567, value: 95000 },
@@ -2845,4 +2845,5 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
+
 
