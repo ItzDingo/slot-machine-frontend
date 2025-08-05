@@ -174,7 +174,7 @@ const CONFIG = {
                 { name: 'CZ75-Auto Twist', img: 'spins/CZ75-Auto Twist.png', rarity: 'uncommon', chance: 10, value: 1 },
                 { name: 'Tec-9 Isaac', img: 'spins/Tec-9 Isaac.png', rarity: 'epic', chance: 2, value: 600 },
                 { name: 'SSG 08 Slashed', img: 'spins/SSG 08 Slashed.png', rarity: 'common', chance: 30, value: 0.3 },
-                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.1, value: 0 }
+                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.5, value: 0 }
             ],
             knifes: [
                 { name: 'Kukri Knife Urban Masked', img: 'spins/Kukri Knife Urban Masked.png', rarity: 'mythic', chance: 0.000567, value: 25000 },
@@ -2848,4 +2848,5 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
+
 
