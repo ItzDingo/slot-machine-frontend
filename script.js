@@ -254,6 +254,10 @@ const CONFIG = {
         maxBet: 10000000000000000000000000000000,
         minMines: 1,
         maxMines: 10,
+        magnifier: {
+            chance: 0.50, // 15% chance to spawn a magnifier in 10-mine games
+            img: 'spins/Magnifier.png'
+        },
         getGridSize: function(minesCount) {
             if (minesCount <= 6) return 5;
             if (minesCount <= 9) return 6;
@@ -322,7 +326,9 @@ let gameState = {
         totalCells: 25,
         minePositions: [],
         currentWin: 0,
-        gameActive: false
+        gameActive: false,
+        magnifierPosition: null,
+        revealedMines: []
     },
     minesStats: {
         totalGames: 0,
@@ -2292,6 +2298,7 @@ function startInventoryScreen() {
 }
 
 async function setupMinesGameUI() {
+    // Reset all game state including magnifier-related properties
     gameState.minesGame = {
         betAmount: 0,
         minesCount: 0,
@@ -2300,27 +2307,40 @@ async function setupMinesGameUI() {
         totalCells: 25,
         minePositions: [],
         currentWin: 0,
-        gameActive: false
+        gameActive: false,
+        magnifierPosition: null,       // Track magnifier cell
+        revealedMines: [],             // Track mines revealed by magnifier
+        magnifierUsed: false           // Track if magnifier was used this game
     };
     
+    // Reset UI displays
     if (elements.minesCurrentWin) elements.minesCurrentWin.textContent = '0.00';
     if (elements.minesMultiplier) elements.minesMultiplier.textContent = '1.0000x';
     if (elements.minesGrid) elements.minesGrid.innerHTML = '';
     
+    // Enable input fields
     if (elements.minesBetInput) {
         elements.minesBetInput.disabled = false;
         elements.minesBetInput.value = '';
+        elements.minesBetInput.focus();
     }
     if (elements.minesCountInput) {
         elements.minesCountInput.disabled = false;
         elements.minesCountInput.value = '';
     }
-    if (elements.minesStartBtn) elements.minesStartBtn.disabled = false;
+    
+    // Set button states
+    if (elements.minesStartBtn) {
+        elements.minesStartBtn.disabled = false;
+        elements.minesStartBtn.textContent = 'START GAME';
+    }
     if (elements.minesCashoutBtn) {
         elements.minesCashoutBtn.disabled = true;
         elements.minesCashoutBtn.classList.add('disabled');
+        elements.minesCashoutBtn.textContent = 'CASHOUT';
     }
     
+    // Load player stats
     try {
         const response = await fetch(`${API_BASE_URL}/api/mines/stats?userId=${gameState.userId}`, {
             credentials: 'include'
@@ -2328,16 +2348,35 @@ async function setupMinesGameUI() {
         
         if (response.ok) {
             const data = await response.json();
-            gameState.minesStats.totalGames = data.totalGames || 0;
-            gameState.minesStats.wins = data.wins || 0;
-            gameState.minesStats.totalWins = data.totalWins || 0;
-            gameState.minesStats.totalGamesPlayed = data.totalGamesPlayed || 0;
+            gameState.minesStats = {
+                totalGames: data.totalGames || 0,
+                wins: data.wins || 0,
+                totalWins: data.totalWins || 0,
+                totalGamesPlayed: data.totalGamesPlayed || 0,
+                magnifiersFound: data.magnifiersFound || 0  // Track magnifier finds
+            };
         }
     } catch (error) {
         console.error('Failed to load mines stats:', error);
+        // Initialize empty stats if load fails
+        gameState.minesStats = {
+            totalGames: 0,
+            wins: 0,
+            totalWins: 0,
+            totalGamesPlayed: 0,
+            magnifiersFound: 0
+        };
     }
     
     updateMinesStats();
+    
+    // Add visual reset effect
+    if (elements.minesGameScreen) {
+        elements.minesGameScreen.classList.add('game-reset');
+        setTimeout(() => {
+            elements.minesGameScreen.classList.remove('game-reset');
+        }, 300);
+    }
 }
 
 function updateMinesStats() {
@@ -2436,6 +2475,8 @@ function placeMines(minesCount) {
     const gridSize = CONFIG.mines.getGridSize(minesCount);
     const totalCells = gridSize * gridSize;
     gameState.minesGame.minePositions = [];
+    gameState.minesGame.magnifierPosition = null;
+    gameState.minesGame.revealedMines = [];
     
     // Create danger zones (both center and edges)
     const dangerZones = [];
@@ -2528,14 +2569,50 @@ function placeMines(minesCount) {
     }
     
     gameState.minesGame.minePositions = selectedIndices;
+    
+    // Place magnifier in 10-mine games (15% chance)
+    if (minesCount === 10 && Math.random() < CONFIG.mines.magnifier.chance) {
+        placeMagnifier(gridSize, selectedIndices);
+    }
+    
+    // Debug visualization
+    if (CONFIG.debug) {
+        visualizeMines(gridSize, selectedIndices, gameState.minesGame.magnifierPosition);
+    }
+}
+
+function placeMagnifier(gridSize, minePositions) {
+    const safeCells = [];
+    const totalCells = gridSize * gridSize;
+    
+    // Find all cells that don't contain mines and aren't in danger zones
+    for (let i = 0; i < totalCells; i++) {
+        if (!minePositions.includes(i)) {
+            safeCells.push(i);
+        }
+    }
+    
+    // Randomly select a safe cell for magnifier
+    if (safeCells.length > 0) {
+        const randomIndex = Math.floor(Math.random() * safeCells.length);
+        gameState.minesGame.magnifierPosition = safeCells[randomIndex];
+    }
 }
 
 function revealMineCell(index) {
+    // Check if game is active and elements exist
     if (!gameState.minesGame.gameActive || !elements.minesGrid) return;
     
     const cell = elements.minesGrid.children[index];
     if (!cell || cell.classList.contains('revealed')) return;
     
+    // Check if this is the magnifier cell
+    if (index === gameState.minesGame.magnifierPosition) {
+        revealMagnifier(index);
+        return;
+    }
+    
+    // Check if cell contains a mine
     if (gameState.minesGame.minePositions.includes(index)) {
         cell.innerHTML = '<img src="assets/mine.png" alt="Mine">';
         cell.classList.add('mine');
@@ -2543,10 +2620,12 @@ function revealMineCell(index) {
         return;
     }
     
+    // Reveal safe cell
     cell.classList.add('revealed');
     cell.innerHTML = '<div class="safe-cell"></div>';
     gameState.minesGame.revealedCells++;
     
+    // Update multiplier and current win (showing only profit)
     gameState.minesGame.multiplier = CONFIG.mines.getMultiplier(
         gameState.minesGame.minesCount,
         gameState.minesGame.revealedCells
@@ -2556,6 +2635,7 @@ function revealMineCell(index) {
         (gameState.minesGame.betAmount * (gameState.minesGame.multiplier - 1)).toFixed(4)
     );
     
+    // Update UI displays
     if (elements.minesCurrentWin) {
         elements.minesCurrentWin.textContent = gameState.minesGame.currentWin.toFixed(4);
     }
@@ -2563,6 +2643,7 @@ function revealMineCell(index) {
         elements.minesMultiplier.textContent = `${(gameState.minesGame.multiplier - 1).toFixed(4)}x`;
     }
     
+    // Enable cashout button after 2+ revealed cells
     if (gameState.minesGame.revealedCells >= 2 && elements.minesCashoutBtn) {
         elements.minesCashoutBtn.disabled = false;
         elements.minesCashoutBtn.classList.remove('disabled');
@@ -2571,16 +2652,51 @@ function revealMineCell(index) {
         elements.minesCashoutBtn.classList.add('disabled');
     }
     
-    cell.querySelector('.safe-cell').textContent = `+${(CONFIG.mines.growthFactors[gameState.minesGame.minesCount] * 100).toFixed(0)}%`;
+    // Show growth percentage temporarily
+    const growthPercentage = (CONFIG.mines.growthFactors[gameState.minesGame.minesCount] * 100).toFixed(0);
+    cell.querySelector('.safe-cell').textContent = `+${growthPercentage}%`;
     setTimeout(() => {
         if (cell.querySelector('.safe-cell')) {
             cell.querySelector('.safe-cell').textContent = '';
         }
     }, 1000);
     
+    // Check for win condition (all safe cells revealed)
     const safeCells = gameState.minesGame.totalCells - gameState.minesGame.minesCount;
     if (gameState.minesGame.revealedCells === safeCells) {
         endMinesGame(true);
+    }
+}
+
+function revealMagnifier(index) {
+    const cell = elements.minesGrid.children[index];
+    cell.classList.add('revealed');
+    cell.innerHTML = `<img src="${CONFIG.mines.magnifier.img}" alt="Magnifier" class="magnifier-icon">`;
+    
+    // Find all hidden mines (not already revealed)
+    const hiddenMines = gameState.minesGame.minePositions.filter(
+        pos => !gameState.minesGame.revealedMines.includes(pos)
+    );
+    
+    if (hiddenMines.length > 0) {
+        // Select a random hidden mine to reveal
+        const mineToReveal = hiddenMines[Math.floor(Math.random() * hiddenMines.length)];
+        gameState.minesGame.revealedMines.push(mineToReveal);
+        
+        // Highlight the revealed mine (without ending game)
+        const mineCell = elements.minesGrid.children[mineToReveal];
+        mineCell.classList.add('mine-hint');
+        mineCell.innerHTML = '<img src="assets/mine.png" alt="Mine" class="hinted-mine">';
+        
+        // Play reveal sound if available
+        if (window.mineRevealSound) {
+            window.mineRevealSound.currentTime = 0;
+            window.mineRevealSound.play().catch(e => console.log("Sound play failed:", e));
+        }
+        
+        showNotification("Magnifier revealed a mine location!", true);
+    } else {
+        showNotification("Magnifier found but all mines are already visible", false);
     }
 }
 
