@@ -2435,16 +2435,99 @@ function createMinesGrid() {
 function placeMines(minesCount) {
     const gridSize = CONFIG.mines.getGridSize(minesCount);
     const totalCells = gridSize * gridSize;
-    
     gameState.minesGame.minePositions = [];
-    const positions = Array.from({length: totalCells}, (_, i) => i);
     
-    for (let i = positions.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [positions[i], positions[j]] = [positions[j], positions[i]];
+    // Create danger zones (both center and edges)
+    const dangerZones = [];
+    const center = Math.floor(gridSize / 2);
+    
+    // 1. Center cluster (3x3 area)
+    for (let r = center - 1; r <= center + 1; r++) {
+        for (let c = center - 1; c <= center + 1; c++) {
+            if (r >= 0 && r < gridSize && c >= 0 && c < gridSize) {
+                dangerZones.push(r * gridSize + c);
+            }
+        }
     }
     
-    gameState.minesGame.minePositions = positions.slice(0, minesCount);
+    // 2. Edge rings (outer 2 layers)
+    for (let i = 0; i < gridSize; i++) {
+        // Top and bottom rows
+        for (let offset = 0; offset < 2; offset++) {
+            dangerZones.push(offset * gridSize + i); // Top
+            dangerZones.push((gridSize - 1 - offset) * gridSize + i); // Bottom
+        }
+        
+        // Left and right columns (skip corners we already added)
+        if (i > 0 && i < gridSize - 1) {
+            for (let offset = 0; offset < 2; offset++) {
+                dangerZones.push(i * gridSize + offset); // Left
+                dangerZones.push(i * gridSize + (gridSize - 1 - offset)); // Right
+            }
+        }
+    }
+    
+    // 3. Create probability map with danger zones weighted higher
+    const probabilityMap = [];
+    const dangerWeight = 3.5; // How much more likely danger zones are
+    const safeWeight = 0.3;  // How much less likely safe areas are
+    
+    for (let i = 0; i < totalCells; i++) {
+        const isDangerZone = dangerZones.includes(i);
+        probabilityMap.push({
+            index: i,
+            weight: isDangerZone ? dangerWeight : safeWeight
+        });
+    }
+    
+    // 4. Select mines using weighted probabilities
+    const selectedIndices = [];
+    let minesToPlace = minesCount;
+    
+    while (minesToPlace > 0 && probabilityMap.length > 0) {
+        // Calculate total weight
+        const totalWeight = probabilityMap.reduce((sum, cell) => sum + cell.weight, 0);
+        
+        // Select random position weighted by probability
+        let random = Math.random() * totalWeight;
+        let weightSum = 0;
+        let selectedIndex = -1;
+        
+        for (let i = 0; i < probabilityMap.length; i++) {
+            weightSum += probabilityMap[i].weight;
+            if (random <= weightSum) {
+                selectedIndex = i;
+                break;
+            }
+        }
+        
+        if (selectedIndex >= 0) {
+            // Add the selected cell to mines
+            selectedIndices.push(probabilityMap[selectedIndex].index);
+            
+            // Remove selected cell from probability map
+            probabilityMap.splice(selectedIndex, 1);
+            
+            // Reduce weight of adjacent cells to create some safe clusters
+            const index = selectedIndices[selectedIndices.length - 1];
+            const row = Math.floor(index / gridSize);
+            const col = index % gridSize;
+            
+            for (let r = Math.max(0, row - 1); r <= Math.min(gridSize - 1, row + 1); r++) {
+                for (let c = Math.max(0, col - 1); c <= Math.min(gridSize - 1, col + 1); c++) {
+                    const adjIndex = r * gridSize + c;
+                    const adjCell = probabilityMap.find(cell => cell.index === adjIndex);
+                    if (adjCell) {
+                        adjCell.weight = Math.max(0.1, adjCell.weight * 0.7);
+                    }
+                }
+            }
+            
+            minesToPlace--;
+        }
+    }
+    
+    gameState.minesGame.minePositions = selectedIndices;
 }
 
 function revealMineCell(index) {
@@ -2512,7 +2595,10 @@ function cashoutMinesGame() {
         return;
     }
     
-    showNotification(`Cashing out with ${gameState.minesGame.currentWin.toFixed(4)} profit!`, true);
+    // Calculate and show the net profit before ending the game
+    const netProfit = gameState.minesGame.currentWin - gameState.minesGame.betAmount;
+    showNotification(`Cashing out with ${netProfit.toFixed(4)} profit!`, true);
+    
     endMinesGame(true);
 }
 
