@@ -1063,6 +1063,8 @@ if (elements.cupGameChipsDisplay) {
 if (elements.cupGameDiceDisplay) {
     elements.cupGameDiceDisplay.textContent = gameState.dice.toFixed(2);
 }
+
+updateCupGameCurrencyDisplay();
 }
 
 function showNotification(message, isSuccess) {
@@ -1157,10 +1159,39 @@ function startCupGame() {
         showLoginScreen();
         return;
     }
+    
     gameState.currentGame = 'cup';
     hideAllScreens();
+    
+    // Initialize user data before showing the screen
+    initializeCupGameUserData();
+    
     if (elements.cupGameScreen) elements.cupGameScreen.style.display = 'block';
     setupCupGameUI();
+}
+
+function initializeCupGameUserData() {
+    // Update avatar
+    if (elements.cupGameAvatar) {
+        elements.cupGameAvatar.src = gameState.avatarUrl || 'default-avatar.png';
+    }
+    
+    // Update username
+    if (elements.cupGameUsername) {
+        elements.cupGameUsername.textContent = gameState.username || 'Guest';
+    }
+    
+    // Update currency displays
+    updateCupGameCurrencyDisplay();
+}
+
+function updateCupGameCurrencyDisplay() {
+    if (elements.cupGameChipsDisplay) {
+        elements.cupGameChipsDisplay.textContent = gameState.chips?.toFixed(2) || '0.00';
+    }
+    if (elements.cupGameDiceDisplay) {
+        elements.cupGameDiceDisplay.textContent = gameState.dice?.toFixed(2) || '0.00';
+    }
 }
 
 // Setup Cup Game UI
@@ -1175,22 +1206,7 @@ function setupCupGameUI() {
         currentWin: 0
     };
     
-    // Update user info
-    if (elements.cupGameAvatar) {
-        elements.cupGameAvatar.src = gameState.avatarUrl || 'default-avatar.png';
-    }
-    if (elements.cupGameUsername) {
-        elements.cupGameUsername.textContent = gameState.username || 'Guest';
-    }
-    
-    // Update currency display
-    if (elements.cupGameChipsDisplay) {
-        elements.cupGameChipsDisplay.textContent = gameState.chips.toFixed(2);
-    }
-    if (elements.cupGameDiceDisplay) {
-        elements.cupGameDiceDisplay.textContent = gameState.dice.toFixed(2);
-    }
-    
+    // Make sure inputs are reset
     if (elements.cupGameBetInput) {
         elements.cupGameBetInput.disabled = false;
         elements.cupGameBetInput.value = '';
@@ -1209,6 +1225,9 @@ function setupCupGameUI() {
     if (elements.cupGameGrid) {
         elements.cupGameGrid.innerHTML = '';
     }
+    
+    // Update currency display again in case it changed
+    updateCupGameCurrencyDisplay();
 }
 
 // Start New Cup Game
