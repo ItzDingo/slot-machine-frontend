@@ -299,6 +299,18 @@ const CONFIG = {
             return parseFloat(withHouseEdge.toFixed(4));
         },
         houseEdge: 0.03
+    },
+    cupGame: {
+        minBet: 1,
+        maxBet: 10000000000000000000000000000000,
+        minCups: 3,
+        maxCups: 5,
+        multipliers: {
+            3: 1.5,    // 3 cups = 1.5x multiplier
+            4: 2,    // 4 cups = 2x multiplier
+            5: 3     // 5 cups = 3x multiplier
+        },
+        houseEdge: 0.01 // 1% house edge
     }
 };
 
@@ -318,6 +330,15 @@ let gameState = {
     userId: null,
     authChecked: false,
     currentGame: null,
+    cupGame: {
+        betAmount: 0,
+        cupsCount: 0,
+        multiplier: 1.0,
+        coinPosition: null,
+        revealedCups: [],
+        gameActive: false,
+        currentWin: 0
+    },
     minesGame: {
         betAmount: 0,
         minesCount: 0,
@@ -342,6 +363,7 @@ let gameState = {
         currentCase: CONFIG.lootboxCases[0] // Default to first case
     },
     inventory: []
+    
 
 };
 
@@ -439,7 +461,23 @@ const elements = {
     lootboxSelectDice: document.getElementById('lootbox-select-dice'),
     lootboxSelectLogoutBtn: document.getElementById('lootbox-select-logout-btn'),
     lootboxCaseSelectBackBtn: document.getElementById('lootbox-case-select-back-btn'),
-    lootboxChangeCaseBtn: document.getElementById('lootbox-change-case-btn')
+    lootboxChangeCaseBtn: document.getElementById('lootbox-change-case-btn'),
+    cupGameScreen: document.getElementById('cup-game-screen'),
+    cupGameBtn: document.getElementById('cup-game-btn'),
+    cupGameBackToMenuBtn: document.getElementById('cup-game-back-to-menu-btn'),
+    cupGameLogoutBtn: document.getElementById('cup-game-logout-btn'),
+    cupGameUsername: document.getElementById('cup-game-username'),
+    cupGameAvatar: document.getElementById('cup-game-avatar'),
+    cupGameChips: document.getElementById('cup-game-chips'),
+    cupGameDice: document.getElementById('cup-game-dice'),
+    cupGameBetInput: document.getElementById('cup-game-bet-input'),
+    cupGameCupsInput: document.getElementById('cup-game-cups-input'),
+    cupGameStartBtn: document.getElementById('cup-game-start-btn'),
+    cupGameGrid: document.getElementById('cup-game-grid'),
+    cupGameGameOverPopup: document.getElementById('cup-game-game-over-popup'),
+    cupGameGameOverMessage: document.getElementById('cup-game-game-over-message'),
+    cupGameGameOverAmount: document.getElementById('cup-game-game-over-amount'),
+    cupGameGameOverClose: document.getElementById('cup-game-game-over-close')
 };
 
 const TimerManager = {
@@ -1105,6 +1143,235 @@ function updateInstantSpinDisplay(showPopup = false) {
     } else {
         instantSpinBtn.classList.remove('disabled');
     }
+}
+
+// Show Cup Game Screen
+function startCupGame() {
+    if (!gameState.userId) {
+        showLoginScreen();
+        return;
+    }
+    gameState.currentGame = 'cup';
+    hideAllScreens();
+    if (elements.cupGameScreen) elements.cupGameScreen.style.display = 'block';
+    setupCupGameUI();
+}
+
+// Setup Cup Game UI
+function setupCupGameUI() {
+    gameState.cupGame = {
+        betAmount: 0,
+        cupsCount: 0,
+        multiplier: 1.0,
+        coinPosition: null,
+        revealedCups: [],
+        gameActive: false,
+        currentWin: 0
+    };
+    
+    if (elements.cupGameBetInput) {
+        elements.cupGameBetInput.disabled = false;
+        elements.cupGameBetInput.value = '';
+    }
+    
+    if (elements.cupGameCupsInput) {
+        elements.cupGameCupsInput.disabled = false;
+        elements.cupGameCupsInput.value = '';
+    }
+    
+    if (elements.cupGameStartBtn) {
+        elements.cupGameStartBtn.disabled = false;
+        elements.cupGameStartBtn.textContent = 'START GAME';
+    }
+    
+    if (elements.cupGameGrid) {
+        elements.cupGameGrid.innerHTML = '';
+    }
+}
+
+// Start New Cup Game
+async function startNewCupGame() {
+    const betAmount = parseFloat(elements.cupGameBetInput?.value);
+    const cupsCount = parseInt(elements.cupGameCupsInput?.value);
+    
+    // Validate inputs
+    if (isNaN(betAmount) || betAmount <= 0) {
+        showNotification("Please enter a valid bet amount", false);
+        return;
+    }
+    
+    if (betAmount < CONFIG.cupGame.minBet || betAmount > CONFIG.cupGame.maxBet) {
+        showNotification(`Bet amount must be between ${CONFIG.cupGame.minBet} and ${CONFIG.cupGame.maxBet}`, false);
+        return;
+    }
+    
+    if (isNaN(cupsCount) || cupsCount < CONFIG.cupGame.minCups || cupsCount > CONFIG.cupGame.maxCups) {
+        showNotification(`Number of cups must be between ${CONFIG.cupGame.minCups} and ${CONFIG.cupGame.maxCups}`, false);
+        return;
+    }
+    
+    if (betAmount > gameState.chips) {
+        showNotification("Not enough chips for this bet", false);
+        return;
+    }
+    
+    // Disable inputs and start button
+    if (elements.cupGameBetInput) elements.cupGameBetInput.disabled = true;
+    if (elements.cupGameCupsInput) elements.cupGameCupsInput.disabled = true;
+    if (elements.cupGameStartBtn) elements.cupGameStartBtn.disabled = true;
+    
+    // Set game state
+    gameState.cupGame.betAmount = betAmount;
+    gameState.cupGame.cupsCount = cupsCount;
+    gameState.cupGame.multiplier = CONFIG.cupGame.multipliers[cupsCount];
+    gameState.cupGame.gameActive = true;
+    
+    // Create cups grid
+    createCupsGrid(cupsCount);
+    
+    // Place coin under random cup
+    gameState.cupGame.coinPosition = Math.floor(Math.random() * cupsCount);
+    gameState.cupGame.revealedCups = [];
+}
+
+// Create Cups Grid
+function createCupsGrid(cupsCount) {
+    if (!elements.cupGameGrid) return;
+    
+    elements.cupGameGrid.innerHTML = '';
+    elements.cupGameGrid.style.gridTemplateColumns = `repeat(${cupsCount}, 1fr)`;
+    
+    for (let i = 0; i < cupsCount; i++) {
+        const cup = document.createElement('div');
+        cup.className = 'cup-game-cup';
+        cup.dataset.index = i;
+        cup.innerHTML = `<img src="spins/cup.png" alt="Cup">`;
+        cup.addEventListener('click', () => revealCup(i));
+        elements.cupGameGrid.appendChild(cup);
+    }
+}
+
+// Reveal Cup
+async function revealCup(index) {
+    if (!gameState.cupGame.gameActive || gameState.cupGame.revealedCups.includes(index)) {
+        return;
+    }
+    
+    const cup = elements.cupGameGrid.children[index];
+    if (!cup) return;
+    
+    // Add to revealed cups
+    gameState.cupGame.revealedCups.push(index);
+    
+    if (index === gameState.cupGame.coinPosition) {
+        // Player found the coin - they win!
+        cup.innerHTML = `<img src="spins/coinflip.png" alt="Coin">`;
+        cup.classList.add('win');
+        
+        const winAmount = gameState.cupGame.betAmount * gameState.cupGame.multiplier;
+        gameState.cupGame.currentWin = winAmount;
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/win`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: gameState.userId,
+                    amount: winAmount
+                }),
+                credentials: 'include'
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                gameState.chips = data.newBalance;
+                updateCurrencyDisplay();
+                
+                // Show win popup
+                if (elements.cupGameGameOverMessage) elements.cupGameGameOverMessage.textContent = "You Won!";
+                if (elements.cupGameGameOverAmount) {
+                    elements.cupGameGameOverAmount.textContent = `+${winAmount.toFixed(2)}`;
+                }
+                if (elements.cupGameGameOverPopup) elements.cupGameGameOverPopup.style.display = 'flex';
+            }
+        } catch (error) {
+            console.error('Win claim error:', error);
+            showNotification('Failed to claim win', false);
+        }
+    } else {
+        // Player picked wrong cup - they lose
+        cup.innerHTML = `<img src="spins/cup.png" alt="Empty Cup">`;
+        cup.classList.add('empty');
+        
+        // Calculate loss (99% of bet)
+        const lossAmount = gameState.cupGame.betAmount * 0.99;
+        const returnedAmount = gameState.cupGame.betAmount * 0.01;
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/spin`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: gameState.userId,
+                    cost: lossAmount
+                }),
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                gameState.chips = data.newBalance;
+                updateCurrencyDisplay();
+                
+                // Show loss popup
+                if (elements.cupGameGameOverMessage) elements.cupGameGameOverMessage.textContent = "Game Over!";
+                if (elements.cupGameGameOverAmount) {
+                    elements.cupGameGameOverAmount.textContent = `-${lossAmount.toFixed(2)} (returned ${returnedAmount.toFixed(2)})`;
+                }
+                if (elements.cupGameGameOverPopup) elements.cupGameGameOverPopup.style.display = 'flex';
+            }
+        } catch (error) {
+            console.error('Loss deduction error:', error);
+            showNotification('Failed to process loss', false);
+        }
+    }
+    
+    // End the game
+    gameState.cupGame.gameActive = false;
+    
+    // Reveal the coin position if not already found
+    if (index !== gameState.cupGame.coinPosition) {
+        const coinCup = elements.cupGameGrid.children[gameState.cupGame.coinPosition];
+        if (coinCup) {
+            setTimeout(() => {
+                coinCup.innerHTML = `<img src="spins/coinflip.png" alt="Coin">`;
+                coinCup.classList.add('win');
+            }, 500);
+        }
+    }
+}
+
+// Close Cup Game Over Popup
+function closeCupGameOverPopup() {
+    if (elements.cupGameGameOverPopup) elements.cupGameGameOverPopup.style.display = 'none';
+    setupCupGameUI();
+}
+
+function hideAllScreens() {
+    if (elements.loginScreen) elements.loginScreen.style.display = 'none';
+    if (elements.gameScreen) elements.gameScreen.style.display = 'none';
+    if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'none';
+    if (elements.minesGameScreen) elements.minesGameScreen.style.display = 'none';
+    if (elements.lootboxScreen) elements.lootboxScreen.style.display = 'none';
+    if (elements.inventoryScreen) elements.inventoryScreen.style.display = 'none';
+    if (elements.lootboxCaseSelectScreen) elements.lootboxCaseSelectScreen.style.display = 'none';
+    if (elements.cupGameScreen) elements.cupGameScreen.style.display = 'none';
 }
 
 // Slot Machine Functions
@@ -2969,12 +3236,20 @@ if (elements.spinBtn) elements.spinBtn.addEventListener('click', startSpin);
 if (elements.claimBtn) elements.claimBtn.addEventListener('click', claimWin);
 if (elements.lootboxClaimBtn) elements.lootboxClaimBtn.addEventListener('click', claimLootboxWin);
 
+// Add to your existing event listeners
+if (elements.cupGameBtn) elements.cupGameBtn.addEventListener('click', startCupGame);
+if (elements.cupGameBackToMenuBtn) elements.cupGameBackToMenuBtn.addEventListener('click', showGameSelectScreen);
+if (elements.cupGameLogoutBtn) elements.cupGameLogoutBtn.addEventListener('click', logout);
+if (elements.cupGameStartBtn) elements.cupGameStartBtn.addEventListener('click', startNewCupGame);
+if (elements.cupGameGameOverClose) elements.cupGameGameOverClose.addEventListener('click', closeCupGameOverPopup);
+
 if (elements.slotMachineBtn) elements.slotMachineBtn.addEventListener('click', startSlotMachineGame);
 if (elements.minesGameBtn) elements.minesGameBtn.addEventListener('click', startMinesGame);
 if (elements.lootboxBtn) elements.lootboxBtn.addEventListener('click', startLootboxGame);
 if (document.getElementById('lootbox-instant-spin-btn')) {
     document.getElementById('lootbox-instant-spin-btn').addEventListener('click', instantLootboxSpin);
 }
+
 
 if (elements.inventoryBtn) elements.inventoryBtn.addEventListener('click', startInventoryScreen);
 if (elements.minesStartBtn) elements.minesStartBtn.addEventListener('click', startNewMinesGame);
@@ -3001,6 +3276,10 @@ document.getElementById('cancel-refill-btn')?.addEventListener('click', () => {
     document.getElementById('refill-popup').style.display = 'none';
 });
 
+
+
+
+
 // Inventory event listeners
 if (elements.inventorySellInput) {
     elements.inventorySellInput.addEventListener('input', updateSellTotal);
@@ -3013,6 +3292,8 @@ if (elements.inventorySellBtn) {
 if (elements.inventorySellClose) {
     elements.inventorySellClose.addEventListener('click', closeSellPanel);
 }
+
+
 
 
 
@@ -3049,4 +3330,3 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
-
