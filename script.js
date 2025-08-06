@@ -1153,6 +1153,22 @@ function updateInstantSpinDisplay(showPopup = false) {
     }
 }
 
+function initializeCupGameUserData() {
+    // Update avatar
+    if (elements.cupGameAvatar) {
+        elements.cupGameAvatar.src = gameState.avatarUrl || 'default-avatar.png';
+    }
+    
+    // Update username
+    if (elements.cupGameUsername) {
+        elements.cupGameUsername.textContent = gameState.username || 'Guest';
+    }
+    
+    // Update currency displays
+    updateCupGameCurrencyDisplay();
+}
+
+
 // Show Cup Game Screen
 function startCupGame() {
     if (!gameState.userId) {
@@ -1168,21 +1184,6 @@ function startCupGame() {
     
     if (elements.cupGameScreen) elements.cupGameScreen.style.display = 'block';
     setupCupGameUI();
-}
-
-function initializeCupGameUserData() {
-    // Update avatar
-    if (elements.cupGameAvatar) {
-        elements.cupGameAvatar.src = gameState.avatarUrl || 'default-avatar.png';
-    }
-    
-    // Update username
-    if (elements.cupGameUsername) {
-        elements.cupGameUsername.textContent = gameState.username || 'Guest';
-    }
-    
-    // Update currency displays
-    updateCupGameCurrencyDisplay();
 }
 
 function updateCupGameCurrencyDisplay() {
@@ -1229,6 +1230,7 @@ function setupCupGameUI() {
     // Update currency display again in case it changed
     updateCupGameCurrencyDisplay();
 }
+
 
 // Start New Cup Game
 async function startNewCupGame() {
