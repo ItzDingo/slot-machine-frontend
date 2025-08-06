@@ -31,10 +31,61 @@
     <!-- Game Select Screen -->
     <div id="game-select-screen" class="game-select-container">
         <h1>Select Game</h1>
+        <button id="cup-game-btn" class="game-select-btn">Cup Game</button>
         <button id="mines-game-btn" class="game-select-btn">Mines</button>
         <button id="lootbox-btn" class="game-select-btn">Cases</button>
         <button id="inventory-btn" class="game-select-btn">Inventory</button>
     </div>
+
+    <!-- Cup Game Screen -->
+<div id="cup-game-screen" class="game-container">
+    <div class="user-panel">
+        <div class="user-info">
+            <img id="cup-game-avatar" src="assets/default-avatar.png" alt="Avatar">
+            <div class="user-details">
+                <div id="cup-game-username">Guest</div>
+                <div class="currency-display">
+                    <div class="currency">
+                        <img src="assets/chip.png" alt="Chips">
+                        <span id="cup-game-chips">0</span>
+                    </div>
+                    <div class="currency">
+                        <img src="assets/dice.png" alt="Dice">
+                        <span id="cup-game-dice">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button id="cup-game-logout-btn" class="logout-btn">Logout</button>
+    </div>
+
+    <div class="cup-game-controls">
+        <div class="cup-game-input-group">
+            <label for="cup-game-bet-input">Bet Amount</label>
+            <input type="number" id="cup-game-bet-input" placeholder="Enter bet amount" min="1">
+        </div>
+        
+        <div class="cup-game-input-group">
+            <label for="cup-game-cups-input">Number of Cups (3-5)</label>
+            <input type="number" id="cup-game-cups-input" placeholder="3, 4, or 5" min="3" max="5">
+        </div>
+        
+        <button id="cup-game-start-btn" class="cup-game-start-btn">START GAME</button>
+    </div>
+
+    <div id="cup-game-grid"></div>
+
+    <button id="cup-game-back-to-menu-btn" class="back-to-menu-btn">Back to Menu</button>
+</div>
+
+<!-- Cup Game Over Popup -->
+<div id="cup-game-game-over-popup">
+    <div class="cup-game-over-content">
+        <h3 id="cup-game-game-over-message">Game Over!</h3>
+        <div id="cup-game-game-over-amount">+0.00</div>
+        <button id="cup-game-game-over-close">Continue</button>
+    </div>
+</div>
 
     <!-- Slot Machine Game Screen -->
     <div id="game-screen" class="game-container">
@@ -350,8 +401,3 @@
 
 </body>
 </html>
-
-
-
-
-
