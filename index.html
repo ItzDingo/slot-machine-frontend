@@ -38,25 +38,25 @@
     </div>
 
     <!-- Cup Game Screen -->
-<div id="cup-game-screen" class="game-container">
+<div id="cup-game-screen" style="display: none;">
     <div class="user-panel">
         <div class="user-info">
-            <img id="cup-game-avatar" src="assets/default-avatar.png" alt="User Avatar">
+            <img id="cup-game-avatar" src="" alt="Avatar" class="user-avatar">
             <div class="user-details">
                 <div id="cup-game-username">Guest</div>
-                <div class="currency-display">
-                    <div class="currency">
-                        <img src="assets/chip.png" alt="Chips">
-                        <span id="cup-game-chips-display">0</span>
-                    </div>
-                    <div class="currency">
-                        <img src="assets/dice.png" alt="Dice">
-                        <span id="cup-game-dice-display">0</span>
-                    </div>
-                </div>
+                <button id="cup-game-logout-btn">Logout</button>
             </div>
         </div>
-        <button id="cup-game-logout-btn" class="logout-btn">Logout</button>
+        <div class="currency-display">
+            <div class="currency">
+                <img src="assets/chips-icon.png" alt="Chips">
+                <span id="cup-game-chips-display">0.00</span>
+            </div>
+            <div class="currency">
+                <img src="assets/dice-icon.png" alt="Dice">
+                <span id="cup-game-dice-display">0.00</span>
+            </div>
+        </div>
     </div>
 
     <div class="cup-game-controls">
@@ -401,4 +401,3 @@
 
 </body>
 </html>
-
