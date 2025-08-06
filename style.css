@@ -448,6 +448,101 @@ body {
     }
 }
 
+#cup-game-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid var(--secondary);
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+#cup-game-avatar:hover {
+    transform: scale(1.05);
+}
+
+/* Cup Game Currency Display */
+#cup-game-currency-display {
+    display: flex;
+    gap: 20px;
+}
+
+#cup-game-currency-display .currency {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.2rem;
+    color: white;
+}
+
+#cup-game-currency-display .currency img {
+    width: 25px;
+    height: 25px;
+    object-fit: contain;
+}
+
+    /* Cup Game Back Button */
+#cup-game-back-to-menu-btn {
+    background: #444;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    width: 100%;
+    margin-top: 10px;
+}
+
+#cup-game-back-to-menu-btn:hover {
+    background: #555;
+    transform: translateY(-2px);
+}
+
+/* Cup Game User Panel */
+#cup-game-user-panel {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    align-items: center;
+    width: 100%;
+}
+
+#cup-game-user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+#cup-game-user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+#cup-game-username {
+    font-weight: bold;
+    color: white;
+    font-size: 1.1rem;
+}
+
+#cup-game-logout-btn {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 0.8rem;
+}
+
+#cup-game-logout-btn:hover {
+    background: #555;
+    transform: translateY(-1px);
+}
+
 /* Slot Machine */
 .slot-machine {
     display: flex;
