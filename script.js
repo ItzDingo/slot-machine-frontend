@@ -1057,6 +1057,12 @@ function updateCurrencyDisplay() {
     if (elements.inventoryDice) elements.inventoryDice.textContent = gameState.dice;
     if (elements.lootboxSelectChips) elements.lootboxSelectChips.textContent = gameState.chips.toFixed(2);
     if (elements.lootboxSelectDice) elements.lootboxSelectDice.textContent = gameState.dice;
+if (elements.cupGameChipsDisplay) {
+    elements.cupGameChipsDisplay.textContent = gameState.chips.toFixed(2);
+}
+if (elements.cupGameDiceDisplay) {
+    elements.cupGameDiceDisplay.textContent = gameState.dice.toFixed(2);
+}
 }
 
 function showNotification(message, isSuccess) {
@@ -1168,6 +1174,22 @@ function setupCupGameUI() {
         gameActive: false,
         currentWin: 0
     };
+    
+    // Update user info
+    if (elements.cupGameAvatar) {
+        elements.cupGameAvatar.src = gameState.avatarUrl || 'default-avatar.png';
+    }
+    if (elements.cupGameUsername) {
+        elements.cupGameUsername.textContent = gameState.username || 'Guest';
+    }
+    
+    // Update currency display
+    if (elements.cupGameChipsDisplay) {
+        elements.cupGameChipsDisplay.textContent = gameState.chips.toFixed(2);
+    }
+    if (elements.cupGameDiceDisplay) {
+        elements.cupGameDiceDisplay.textContent = gameState.dice.toFixed(2);
+    }
     
     if (elements.cupGameBetInput) {
         elements.cupGameBetInput.disabled = false;
@@ -3236,12 +3258,6 @@ if (elements.spinBtn) elements.spinBtn.addEventListener('click', startSpin);
 if (elements.claimBtn) elements.claimBtn.addEventListener('click', claimWin);
 if (elements.lootboxClaimBtn) elements.lootboxClaimBtn.addEventListener('click', claimLootboxWin);
 
-// Add to your existing event listeners
-if (elements.cupGameBtn) elements.cupGameBtn.addEventListener('click', startCupGame);
-if (elements.cupGameBackToMenuBtn) elements.cupGameBackToMenuBtn.addEventListener('click', showGameSelectScreen);
-if (elements.cupGameLogoutBtn) elements.cupGameLogoutBtn.addEventListener('click', logout);
-if (elements.cupGameStartBtn) elements.cupGameStartBtn.addEventListener('click', startNewCupGame);
-if (elements.cupGameGameOverClose) elements.cupGameGameOverClose.addEventListener('click', closeCupGameOverPopup);
 
 if (elements.slotMachineBtn) elements.slotMachineBtn.addEventListener('click', startSlotMachineGame);
 if (elements.minesGameBtn) elements.minesGameBtn.addEventListener('click', startMinesGame);
@@ -3250,6 +3266,17 @@ if (document.getElementById('lootbox-instant-spin-btn')) {
     document.getElementById('lootbox-instant-spin-btn').addEventListener('click', instantLootboxSpin);
 }
 
+if (elements.cupGameBtn) elements.cupGameBtn.addEventListener('click', startCupGame);
+if (elements.cupGameBackToMenuBtn) elements.cupGameBackToMenuBtn.addEventListener('click', showGameSelectScreen);
+if (elements.cupGameLogoutBtn) elements.cupGameLogoutBtn.addEventListener('click', logout);
+if (elements.cupGameStartBtn) elements.cupGameStartBtn.addEventListener('click', startNewCupGame);
+if (elements.cupGameGameOverClose) elements.cupGameGameOverClose.addEventListener('click', closeCupGameOverPopup);
+if (elements.cupGameBackToMenuBtn) {
+    elements.cupGameBackToMenuBtn.addEventListener('click', () => {
+        hideAllScreens();
+        if (elements.gameSelectScreen) elements.gameSelectScreen.style.display = 'block';
+    });
+}
 
 if (elements.inventoryBtn) elements.inventoryBtn.addEventListener('click', startInventoryScreen);
 if (elements.minesStartBtn) elements.minesStartBtn.addEventListener('click', startNewMinesGame);
