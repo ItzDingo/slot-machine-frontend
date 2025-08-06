@@ -260,8 +260,8 @@ const CONFIG = {
         },
         getGridSize: function(minesCount) {
             if (minesCount <= 6) return 5;
-            if (minesCount <= 9) return 6;
-            return 6;
+            if (minesCount <= 9) return 5;
+            return 5;
         },
         getMultiplier: function(minesCount, revealedCells) {
             const baseMultipliers = {
@@ -3378,3 +3378,4 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
+
