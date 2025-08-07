@@ -197,8 +197,8 @@ const CONFIG = {
             img: 'spins/nun.png',
             cost: 0,
             limitedTime: true, // Add this
-            startTime: '2025-08-07T15:00:00', // Add start time (optional)
-            endTime: '2025-08-09T15:00:00', // Add end time
+            startTime: '2025-08-08T15:00:00', // Add start time (optional)
+            endTime: '2025-08-10T15:00:00', // Add end time
             playVideo: false, // Add this
             video: 'spins/video4.mp4', // Add this
             mythicVideo: false,  // Set to true for cases that should play video for mythic items
@@ -3378,6 +3378,7 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
+
 
 
 
