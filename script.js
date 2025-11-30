@@ -174,7 +174,7 @@ const CONFIG = {
                 { name: 'CZ75-Auto Twist', img: 'spins/CZ75-Auto Twist.png', rarity: 'uncommon', chance: 10, value: 1 },
                 { name: 'Tec-9 Isaac', img: 'spins/Tec-9 Isaac.png', rarity: 'epic', chance: 2, value: 600 },
                 { name: 'SSG 08 Slashed', img: 'spins/SSG 08 Slashed.png', rarity: 'common', chance: 30, value: 0.3 },
-                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 0.5, value: 0 }
+                { name: 'Special Item', img: 'spins/gold.png', rarity: 'mythic', chance: 100, value: 0 }
             ],
             knifes: [
                 { name: 'Kukri Knife Urban Masked', img: 'spins/Kukri Knife Urban Masked.png', rarity: 'mythic', chance: 0.000567, value: 25000 },
@@ -230,7 +230,7 @@ const CONFIG = {
                 { name: 'Venomous Fang Upgrade Token', img: 'spins/Venomous_Fang.png', rarity: 'uncommon', chance: 10, value: 100 },
                 { name: 'Magic Cube Fragment', img: 'spins/Cube_Fragment.png', rarity: 'epic', chance: 2, value: 2500 },
                 { name: 'Elite Pass Access', img: 'spins/Elite_Pass.png', rarity: 'exclusive', chance: 0.5, value: 5000 },
-                { name: 'Limited Item', img: 'spins/congratulations.png', rarity: 'mythic', chance: 0.01, value: 0 }
+                { name: 'Limited Item', img: 'spins/congratulations.png', rarity: 'mythic', chance: 100, value: 0 }
             ],
             knifes: [
                 { name: 'Motor Bike Cobra Skin', img: 'spins/Motor_BikeCobra.png', rarity: 'limited', chance: 0.001, value: 30000 },
@@ -3378,6 +3378,7 @@ async function initGame() {
 }
 
 document.addEventListener('DOMContentLoaded', initGame);
+
 
 
 
